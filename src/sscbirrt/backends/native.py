@@ -270,8 +270,8 @@ def _lower_config(config: CBiRRTConfig):
     c.edge_resolution = None if config.edge_resolution is None else float(config.edge_resolution)
     c.progress_tolerance = float(config.progress_tolerance)
     c.step_size = float(config.step_size)
-    c.goal_bias = float(config.goal_bias)
-    c.start_bias = float(config.start_bias)
+    c.start_sample_probability = float(config.start_sample_probability)
+    c.goal_sample_probability = float(config.goal_sample_probability)
     c.extend_steps = config.extend_steps
     c.connect_steps = config.connect_steps
     c.sample_draws = int(config.sample_draws)
@@ -388,6 +388,7 @@ def convert(r, provenance: dict | None = None):
         "edge_checks": s.edge_checks,
         "set_samples": s.set_samples,
         "set_projections": s.set_projections,
+        "search_roots": s.search_roots,
         "seconds_state_checks": s.seconds_state_checks,
         "seconds_edge_checks": s.seconds_edge_checks,
         "seconds_set_samples": s.seconds_set_samples,

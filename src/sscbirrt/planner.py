@@ -277,7 +277,7 @@ class CBiRRT:
                 logger.info("native backend not used; planning in Python: %s", "; ".join(reasons))
             else:
                 return native.solve(lowered, seed, self.config.abort_fn)
-        self._counts = {"state_checks": 0, "edge_checks": 0}
+        self._counts = {"state_checks": 0, "edge_checks": 0, "search_roots": 0}
         result = self._solve_python(problem, seed)
         result.backend = "python"
         result.backend_reasons = reasons
@@ -356,8 +356,15 @@ class CBiRRT:
                 tree_goal=tree_goal,
             )
 
-        goal_biased = supports(problem.goal, SetSampler)
-        start_biased = supports(problem.start, SetSampler)
+        # CBiRRT's P_sample (#196): a set that is not finite and can be sampled keeps adding roots during the search.
+        # A finite set's members are all roots already, so its tree never tosses the coin.
+        roles = {
+            id(tree_start): (problem.start, self.config.start_sample_probability),
+            id(tree_goal): (problem.goal, self.config.goal_sample_probability),
+        }
+        seeds = {key: {m.source for m in explicit_samples(s)} for key, (s, _) in roles.items()}
+        grows = {key: not is_finite(s) and supports(s, SetSampler) for key, (s, _) in roles.items()}
+        counts = getattr(self, "_counts", None)
 
         for iteration in range(self.config.max_iterations):
             if self._aborted():
@@ -377,14 +384,17 @@ class CBiRRT:
             else:
                 tree_a, tree_b = tree_goal, tree_start
 
-            # Sample a target, biased toward the opposite tree's set
-            q_sample = None
-            if tree_a is tree_start and goal_biased and self._rng.random() < self.config.goal_bias:
-                q_sample = self._sample_admissible(problem, problem.goal)
-            elif tree_a is tree_goal and start_biased and self._rng.random() < self.config.start_bias:
-                q_sample = self._sample_admissible(problem, problem.start)
-            if q_sample is None:
-                q_sample = (problem.sampler or problem.space).sample(self._rng)
+            # Heads: this turn adds roots to tree_a from its own set, and that is the whole turn
+            own, p_sample = roles[id(tree_a)]
+            if grows[id(tree_a)] and self._rng.random() < p_sample:
+                for smp in self._draw_roots(problem, own, seeds[id(tree_a)], self.config.max_per_draw):
+                    tree_a.add_root(smp.q, smp.source)
+                    if counts is not None:
+                        counts["search_roots"] += 1
+                continue
+
+            # Tails: an ordinary turn toward a random configuration
+            q_sample = (problem.sampler or problem.space).sample(self._rng)
 
             # Extend tree_a toward the sample (EXT), then connect tree_b to where it got (CON)
             grow_idx, _ = self._grow(problem, tree_a, q_sample, self.config.extend_steps)
@@ -456,13 +466,50 @@ class CBiRRT:
             return False, "violates path constraints"
         return True, None
 
-    def _sample_admissible(self, problem: PlanningProblem, s: StateSet) -> np.ndarray | None:
-        """Draw one admissible configuration from ``s``, or None within the sample budget."""
-        for _ in range(self.config.sample_draws):
-            for smp in s.sample(self._rng):
-                if self._admissible(problem, smp.q)[0]:
-                    return smp.q
-        return None
+    def _draw_roots(
+        self,
+        problem: PlanningProblem,
+        s: StateSet,
+        seed_sources: set,
+        room: int,
+        stats: dict[str, int] | None = None,
+    ) -> list[Sample]:
+        """One sampling draw from ``s``: its admissible candidates, at most ``min(max_per_draw, room)`` of them.
+
+        A draw may yield several candidates (for example every IK solution of one pose). When it yields more than
+        ``max_per_draw`` they are visited in a uniformly random order, so the kept ones are a random subset rather
+        than the first ones the sampler listed (#168). A candidate that repeats an explicit seed of the set (same
+        provenance) is skipped: it is already a root or already rejected. ``stats`` counts why candidates failed.
+        The same step builds the trees before the search and adds roots during it (#196).
+        """
+        candidates = s.sample(self._rng)
+        if not candidates:
+            if stats is not None:
+                stats["sample_failed"] += 1
+            return []
+        if len(candidates) > self.config.max_per_draw:
+            # A draw can yield many more candidates than are kept (an IK solver that enumerates branches and joint
+            # windings returns hundreds, in a fixed order); visit them in a random order (#168).
+            candidates = [candidates[k] for k in self._rng.permutation(len(candidates))]
+        limit = min(self.config.max_per_draw, room)
+        kept: list[Sample] = []
+        for smp in candidates:
+            if len(kept) >= limit:
+                break
+            if smp.source in seed_sources:
+                continue
+            ok, reason = self._admissible(problem, smp.q)
+            if ok:
+                kept.append(smp)
+            elif stats is None:
+                pass
+            elif reason == "in collision":
+                stats["in_collision"] += 1
+            elif reason.startswith("outside joint space"):
+                stats["outside_space"] += 1
+            else:
+                stats["constraint_violated"] += 1
+        return kept
 
     def _roots(self, problem: PlanningProblem, s: StateSet, role: str) -> list[Sample]:
         """Collect tree roots for a start or goal set.
@@ -513,31 +560,7 @@ class CBiRRT:
                     break
                 if self._aborted():
                     raise _AbortedDuringRoots(role, roots)
-                candidates = s.sample(self._rng)
-                if not candidates:
-                    stats["sample_failed"] += 1
-                    continue
-                if len(candidates) > self.config.max_per_draw:
-                    # A draw can yield many more candidates than are kept (an IK solver that enumerates
-                    # branches and joint windings returns hundreds, in a fixed order); visit them in a
-                    # random order so the kept ones are a uniform subset, not the first corner (#168).
-                    candidates = [candidates[k] for k in self._rng.permutation(len(candidates))]
-                kept = 0
-                for smp in candidates:
-                    if kept >= self.config.max_per_draw or len(roots) >= self.config.num_tree_roots:
-                        break
-                    if smp.source in seed_sources:
-                        continue  # an explicit seed drawn again; already a root or already rejected
-                    ok, reason = self._admissible(problem, smp.q)
-                    if ok:
-                        roots.append(smp)
-                        kept += 1
-                    elif reason == "in collision":
-                        stats["in_collision"] += 1
-                    elif reason.startswith("outside joint space"):
-                        stats["outside_space"] += 1
-                    else:
-                        stats["constraint_violated"] += 1
+                roots += self._draw_roots(problem, s, seed_sources, self.config.num_tree_roots - len(roots), stats)
 
         if roots:
             if invalid_details:

@@ -442,7 +442,7 @@ class TestReplacementVsComposition:
     def test_goal_tree_edges_are_validated_from_the_goal_side(self):
         """Documents the reversibility requirement: half the calls have q_from nearer the goal."""
         robot = MockRobotModel()
-        cfg = CBiRRTConfig(step_size=0.1, connection_tolerance=0.05, smooth_path=False, goal_bias=0.0, start_bias=0.0)
+        cfg = CBiRRTConfig(step_size=0.1, connection_tolerance=0.05, smooth_path=False)
         planner = CBiRRT(robot, MockIKSolver(robot, MockCollisionChecker()), MockCollisionChecker(), cfg)
         q0, q1 = np.zeros(2), np.array([1.0, 0.0])
         base = planner.default_motion_validator(problem(planner, q0, q1))

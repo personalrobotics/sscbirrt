@@ -97,7 +97,7 @@ class TestNoSelfSpaceInSearch:
         [
             "solve",
             "_roots",
-            "_sample_admissible",
+            "_draw_roots",
             "_admissible",
             "_grow",
             "_extend_along_edge",

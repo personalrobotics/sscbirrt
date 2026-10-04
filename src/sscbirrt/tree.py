@@ -49,6 +49,17 @@ class RRTree:
             self.nodes.append(Node(config=config.copy(), parent=None, source_index=src_idx))
             self._configs.append(config.copy())
 
+    def add_root(self, config: np.ndarray, source_index: Any = None) -> int:
+        """Add a root: a child of the tree's virtual root, with no edge to check (CBiRRT's P_sample, #196).
+
+        Every root hangs off one virtual root that is not a configuration, so the tree stays one tree however many
+        start or goal members join it, before the search or during it.
+        """
+        self.nodes.append(Node(config=config.copy(), parent=None, source_index=source_index))
+        self._configs.append(config.copy())
+        self._configs_array = None  # Invalidate cache
+        return len(self.nodes) - 1
+
     def add_node(self, config: np.ndarray, parent_idx: int) -> int:
         """Add a new node to the tree.
 

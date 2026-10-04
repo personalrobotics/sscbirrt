@@ -244,9 +244,16 @@ Python with that list in `result.backend_reasons`.
 Two trees grow at once, blue from the start set and green from the goal set.
 The right panel is configuration space; red regions are in collision.
 
-1. **Sample** a random configuration, or a member of the other role's set
-   with probability `goal_bias` / `start_bias`.
-2. **Extend** the nearest tree toward it in steps of `step_size`.
+1. **Grow a set, or sample.** The trees take turns. On a tree's turn, with
+   probability `start_sample_probability` (start tree) or
+   `goal_sample_probability` (goal tree), the turn draws new members of that
+   tree's own set and adds them as roots, and that is the whole turn. This is
+   CBiRRT's `P_sample`: the trees keep gaining start and goal members
+   throughout the search, not only before it. Otherwise the turn samples a
+   random configuration. A finite set's members are all roots from the start,
+   so its tree always samples.
+2. **Extend** the tree whose turn it is toward the random configuration, in
+   steps of `step_size`.
 3. **Project** each new configuration onto the path-admissible set when a
    path constraint is present.
 4. **Connect** the trees when one reaches the other within
@@ -434,13 +441,13 @@ config = CBiRRTConfig(
 
     # Tree growth
     step_size=0.1,                      # Max joint-space step per iteration
-    goal_bias=0.1,                      # Probability of sampling from the goal set
-    start_bias=0.1,                     # Probability of sampling from the start set
+    start_sample_probability=0.1,       # On the start tree's turn, probability of adding start roots instead
+    goal_sample_probability=0.1,        # On the goal tree's turn, probability of adding goal roots instead
     max_projection_iters=50,            # Iterations to project onto the constraint set
 
     # Set sampling
     sample_draws=100,                    # Pose samples to try from each TSR
-    num_tree_roots=100,                 # Target root configs to seed each tree
+    num_tree_roots=100,                 # Root configs to seed each tree before the search
     max_per_draw=3,                  # IK solutions to take per pose sample
 
     # Extension behavior (None = connect until blocked)

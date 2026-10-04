@@ -279,8 +279,8 @@ forever under a projector that stalls); `membership_tolerance` and
 None or positive; `max_iterations`, `sample_draws`, `num_tree_roots`,
 `max_per_draw`, and `max_projection_iters` at least 1;
 `smoothing_iterations` and `smoothing_patience` nonnegative; `extend_steps`
-and `connect_steps` None or at least 1; `goal_bias` and `start_bias` within
-$[0, 1]$. The native `PlannerConfig` applies the same ranges.
+and `connect_steps` None or at least 1; `start_sample_probability` and
+`goal_sample_probability` within $[0, 1]$. The native `PlannerConfig` applies the same ranges.
 
 ## The reference artifact
 

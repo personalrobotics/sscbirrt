@@ -32,8 +32,10 @@ void PlannerConfig::validate() const {
   if (edge_resolution) check("edge_resolution", *edge_resolution > 0, "None or positive", *edge_resolution);
   if (extend_steps) check("extend_steps", *extend_steps >= 1, "None or at least 1", *extend_steps);
   if (connect_steps) check("connect_steps", *connect_steps >= 1, "None or at least 1", *connect_steps);
-  check("goal_bias", goal_bias >= 0.0 && goal_bias <= 1.0, "within [0, 1]", goal_bias);
-  check("start_bias", start_bias >= 0.0 && start_bias <= 1.0, "within [0, 1]", start_bias);
+  check("start_sample_probability", start_sample_probability >= 0.0 && start_sample_probability <= 1.0, "within [0, 1]",
+        start_sample_probability);
+  check("goal_sample_probability", goal_sample_probability >= 0.0 && goal_sample_probability <= 1.0, "within [0, 1]",
+        goal_sample_probability);
 }
 
 }  // namespace sscbirrt

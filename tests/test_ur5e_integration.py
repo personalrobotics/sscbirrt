@@ -222,7 +222,8 @@ class TestMuJoCoDifferentialIK:
 
     def test_plans_to_a_grasp_region(self):
         robot, collision, ik = self._world()
-        planner = CBiRRT(robot, ik, collision, CBiRRTConfig(timeout=60.0, goal_bias=0.15, sample_draws=100))
+        cfg = CBiRRTConfig(timeout=60.0, goal_sample_probability=0.15, sample_draws=100)
+        planner = CBiRRT(robot, ik, collision, cfg)
         result = planner.plan(start=self.HOME, goal_tsrs=[create_grasp_tsr(np.array([0.45, 0.15, 0.47]))], seed=0,
                               return_details=True)  # fmt: skip
         assert result.success, result.failure_reason

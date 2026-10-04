@@ -40,6 +40,11 @@ int Tree::add(Config q, int parent) {
   return static_cast<int>(nodes_.size()) - 1;
 }
 
+int Tree::add_root(Config q, Provenance source) {
+  nodes_.push_back(Node{std::move(q), -1, std::move(source)});
+  return static_cast<int>(nodes_.size()) - 1;
+}
+
 int Tree::nearest(const JointSpace& space, ConfigView q) const {
   int best = 0;
   double best_d = std::numeric_limits<double>::infinity();
@@ -134,7 +139,8 @@ class Solve {
   }
 
   std::vector<Sample> roots(const StateSet& s, const std::string& role, RootReport& report);
-  std::optional<Config> sample_admissible(const StateSet& s);
+  // One sampling draw: its admissible candidates, at most min(max_per_draw, room), skipping explicit seeds (#196).
+  std::vector<Sample> draw_roots(const StateSet& s, const std::vector<Sample>& seeds, int room, RootReport* report);
   std::pair<int, bool> grow(Tree& tree, ConfigView target, std::optional<int> max_steps);
   std::pair<int, bool> extend_along_edge(Tree& tree, int start_idx, ConfigView target);
   std::vector<Config> extract_path(const Tree& ts, const Tree& tg, bool a_is_start, int idx_a, int idx_b) const;
@@ -179,29 +185,8 @@ std::vector<Sample> Solve::roots(const StateSet& s, const std::string& role, Roo
     for (int draw = 0; draw < cfg_.sample_draws; ++draw) {
       if (static_cast<int>(out.size()) >= cfg_.num_tree_roots) break;
       if (aborted()) throw AbortedDuringRoots{role, out};
-      ++report.draws;
-      std::vector<Sample> candidates = sample_counted(s);
-      if (candidates.empty()) {
-        ++report.draws_empty;
-        continue;
-      }
-      if (static_cast<int>(candidates.size()) > cfg_.max_per_draw) {
-        // Visit a large draw in a random order so the kept candidates are a uniform subset, not the first
-        // corner of an enumeration (#168). Fisher-Yates on index(), not std::shuffle, for portability.
-        for (std::size_t k = candidates.size() - 1; k > 0; --k) std::swap(candidates[k], candidates[index(rng_, k + 1)]);
-      }
-      int kept = 0;
-      for (Sample& c : candidates) {
-        if (kept >= cfg_.max_per_draw || static_cast<int>(out.size()) >= cfg_.num_tree_roots) break;
-        const bool repeats_seed = std::any_of(explicit_seeds.begin(), explicit_seeds.end(),
-                                              [&c](const Sample& e) { return e.source == c.source; });
-        if (repeats_seed) continue;  // an explicit seed drawn again; already a root or already rejected
-        if (auto why = why_inadmissible_counted(c.q)) {
-          count_reason(*why);
-        } else {
-          out.push_back(std::move(c));
-          ++kept;
-        }
+      for (Sample& c : draw_roots(s, explicit_seeds, cfg_.num_tree_roots - static_cast<int>(out.size()), &report)) {
+        out.push_back(std::move(c));
       }
     }
   }
@@ -221,13 +206,36 @@ std::vector<Sample> Solve::roots(const StateSet& s, const std::string& role, Roo
   throw NoRoots(lower_role, report, message);
 }
 
-std::optional<Config> Solve::sample_admissible(const StateSet& s) {
-  for (int draw = 0; draw < cfg_.sample_draws; ++draw) {
-    for (Sample& c : sample_counted(s)) {
-      if (admissible(c.q)) return std::move(c.q);
+std::vector<Sample> Solve::draw_roots(const StateSet& s, const std::vector<Sample>& seeds, int room, RootReport* report) {
+  std::vector<Sample> out;
+  if (report) ++report->draws;
+  std::vector<Sample> candidates = sample_counted(s);
+  if (candidates.empty()) {
+    if (report) ++report->draws_empty;
+    return out;
+  }
+  if (static_cast<int>(candidates.size()) > cfg_.max_per_draw) {
+    // Visit a large draw in a random order so the kept candidates are a uniform subset, not the first
+    // corner of an enumeration (#168). Fisher-Yates on index(), not std::shuffle, for portability.
+    for (std::size_t k = candidates.size() - 1; k > 0; --k) std::swap(candidates[k], candidates[index(rng_, k + 1)]);
+  }
+  const int limit = std::min(cfg_.max_per_draw, room);
+  for (Sample& c : candidates) {
+    if (static_cast<int>(out.size()) >= limit) break;
+    const bool repeats_seed =
+        std::any_of(seeds.begin(), seeds.end(), [&c](const Sample& e) { return e.source == c.source; });
+    if (repeats_seed) continue;  // an explicit seed drawn again; already a root or already rejected
+    if (auto why = why_inadmissible_counted(c.q)) {
+      if (report) {
+        if (*why == "in collision") ++report->in_collision;
+        else if (why->rfind("outside joint space", 0) == 0) ++report->outside_space;
+        else ++report->constraint_violated;
+      }
+    } else {
+      out.push_back(std::move(c));
     }
   }
-  return std::nullopt;
+  return out;
 }
 
 std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<int> max_steps) {
@@ -423,8 +431,12 @@ PlanResult Solve::run() {
 
   t0_ = Clock::now();  // the deadline starts with the search, as in Python
   const auto deadline = t0_ + std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(cfg_.timeout_seconds));
-  const bool goal_biased = p_.goal->sampler() != nullptr;
-  const bool start_biased = p_.start->sampler() != nullptr;
+  // CBiRRT's P_sample (#196): a set that is not finite and can be sampled keeps adding roots during the search. A
+  // finite set's members are all roots already, so its tree never tosses the coin.
+  const bool start_grows = !p_.start->is_finite() && p_.start->sampler() != nullptr;
+  const bool goal_grows = !p_.goal->is_finite() && p_.goal->sampler() != nullptr;
+  const std::vector<Sample> start_seeds = start_grows ? p_.start->seeds() : std::vector<Sample>{};
+  const std::vector<Sample> goal_seeds = goal_grows ? p_.goal->seeds() : std::vector<Sample>{};
   const SpaceSampler& free_sampler = p_.sampler ? *p_.sampler : static_cast<const SpaceSampler&>(*p_.space);
   const JointSpace& space = *p_.space;
 
@@ -442,15 +454,21 @@ PlanResult Solve::run() {
     Tree& tree_a = a_is_start ? *tree_start_ : *tree_goal_;
     Tree& tree_b = a_is_start ? *tree_goal_ : *tree_start_;
 
-    std::optional<Config> q_sample;
-    if (a_is_start && goal_biased && unit(rng_) < cfg_.goal_bias) {
-      q_sample = sample_admissible(*p_.goal);
-    } else if (!a_is_start && start_biased && unit(rng_) < cfg_.start_bias) {
-      q_sample = sample_admissible(*p_.start);
+    // Heads: this turn adds roots to tree_a from its own set, and that is the whole turn
+    const bool grows = a_is_start ? start_grows : goal_grows;
+    const double p_sample = a_is_start ? cfg_.start_sample_probability : cfg_.goal_sample_probability;
+    if (grows && unit(rng_) < p_sample) {
+      const StateSet& own = a_is_start ? *p_.start : *p_.goal;
+      for (Sample& c : draw_roots(own, a_is_start ? start_seeds : goal_seeds, cfg_.max_per_draw, nullptr)) {
+        tree_a.add_root(std::move(c.q), std::move(c.source));
+        ++stats_.search_roots;
+      }
+      continue;
     }
-    if (!q_sample) q_sample = free_sampler.sample(rng_);
 
-    const auto [grow_idx, grown] = grow(tree_a, *q_sample, cfg_.extend_steps);
+    // Tails: an ordinary turn toward a random configuration
+    const Config q_sample = free_sampler.sample(rng_);
+    const auto [grow_idx, grown] = grow(tree_a, q_sample, cfg_.extend_steps);
     (void)grown;
     const Config q_reached = tree_a.nodes()[static_cast<std::size_t>(grow_idx)].q;
     const auto [connect_idx, connected] = grow(tree_b, q_reached, cfg_.connect_steps);
