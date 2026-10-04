@@ -15,15 +15,16 @@ does not depend on it, and sets you define yourself take the same roles.
 
 <table>
 <tr><td><img src="docs/images/pick_yellow_seed5.gif" alt="UR5e reaching the yellow can, from the near side" width="100%"></td><td><img src="docs/images/pick_green_seed22.gif" alt="UR5e reaching the green can, straight in" width="100%"></td><td><img src="docs/images/pick_blue_seed12.gif" alt="UR5e reaching the blue can, over the boxes" width="100%"></td></tr>
-<tr><td align="center"><sub>yellow can, from the near side (seed 5)</sub></td><td align="center"><sub>green can, straight in (seed 22)</sub></td><td align="center"><sub>blue can, over the boxes (seed 12)</sub></td></tr>
+<tr><td align="center"><sub>yellow can, from the near side</sub></td><td align="center"><sub>green can, straight in</sub></td><td align="center"><sub>blue can, over the boxes</sub></td></tr>
 <tr><td><img src="docs/images/pick_yellow_seed15.gif" alt="UR5e reaching the yellow can, over the boxes" width="100%"></td><td><img src="docs/images/pick_green_seed57.gif" alt="UR5e reaching the green can, another grasp" width="100%"></td><td><img src="docs/images/pick_yellow_seed54.gif" alt="UR5e reaching the yellow can, a wide arc" width="100%"></td></tr>
-<tr><td align="center"><sub>yellow can, over the boxes (seed 15)</sub></td><td align="center"><sub>green can, another grasp (seed 57)</sub></td><td align="center"><sub>yellow can, a wide arc (seed 54)</sub></td></tr>
+<tr><td align="center"><sub>yellow can, over the boxes</sub></td><td align="center"><sub>green can, another grasp</sub></td><td align="center"><sub>yellow can, a wide arc</sub></td></tr>
 </table>
 
 Six runs of one call, `plan(model, data, arm, goal=grasps)`, where `grasps` is
-every side grasp of every can: 18 regions. Each seed lets the planner choose a
-different can, grasp, and route around the red boxes, planned natively in
-0.02 to 0.12 s. `sscbirrt-demo pick --seed N` renders any of them.
+every side grasp of every can: 18 regions. Each run lets the planner choose a
+different can, grasp, and route around the red boxes. Over 100 seeds every
+run succeeds, with a median of 0.54 s including root collection
+(`tools/planning_benchmark.py`). `sscbirrt-demo pick --seed N` renders a run.
 
 <table>
 <tr><td><img src="docs/images/transport.gif" alt="UR5e carrying a can upright over a box" width="100%"></td><td><img src="docs/images/door.gif" alt="UR5e opening a door: a TSR chain" width="100%"></td></tr>
