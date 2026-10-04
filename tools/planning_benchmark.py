@@ -6,8 +6,8 @@
 Runs each problem over many seeds on the native backend and records, per run, the outcome, the time, the work
 (machine-independent counts), and the path. Time alone is not trusted: a loaded machine slows every run (one run
 this week was 8x slow across the board), so conclusions rest on the work counts, and wall time is cross-checked by a
-fixed calibration solve before and after each problem and, for an A/B comparison, by interleaving blocks of seeds
-between the two installs so that both see the same machine state.
+fixed calibration workload, independent of the planner, before and after each problem and, for an A/B comparison,
+by interleaving blocks of seeds between the two installs so that both see the same machine state.
 
 The primary time is ``solve_seconds``: root collection plus search plus smoothing. ``planning_time`` alone excludes
 the initial root collection, so it would flatter a configuration that collects more roots up front.
@@ -123,12 +123,15 @@ def measure(result, wall: float) -> dict[str, Any]:
 
 
 def calibrate(repeats: int = 5) -> float:
-    """Median seconds of a fixed native solve (the artifact's ``unreachable``: 300 iterations of fixed work)."""
-    case = next(c for c in _artifact_tool().cases() if c["name"] == "unreachable")
+    """Median seconds of a fixed workload that no planner version touches (dense linear algebra), so that A and B
+    calibrations measure the machine, not the code under test."""
+    rng = np.random.default_rng(0)
+    a = rng.standard_normal((300, 300))
     times = []
     for _ in range(repeats):
         t = time.perf_counter()
-        case["planner"].solve(case["problem"], seed=case["seed"])
+        for _ in range(20):
+            np.linalg.solve(a + 300 * np.eye(300), a @ a)
         times.append(time.perf_counter() - t)
     return float(np.median(times))
 
