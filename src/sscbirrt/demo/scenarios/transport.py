@@ -11,7 +11,7 @@ from tsr import TSR, Robotiq2F85
 
 from sscbirrt import CBiRRTConfig
 from sscbirrt.demo.render import Camera, Clip
-from sscbirrt.demo.scenarios import Outcome, Scenario
+from sscbirrt.demo.scenarios import Outcome, Problem, Scenario
 from sscbirrt.demo.scene import (
     CAN_HALF_HEIGHT,
     CAN_RADIUS,
@@ -88,14 +88,25 @@ def tilt(model: mujoco.MjModel, data: mujoco.MjData, q: np.ndarray) -> float:
     return float(np.arccos(np.clip(axis[2], -1.0, 1.0)))
 
 
-def run(seed: int) -> Outcome:
+def problem() -> Problem:
+    """The upright carry: from any grasp of the can at PICK_AT to the same grasp at PLACE_AT, upright throughout.
+
+    Starting from the set of all grasps of the can lets the planner pick a grasp configuration from which an upright
+    carry exists (from some windings of the wrist there is none within the joint limits).
+    """
     model = build_scene({CAN: PICK_AT}, OBSTACLES)
     data = mujoco.MjData(model)
     set_arm(model, data, HOME)
     arm = Arm(model, UR5E_JOINTS, EE_SITE, mjcf=ur5e_xml())
     config = CBiRRTConfig(step_size=0.2, edge_resolution=0.05, num_tree_roots=20, timeout=30.0)
-
     held = {CAN: (GRIPPER_BODY, _held(model))}
+    kwargs = {"start": _grasp(PICK_AT), "goal": _grasp(PLACE_AT), "constraint": upright(), "holding": held}
+    return Problem(model, data, arm, config, kwargs)
+
+
+def run(seed: int) -> Outcome:
+    p = problem()
+    model, data, held = p.model, p.data, p.kwargs["holding"]
     view = mujoco.MjData(model)
 
     def max_tilt(path) -> float:
@@ -104,12 +115,7 @@ def run(seed: int) -> Outcome:
     def length(path) -> float:
         return float(sum(np.linalg.norm(b - a) for a, b in zip(path, path[1:])))
 
-    # Upright first, starting from the set of all grasps of the can: the planner picks a grasp configuration from
-    # which an upright carry exists (from some windings of the wrist there is none within the joint limits).
-    carried = plan(
-        model, data, arm, start=_grasp(PICK_AT), goal=_grasp(PLACE_AT), constraint=upright(), holding=held,
-        config=config, seed=seed,
-    )  # fmt: skip
+    carried = plan(model, data, p.arm, config=p.config, seed=seed, **p.kwargs)
     if not carried.success:
         return Outcome(False, [f"upright: no path: {carried.failure_reason}"], model, data)
 
@@ -139,4 +145,5 @@ SCENARIO = Scenario(
     name="transport",
     claim="a path constraint holds everywhere: the can is carried over a box and kept upright the whole way",
     run=run,
+    problem=problem,
 )

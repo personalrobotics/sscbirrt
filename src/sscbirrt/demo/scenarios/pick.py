@@ -10,7 +10,7 @@ import mujoco
 from sscbirrt import CBiRRTConfig
 from sscbirrt.demo.grasps import side_grasps
 from sscbirrt.demo.render import Camera, Clip
-from sscbirrt.demo.scenarios import Outcome, Scenario
+from sscbirrt.demo.scenarios import Outcome, Problem, Scenario
 from sscbirrt.demo.scene import EE_SITE, HOME, TABLE_TOP_Z, UR5E_JOINTS, build_scene, can_position, set_arm, ur5e_xml
 from sscbirrt.mujoco import Arm, plan
 
@@ -31,20 +31,26 @@ OBSTACLES = {
 }
 
 
-def run(seed: int) -> Outcome:
+def owners() -> list[str]:
+    """The can each goal region belongs to, in the goal list's order (``result.goal_index`` indexes it)."""
+    return [name for name, center in CANS.items() for _ in side_grasps(center)]
+
+
+def problem() -> Problem:
+    """Plan from HOME to any side grasp of any can."""
     model = build_scene({name.replace(" ", "_"): pos for name, pos in CANS.items()}, OBSTACLES)
     data = mujoco.MjData(model)
     set_arm(model, data, HOME)
     arm = Arm(model, UR5E_JOINTS, EE_SITE, mjcf=ur5e_xml())
-
-    goals, owner = [], []
-    for name, center in CANS.items():
-        regions = side_grasps(center)
-        goals += regions
-        owner += [name] * len(regions)
-
+    goals = [region for center in CANS.values() for region in side_grasps(center)]
     config = CBiRRTConfig(step_size=0.2, edge_resolution=0.05, num_tree_roots=20, timeout=30.0)
-    result = plan(model, data, arm, goal=goals, config=config, seed=seed)
+    return Problem(model, data, arm, config, {"goal": goals})
+
+
+def run(seed: int) -> Outcome:
+    p = problem()
+    model, data, goals, owner = p.model, p.data, p.kwargs["goal"], owners()
+    result = plan(model, data, p.arm, config=p.config, seed=seed, **p.kwargs)
 
     report = [f"goal set: {len(goals)} side-grasp regions of 3 cans (tsr.Robotiq2F85 cylinder primitive)"]
     if not result.success:
@@ -77,4 +83,5 @@ SCENARIO = Scenario(
     name="pick",
     claim="a goal can be a set: one call plans to whichever side grasp of whichever can is reachable",
     run=run,
+    problem=problem,
 )

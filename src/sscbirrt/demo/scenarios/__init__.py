@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import Any
 
 import mujoco
 
@@ -25,11 +26,23 @@ class Outcome:
     camera: Camera = field(default_factory=Camera)
 
 
+@dataclass
+class Problem:
+    """A scenario's main planning call, for benchmarks: ``plan(model, data, arm, config=config, seed=s, **kwargs)``."""
+
+    model: mujoco.MjModel
+    data: mujoco.MjData
+    arm: Any  # sscbirrt.mujoco.Arm
+    config: Any  # sscbirrt.CBiRRTConfig
+    kwargs: dict[str, Any]
+
+
 @dataclass(frozen=True)
 class Scenario:
     name: str
     claim: str
     run: Callable[[int], Outcome]  # seed -> outcome
+    problem: Callable[[], Problem] | None = None  # the main planning call, without running it
 
 
 def all_scenarios() -> dict[str, Scenario]:

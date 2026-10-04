@@ -12,7 +12,7 @@ from tsr import TSR, Robotiq2F85, TSRChain
 from sscbirrt import CBiRRTConfig
 from sscbirrt.backends.mujoco import site_offset_in_body
 from sscbirrt.demo.render import Camera, Clip
-from sscbirrt.demo.scenarios import Outcome, Scenario
+from sscbirrt.demo.scenarios import Outcome, Problem, Scenario
 from sscbirrt.demo.scene import (
     DOOR_BODY,
     DOOR_HINGE,
@@ -79,7 +79,8 @@ def opening(model: mujoco.MjModel, data: mujoco.MjData, q: np.ndarray) -> float:
     return float(np.arctan2(T_door[1, 0], T_door[0, 0]))
 
 
-def run(seed: int) -> Outcome:
+def problem() -> Problem:
+    """Open the door along the chain: start holding the handle of the closed door, end at OPEN, follow the arc."""
     model = build_scene(table=False, door=True)
     data = mujoco.MjData(model)
     set_arm(model, data, HOME)
@@ -91,12 +92,19 @@ def run(seed: int) -> Outcome:
         step_size=0.1, edge_resolution=0.05, num_tree_roots=400, max_per_draw=400, sample_draws=2, timeout=120.0
     )
     held = {DOOR_BODY: (GRIPPER_BODY, _held(model))}
+    kwargs = {
+        "start": door_chain(0.0, 0.0),
+        "goal": door_chain(OPEN, OPEN),
+        "constraint": door_chain(-0.02, OPEN + 0.02),
+        "holding": held,
+    }
+    return Problem(model, data, arm, config, kwargs)
 
-    # Open it along the chain: start holding the handle of the closed door, end at OPEN, follow the arc between.
-    opened = plan(
-        model, data, arm, start=door_chain(0.0, 0.0), goal=door_chain(OPEN, OPEN),
-        constraint=door_chain(-0.02, OPEN + 0.02), holding=held, config=config, seed=seed,
-    )  # fmt: skip
+
+def run(seed: int) -> Outcome:
+    p = problem()
+    model, data, arm, config, held = p.model, p.data, p.arm, p.config, p.kwargs["holding"]
+    opened = plan(model, data, arm, config=config, seed=seed, **p.kwargs)
     if not opened.success:
         return Outcome(False, [f"open: no path: {opened.failure_reason}"], model, data)
 
@@ -131,4 +139,5 @@ SCENARIO = Scenario(
     name="door",
     claim="a constraint can be a chain of regions: the gripper opens a door by following its handle's arc",
     run=run,
+    problem=problem,
 )
