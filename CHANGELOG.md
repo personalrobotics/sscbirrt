@@ -6,6 +6,23 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-10-04
+
+Root collection now follows CBiRRT, and it is much cheaper. Over 100 seeds
+of the pick demo, every run succeeds (it was 97%), and the median solve drops
+from 0.68 to 0.07 s (p90 from 1.69 to 0.18 s). Two changes, each measured
+against the one before it with `tools/planning_benchmark.py`:
+- The start and goal sets keep growing during the search (#196).
+- IK windings of one physical configuration share a collision verdict
+  (#200). This gives the same paths, faster.
+
+Migrating from 3.2.0:
+- The same seed gives a different path.
+- `goal_bias` and `start_bias` are deprecated, and their meaning changed.
+  Prefer `goal_sample_probability` and `start_sample_probability`; the old
+  names map to them, with a warning, until 4.0.
+- C++ consumers: the `PlannerConfig` fields are renamed the same way.
+
 The start and goal sets keep growing during the search, as in CBiRRT (#196).
 On each tree's turn a weighted coin, the paper's `P_sample`, either draws new
 members of that tree's own start or goal set and adds them as roots, or takes
