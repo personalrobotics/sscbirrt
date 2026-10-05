@@ -263,7 +263,7 @@ Each has one meaning:
 |---|---|
 | `membership_tolerance` | a configuration is in a TSR-induced set if its TSR distance is within this; projection is done when within it |
 | `connection_tolerance` | tree growth counts as reaching its target within this joint-space distance |
-| `edge_resolution` | spacing of validity checks along an edge (`None` means `step_size`) |
+| `edge_resolution` | spacing of validity checks along an edge, a joint-space distance; default 0.05 rad, independent of `step_size` since 3.4 (#204); `None` means `step_size` |
 | `progress_tolerance` | tree growth stops when the distance to target shrinks by less than this |
 | `projection_progress_tolerance` | projection gives up when the violation shrinks by less than this |
 

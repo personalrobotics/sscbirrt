@@ -409,7 +409,7 @@ struct PlannerConfig {
 
   // Tolerances
   double connection_tolerance          = 1e-3;
-  std::optional<double> edge_resolution;      // nullopt means step_size
+  std::optional<double> edge_resolution = 0.05;  // nullopt means step_size (the default until #204)
   double progress_tolerance            = 1e-6;
 
   // Growth

@@ -436,7 +436,7 @@ config = CBiRRTConfig(
     # Tolerances
     membership_tolerance=1e-3,          # TSR distance at which a configuration is in the set
     connection_tolerance=1e-3,          # Joint-space distance at which growth has reached its target
-    edge_resolution=None,               # Spacing of validity checks along an edge; None = step_size
+    edge_resolution=0.05,               # Spacing of collision checks along an edge, independent of step_size
     progress_tolerance=1e-6,            # Growth stops when it gains less than this per step
     projection_progress_tolerance=1e-6, # Projection gives up when the violation shrinks less than this
 

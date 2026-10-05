@@ -81,8 +81,8 @@ class TestConnectionTolerance:
 
 
 class TestEdgeResolution:
-    def test_default_resolution_is_step_size(self):
-        planner = make_planner(step_size=0.3)
+    def test_none_resolution_is_step_size(self):
+        planner = make_planner(step_size=0.3, edge_resolution=None)
         tree = RRTree(np.zeros(2))
         planner._extend_along_edge(unconstrained(planner), tree, 0, np.array([0.3, 0.0]))
         assert len(tree) == 2  # one node added: the endpoint
@@ -102,7 +102,7 @@ class TestEdgeResolution:
 
         q0, q1 = np.zeros(2), np.array([0.3, 0.0])
 
-        coarse = make_planner(step_size=0.3)
+        coarse = make_planner(step_size=0.3, edge_resolution=None)
         tree = RRTree(q0)
         problem = PlanningProblem(space=coarse.space, start=FiniteSet([q0]), goal=FiniteSet([q1]), validator=Wall())
         _, ok = coarse._extend_along_edge(problem, tree, 0, q1)
@@ -205,6 +205,6 @@ class TestDeprecatedAlias:
         cfg = CBiRRTConfig()
         assert cfg.membership_tolerance == 1e-3
         assert cfg.connection_tolerance == 1e-3
-        assert cfg.edge_resolution is None
+        assert cfg.edge_resolution == 0.05  # since 3.4 (#204); None (step_size) before
         assert cfg.progress_tolerance == 1e-6
         assert cfg.projection_progress_tolerance == 1e-6

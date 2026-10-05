@@ -6,6 +6,19 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **`edge_resolution` defaults to 0.05 rad, independent of `step_size` (#204).**
+  It is the spacing of collision checks along an edge, a joint-space distance.
+  It used to default to `step_size` (0.1 rad). On a UR5e with gripper, a point
+  can move up to ~1.2 m per radian, so the old default let it move up to
+  12 cm between checks and step over thin obstacles. 0.05 rad bounds that to
+  ~6 cm. Every shipped demo and reference case already set 0.05, so they are
+  unchanged. A problem that relied on the default gets finer checks, is
+  slower, and plans different paths. Its returned paths are also denser: the
+  planner stores each checked configuration, so there is a waypoint every
+  0.05 rad. `edge_resolution=None` still means `step_size`. C++:
+  `PlannerConfig::edge_resolution` defaults to 0.05.
+
 ## [3.3.0] - 2026-10-04
 
 Root collection now follows CBiRRT, and it is much cheaper. Over 100 seeds

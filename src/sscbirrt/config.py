@@ -30,7 +30,10 @@ class CBiRRTConfig:
     # PlanningProblem keeps its own constructor values (FiniteSet tolerance 1e-6, TSRConfigurationSet 1e-3).
     membership_tolerance: float = 1e-3  # A configuration is in a TSR-induced set if its TSR distance is within this
     connection_tolerance: float = 1e-3  # Tree growth counts as reaching its target within this joint-space distance
-    edge_resolution: float | None = None  # Spacing of validity checks along an edge; None means step_size
+    # Spacing of collision checks along an edge, a joint-space distance in step_size's units (#204). Independent of
+    # step_size: on a UR5e a point can move ~1.2 m per rad, so 0.05 rad bounds the motion between checks to ~6 cm.
+    # None means step_size, the default before 3.4.
+    edge_resolution: float | None = 0.05
     progress_tolerance: float = 1e-6  # Tree growth stops when the distance to target shrinks by less than this
     projection_progress_tolerance: float = 1e-6  # Projection gives up when the violation shrinks by less than this
 
