@@ -23,7 +23,7 @@ does not depend on it, and sets you define yourself take the same roles.
 Six runs of one call, `plan(model, data, arm, goal=grasps)`, where `grasps` is
 every side grasp of every can: 18 regions. Each run lets the planner choose a
 different can, grasp, and route around the red boxes. Over 100 seeds every
-run succeeds, with a median of 0.54 s including root collection
+run succeeds, with a median of 0.07 s including root collection
 (`tools/planning_benchmark.py`). `sscbirrt-demo pick --seed N` renders a run.
 
 <table>
@@ -420,7 +420,7 @@ start or goal roots, and some extensions under a chain path constraint
 rejected. If a chain problem finds no roots or does not connect, raise
 `sample_draws` and `num_tree_roots`, or widen the chain's bounds where the
 task allows. Chains plan natively like single TSRs: the door demo's chain
-plans in about 0.3 s natively, against 5 to 7 s in Python.
+plans in about 0.3 s natively, against 5 to 9 s in Python.
 
 ## Configuration
 
@@ -522,6 +522,15 @@ class CollisionChecker(Protocol):
     def is_valid(self, q: np.ndarray) -> bool:
         """Return True if collision-free."""
 ```
+
+Two optional declarations make root collection cheaper. They are declared,
+never inferred. An IK solver's `revolute_joints` names the joints on which q
+and q + 2πk put the arm in the same place; SSIK declares all of its joints. A
+collision checker's `full_turn_invariant = True` says that a full turn of a
+joint never changes its verdict; the MuJoCo checkers declare it when every
+planned joint is a hinge. With both, the many windings that SSIK returns for
+one pose are collision-checked once, not each separately (#200). The result
+is the same, only faster.
 
 Together with `StateSet`, these are the planner's extension points. Each has
 a native counterpart in the C++ core (`StateSet`, `StateValidator`,
@@ -689,7 +698,7 @@ One Python-only validator, IK solver or set sends the whole solve, every
 sample, extension and collision check, to the Python planner: the cost is the
 whole speedup, not that component's share. The door demo shows the size. Its
 TSR chain had no native form before 3.2.0; the same problem now plans in
-about 0.3 s natively, against 5 to 7 s in Python. `result.backend_reasons`
+about 0.3 s natively, against 5 to 9 s in Python. `result.backend_reasons`
 names each component that kept a solve in Python, so it is the list of what
 to port.
 

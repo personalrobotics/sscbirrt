@@ -70,8 +70,11 @@ double TSRConfigurationSet::violation(ConfigView q) const { return std::max(0.0,
 std::vector<Sample> TSRConfigurationSet::sample(Rng& rng) const {
   const Transform pose = region_sample(region_, rng);
   std::vector<Sample> out;
+  const std::vector<bool> revolute = ik_->revolute_joints();
   for (Config& q : ik_->solve(pose, {})) {
-    if (within_limits(q)) out.push_back(Sample{std::move(q), {}});
+    if (!within_limits(q)) continue;
+    std::vector<std::int64_t> key = revolute.empty() ? std::vector<std::int64_t>{} : full_turn_key(q, revolute);
+    out.push_back(Sample{std::move(q), {}, std::move(key)});
   }
   return out;
 }

@@ -48,6 +48,7 @@ struct SolveStats {
   long set_samples = 0;           // calls to a set's sample() (roots, before and during the search); IK lives here for TSR sets
   long set_projections = 0;       // calls to a path constraint's project(); IK lives here too
   long search_roots = 0;          // roots added during the search by the P_sample coin (#196)
+  long reused_verdicts = 0;       // validator verdicts shared between windings of one physical configuration (#200)
   double seconds_state_checks = 0.0;
   double seconds_edge_checks = 0.0;   // includes the state checks made inside edges
   double seconds_set_samples = 0.0;

@@ -48,6 +48,16 @@ class PoseRegion(Protocol):
     def sample(self, *args: Any, rng: np.random.Generator | None = None) -> np.ndarray: ...
 
 
+def full_turn_key(q: np.ndarray, revolute: Sequence[bool]) -> tuple[int, ...]:
+    """Equal for configurations that differ only by full turns of the joints the IK declares revolute (#200).
+
+    Each revolute joint is reduced to [-pi, pi]; every joint is rounded to nanoradians. Two windings that round
+    apart only cost an extra validator call; two different configurations never share a key.
+    """
+    w = np.where(np.asarray(revolute, dtype=bool), np.remainder(q + np.pi, 2 * np.pi) - np.pi, q)
+    return tuple(int(v) for v in np.round(w * 1e9))
+
+
 class TSRConfigurationSet:
     """Configurations whose end-effector pose lies in a TSR or a TSR chain.
 
@@ -127,7 +137,13 @@ class TSRConfigurationSet:
 
     def sample(self, rng: np.random.Generator) -> list[Sample]:
         pose = self.sample_pose(rng)
-        return [Sample(np.array(q, dtype=float)) for q in self.ik.solve(pose) if self.space.within_limits(q)]
+        revolute = getattr(self.ik, "revolute_joints", None)
+        out = []
+        for q in self.ik.solve(pose):
+            if self.space.within_limits(q):
+                q = np.array(q, dtype=float)
+                out.append(Sample(q, (), None if revolute is None else full_turn_key(q, revolute)))
+        return out
 
     # -- projection ----------------------------------------------------------
 

@@ -33,6 +33,7 @@ class SceneValidator final : public StateValidator {
   SceneValidator& operator=(const SceneValidator&) = delete;
 
   bool is_valid(ConfigView q) const override;
+  bool full_turn_invariant() const override;  // every controlled joint is a hinge
   std::vector<InvalidContact> invalid_contacts(ConfigView q) const;
   const Scene& scene() const { return *scene_; }
   const Snapshot& snapshot() const { return snapshot_; }

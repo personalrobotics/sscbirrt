@@ -34,6 +34,21 @@ problem, with both versions interleaved on one machine
   never tosses the coin, because its members are all roots already. The old
   names still work until 4.0, mapped to the new ones, with a
   `DeprecationWarning` that says the meaning changed.
+- **Faster root collection, same result (#200).** SSIK returns every winding
+  of every IK branch: 320 solutions per pick pose, but only about 12
+  physically distinct arm poses. Root collection now collision-checks each
+  physical configuration once per draw instead of every winding. Pick's root
+  collection goes from 0.41 s to 0.03 s, so its median solve drops from 0.53
+  to 0.07 s (p90 from 0.80 to 0.18 s). Transport's median drops from 0.14 to
+  0.05 s. All 700 benchmark runs give identical paths. This needs two
+  declarations, never inferred:
+  - the IK solver's `revolute_joints` (SSIK: every joint);
+  - the collision checker's `full_turn_invariant` (the MuJoCo checkers, when
+    every planned joint is a hinge).
+
+  `stats["reused_verdicts"]` counts the shared verdicts. C++: `Sample::key`,
+  `IKSolver::revolute_joints()`, `StateValidator::full_turn_invariant()` and
+  `SolveStats::reused_verdicts` are new.
 - **New stat.** `PlanResult.stats["search_roots"]` counts the roots added
   during the search, on both backends.
 - **New tool.** `tools/planning_benchmark.py` measures planning time and work

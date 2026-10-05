@@ -231,3 +231,23 @@ class TestMuJoCoDifferentialIK:
                               return_details=True)  # fmt: skip
         assert result.success, result.failure_reason
         assert all(collision.is_valid(q) for q in result.path)
+
+
+def test_ssik_windings_share_a_key_and_the_hinge_scene_declares_invariance(ur5e):
+    """#200 on the real stack: SSIK's windings of one arm pose share a key, and both MuJoCo checkers declare that
+    full turns cannot change their verdict (every UR5e joint is a hinge)."""
+    from sscbirrt.backends.native_mujoco import NativeCollisionChecker, NativeScene, Snapshot, available
+
+    robot, collision, ik, planner = ur5e
+    s = TSRConfigurationSet(create_grasp_tsr(np.array([0.45, 0.15, 0.47])), robot, ik, planner.space)
+    cands = s.sample(np.random.default_rng(0))
+    keys = {c.key for c in cands}
+    assert len(cands) > len(keys) > 1  # many windings, a few physical configurations
+    for c in cands:
+        twin = next(d for d in cands if d.key == c.key)
+        assert np.allclose(robot.forward_kinematics(c.q), robot.forward_kinematics(twin.q), atol=1e-9)
+    assert collision.full_turn_invariant
+    if available():
+        scene = NativeScene.from_model(collision.model, JOINTS)
+        checker = NativeCollisionChecker(scene, Snapshot.capture(scene, collision.data))
+        assert checker.full_turn_invariant
