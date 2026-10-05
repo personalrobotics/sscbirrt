@@ -12,7 +12,7 @@ START, GOAL = np.array([-0.5, 0.5]), np.array([0.5, 0.5])
 
 
 def _planner(collision=None, **kw):
-    cfg = CBiRRTConfig(step_size=0.1, goal_bias=0.0, start_bias=0.0, smooth_path=False, **kw)
+    cfg = CBiRRTConfig(step_size=0.1, smooth_path=False, **kw)
     return CBiRRT(PlanarArm(), PlanarIK(), collision or NoCollision(), cfg)
 
 

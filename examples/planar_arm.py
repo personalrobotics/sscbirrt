@@ -336,7 +336,7 @@ def example_basic():
 
     config = CBiRRTConfig(
         step_size=0.3,
-        goal_bias=0.15,
+        goal_sample_probability=0.15,
         smooth_path=True,
         smoothing_iterations=50,
         continuous_joints=(True, True),  # both joints turn freely; ±π is only how their angles are written
@@ -404,7 +404,7 @@ def example_start_goal_tsrs():
 
     config = CBiRRTConfig(
         step_size=0.3,
-        goal_bias=0.15,
+        goal_sample_probability=0.15,
         membership_tolerance=0.05,  # larger tolerances for TSR membership and tree connection
         connection_tolerance=0.05,
         smooth_path=True,
@@ -486,7 +486,7 @@ def example_constrained():
 
     config = CBiRRTConfig(
         step_size=0.2,
-        goal_bias=0.1,
+        goal_sample_probability=0.1,
         smooth_path=True,
         smoothing_iterations=50,
         membership_tolerance=0.05,

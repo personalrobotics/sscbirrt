@@ -32,8 +32,8 @@ def test_defaults_construct():
         ("edge_resolution", 0.0, "None or positive"),
         ("extend_steps", 0, "None or at least 1"),
         ("connect_steps", 0, "None or at least 1"),
-        ("goal_bias", 1.5, r"within \[0, 1\]"),
-        ("start_bias", -0.1, r"within \[0, 1\]"),
+        ("goal_sample_probability", 1.5, r"within \[0, 1\]"),
+        ("start_sample_probability", -0.1, r"within \[0, 1\]"),
     ],
 )
 def test_out_of_range_field_is_rejected_by_name(field, value, requirement):
@@ -48,8 +48,8 @@ def test_out_of_range_field_is_rejected_by_name(field, value, requirement):
         ("connection_tolerance", 0.0),
         ("smoothing_iterations", 0),
         ("smoothing_patience", 0),
-        ("goal_bias", 0.0),
-        ("start_bias", 1.0),
+        ("goal_sample_probability", 0.0),
+        ("start_sample_probability", 1.0),
         ("edge_resolution", None),
         ("extend_steps", 1),
         ("connect_steps", None),
@@ -74,6 +74,8 @@ class TestRenamedNames:
             ("tsr_samples", "sample_draws", 7),
             ("max_ik_per_pose", "max_per_draw", 2),
             ("angular_joints", "continuous_joints", (True,)),
+            ("start_bias", "start_sample_probability", 0.2),  # #196: renamed, and the meaning changed
+            ("goal_bias", "goal_sample_probability", 0.3),
         ],
     )
     def test_old_keyword_and_attribute(self, old, new, value):

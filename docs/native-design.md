@@ -414,8 +414,8 @@ struct PlannerConfig {
 
   // Growth
   double step_size  = 0.1;
-  double goal_bias  = 0.1;
-  double start_bias = 0.1;
+  double start_sample_probability = 0.1;  // goal_bias/start_bias until #196
+  double goal_sample_probability  = 0.1;
   std::optional<int> extend_steps;            // nullopt: connect until blocked
   std::optional<int> connect_steps;
 
@@ -446,7 +446,8 @@ and Python's ranges (#108): positive `timeout_seconds`, `step_size`,
 `smoothing_iterations`, `smoothing_patience`; at least 1 for
 `max_iterations`, `sample_draws`, `num_tree_roots`, `max_per_draw`;
 `edge_resolution` empty or positive; `extend_steps` and `connect_steps`
-empty or at least 1; `goal_bias` and `start_bias` within $[0, 1]$. The
+empty or at least 1; `start_sample_probability` and
+`goal_sample_probability` (`goal_bias`/`start_bias` until #196) within $[0, 1]$. The
 ranges Python checks on its set-owned fields (`membership_tolerance`
 nonnegative, `max_projection_iters` at least 1,
 `projection_progress_tolerance` positive) are enforced natively by the
@@ -572,7 +573,9 @@ contract; `planner.py` is the reference for anything it leaves open.
    Before each draw the cancellation token is checked; if set, the solve
    returns `Status::Aborted` with the roots gathered so far.
 4. **Iteration** `i` extends the start tree if `i` is even, else the goal
-   tree. Cancellation is checked, then the deadline. The target is a sample
+   tree. Cancellation is checked, then the deadline. *(Superseded by #196,
+   see the last section: a turn now either adds roots to its own tree or
+   extends toward a free-space sample.)* The target is a sample
    from the opposite role's set with probability `goal_bias` or
    `start_bias` (only if that set samples; up to `sample_draws` attempts to
    find an admissible one), otherwise one draw from `problem.sampler`, or
@@ -1591,3 +1594,43 @@ check of the binding against sstsr's Python.
   with no version pin, and links it privately into `sscbirrt_tsr` only: its
   sources compile into whatever links it. An editable sstsr install has no
   CMake package; build against a wheel.
+
+## Roots during the search: CBiRRT's P_sample (#196)
+
+Through 3.2, both backends collected roots once, before the search, and froze
+them. `goal_bias` and `start_bias` only made a member of the *other* role's set
+a turn's extension target, discarded if the extension fell short. CBiRRT
+(Berenson et al. 2009, 2011) instead keeps growing the start and goal sets
+during the search. In both backends now:
+
+- **One tree per role, with a virtual root.** Each tree hangs off a virtual
+  root that is not a configuration, never a nearest-neighbour candidate, never
+  the end of an edge, and never on a path. Every start or goal member in the
+  tree is its child, whether it joined before the search or during it. The
+  representation is unchanged: a node with no parent (`parent = -1` in C++,
+  `None` in Python) is such a child, and `Tree::add_root` / `RRTree.add_root`
+  add one.
+- **One draw, one rule.** `draw_roots` / `_draw_roots` takes one draw from a
+  set and keeps up to `max_per_draw` admissible candidates, visited in random
+  order when the draw offers more (#168), skipping explicit seeds. Admissible
+  means inside the space, valid, and inside the path constraint. Collection
+  before the search is this step repeated until `num_tree_roots` roots exist
+  or `sample_draws` draws are spent. Its RNG consumption is unchanged.
+- **The coin.** A role *grows* when its set is not finite and can be sampled,
+  the predicate collection already used. On tree `a`'s turn, if `a`'s role
+  grows and `unit(rng) < p_a` (`start_sample_probability` or
+  `goal_sample_probability`), the turn makes one draw from `a`'s own set and
+  adds every kept candidate as a root, with its provenance. That is the whole
+  turn, and it counts as an iteration. Otherwise the turn is unchanged: one
+  free-space sample, then extend `a` and connect `b`. A finite role never
+  tosses the coin and consumes no random draw for it. Steering toward a
+  member is gone: the connect step already pulls each tree toward the other's
+  members.
+- **Results.** `start_source` / `goal_source` name the root the path descends
+  from, whenever it joined. `SolveStats.search_roots` and
+  `PlanResult.stats["search_roots"]` count the roots added during the search.
+  `RootReport` and `start_roots` / `goal_roots` keep describing collection
+  before the search.
+- **Configuration.** The C++ `PlannerConfig` fields are renamed. In Python,
+  `goal_bias` and `start_bias` are deprecated aliases of the new names until
+  4.0, and they warn that their meaning changed.

@@ -110,7 +110,10 @@ TEST(config_ranges_are_validated_with_pythons_messages) {
   }
   CHECK(caught);
   c = PlannerConfig{};
-  c.goal_bias = 1.5;
+  c.goal_sample_probability = 1.5;
+  CHECK_THROWS(Planner{c}, std::invalid_argument);
+  c = PlannerConfig{};
+  c.start_sample_probability = -0.1;
   CHECK_THROWS(Planner{c}, std::invalid_argument);
   c = PlannerConfig{};
   c.extend_steps = 0;
@@ -343,14 +346,84 @@ TEST(custom_sampler_replaces_free_space_targets) {
     Config sample(Rng&) const override { return {1.0, 0.5}; }
   };
   auto s = planar();
-  PlannerConfig c = base();
-  c.goal_bias = c.start_bias = 0.0;
+  PlannerConfig c = base();  // finite start and goal: neither tree tosses the P_sample coin
   c.smooth_path = false;
   Planner planner(c);
   auto p = problem(s, finite(*s, {{0.0, 0.0}}), finite(*s, {{1.0, 0.5}}));
   p.sampler = std::make_shared<AlwaysGoal>();
   PlanResult r = planner.solve(p, seeded(0));
   CHECK(r.success() && r.iterations == 1);
+}
+
+// CBiRRT's P_sample (#196). A full-height wall at joint 0 in [0.45, 0.55]; the goal is a band beyond it (unreachable)
+// or a band on the start's side.
+namespace {
+std::shared_ptr<JointBoxObstacles> wall() {
+  return std::make_shared<JointBoxObstacles>(std::vector<JointBoxObstacles::Box>{{{0.45, -kInf}, {0.55, kInf}}});
+}
+}  // namespace
+
+TEST(p_sample_zero_adds_no_roots_during_the_search) {
+  auto s = planar();
+  PlannerConfig c = base();
+  c.max_iterations = 200;
+  c.num_tree_roots = 1;
+  c.goal_sample_probability = 0.0;
+  Planner planner(c);
+  auto p = problem(s, finite(*s, {{0.0, 0.0}}), std::make_shared<Band>(1.0, 1.2), nullptr, wall());
+  PlanResult r = planner.solve(p, seeded(3));
+  CHECK(r.status == Status::MaxIterations && r.stats.search_roots == 0);
+  int roots = 0;
+  for (const Node& n : r.tree_goal->nodes()) roots += n.parent < 0;
+  CHECK(roots == 1);
+}
+
+TEST(p_sample_one_adds_a_root_on_every_goal_turn_and_none_to_a_finite_start) {
+  auto s = planar();
+  PlannerConfig c = base();
+  c.max_iterations = 200;
+  c.num_tree_roots = 1;
+  c.goal_sample_probability = 1.0;
+  c.start_sample_probability = 1.0;  // the start is finite: its tree never tosses the coin
+  Planner planner(c);
+  auto p = problem(s, finite(*s, {{0.0, 0.0}}), std::make_shared<Band>(1.0, 1.2), nullptr, wall());
+  PlanResult r = planner.solve(p, seeded(3));
+  CHECK(r.status == Status::MaxIterations);
+  CHECK(r.stats.search_roots == 100);  // 100 goal turns, one admissible candidate per Band draw
+  int goal_roots = 0, start_roots = 0;
+  for (const Node& n : r.tree_goal->nodes()) {
+    goal_roots += n.parent < 0;
+    if (n.parent < 0) CHECK(n.q[0] >= 1.0 && n.q[0] <= 1.2);
+  }
+  CHECK(goal_roots == 101);  // its own turns only add roots; it still grows on the start's turns, by connecting
+  for (const Node& n : r.tree_start->nodes()) start_roots += n.parent < 0;
+  CHECK(start_roots == 1);
+  CHECK(r.goal_roots.roots == 1);  // RootReport covers the collection before the search only
+}
+
+TEST(a_path_to_a_root_added_during_the_search_reports_its_provenance) {
+  auto s = planar();
+  PlannerConfig c = base();
+  c.num_tree_roots = 1;
+  c.goal_sample_probability = 0.5;
+  Planner planner(c);
+  auto goal = std::make_shared<AnyOf>(
+      std::vector<SetPtr>{std::make_shared<Band>(1.0, 1.2), std::make_shared<Band>(-1.2, -1.0)},
+      std::vector<double>{1.0, 1.0});
+  auto p = problem(s, finite(*s, {{0.0, 0.0}}), goal, nullptr, wall());
+  int checked = 0;
+  for (std::uint64_t seed = 0; seed < 40; ++seed) {
+    PlanResult r = planner.solve(p, seeded(seed));
+    CHECK(r.success() && validate(p, planner.config(), r.path).all());
+    CHECK(r.goal_source == Provenance{1});  // only the band on the start's side is reachable
+    CHECK(r.path.back()[0] >= -1.2 - 1e-9 && r.path.back()[0] <= -1.0 + 1e-9);
+    // The first goal root came from the unreachable band: the path ends on a root added during the search.
+    if (r.tree_goal->nodes()[0].source == Provenance{0}) {
+      CHECK(r.stats.search_roots > 0);
+      ++checked;
+    }
+  }
+  CHECK(checked > 0);
 }
 
 HARNESS_MAIN()

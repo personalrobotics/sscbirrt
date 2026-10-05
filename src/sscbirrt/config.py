@@ -36,8 +36,11 @@ class CBiRRTConfig:
 
     # Tree growth parameters
     step_size: float = 0.1  # Maximum joint space step
-    goal_bias: float = 0.1  # Probability of start tree sampling from goal TSR
-    start_bias: float = 0.1  # Probability of goal tree sampling from start TSR
+
+    # CBiRRT's P_sample (#196): on a tree's turn, the probability that the turn adds roots drawn from that tree's own
+    # set instead of extending toward a random configuration. A finite set never does: its members are all roots.
+    start_sample_probability: float = 0.1
+    goal_sample_probability: float = 0.1
 
     # Extension behavior (None = CON, int = EXT with X steps)
     extend_steps: int | None = None  # Steps when growing toward random sample
@@ -90,7 +93,7 @@ class CBiRRTConfig:
             check(name, getattr(self, name) is None or getattr(self, name) > 0, "None or positive")
         for name in ("extend_steps", "connect_steps"):
             check(name, getattr(self, name) is None or getattr(self, name) >= 1, "None or at least 1")
-        for name in ("goal_bias", "start_bias"):
+        for name in ("start_sample_probability", "goal_sample_probability"):
             check(name, 0.0 <= getattr(self, name) <= 1.0, "within [0, 1]")
 
 
@@ -102,12 +105,20 @@ _RENAMED = {
     "tsr_samples": "sample_draws",
     "max_ik_per_pose": "max_per_draw",
     "angular_joints": "continuous_joints",
+    # 3.3.0 (#196): the biases steered a turn's extension toward a member of the other tree's set; the probabilities
+    # add roots to the tree's own set. The alias maps each to its own role's probability.
+    "start_bias": "start_sample_probability",
+    "goal_bias": "goal_sample_probability",
 }
+_MEANING_CHANGED = {"start_bias", "goal_bias"}
 _dataclass_init = CBiRRTConfig.__init__
 
 
 def _warn_renamed(old: str, new: str, stacklevel: int) -> None:
-    warnings.warn(f"CBiRRTConfig.{old} is deprecated; use {new}", DeprecationWarning, stacklevel=stacklevel)
+    note = ""
+    if old in _MEANING_CHANGED:
+        note = " (since 3.3.0 it adds roots to its own tree on that tree's turn instead of steering the other, #196)"
+    warnings.warn(f"CBiRRTConfig.{old} is deprecated; use {new}{note}", DeprecationWarning, stacklevel=stacklevel)
 
 
 def _init(self, *args, tsr_tolerance: float | None = None, **kwargs):

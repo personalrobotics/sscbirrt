@@ -134,13 +134,14 @@ def test_planner_keeps_a_collision_free_branch_when_others_collide(ur5e):
 def test_unconstrained_baseline_violates_constraint(ur5e):
     """Sanity check that the constraint above is not vacuous for this start/goal pair.
 
-    Whether one unconstrained plan tilts depends on which goal roots its seed draws (many stay upright
-    since #168), so the claim is over a few seeds: without the constraint, some plans tilt the gripper.
+    Whether one unconstrained plan tilts depends on the roots and detours its seed draws: about half do
+    (16 of 30 seeds after #196). Five seeds were too few: on Linux all five stayed upright, while on macOS
+    two of them tilted. So the claim is over up to 20 seeds, stopping at the first plan that tilts.
     """
     robot, _, _, planner = ur5e
     upright = gripper_down_everywhere()
     tilts = []
-    for seed in range(5):
+    for seed in range(20):
         result = planner.plan(
             start_tsrs=[create_grasp_tsr(np.array([0.55, -0.35, 0.47]))],
             goal_tsrs=[create_grasp_tsr(np.array([-0.30, 0.45, 0.47]))],
@@ -149,6 +150,8 @@ def test_unconstrained_baseline_violates_constraint(ur5e):
         )
         assert result.success
         tilts.append(max(upright.distance(robot.forward_kinematics(q))[0] for q in result.path))
+        if tilts[-1] > 1.0:
+            break
     assert max(tilts) > 1.0, tilts
 
 
@@ -222,7 +225,8 @@ class TestMuJoCoDifferentialIK:
 
     def test_plans_to_a_grasp_region(self):
         robot, collision, ik = self._world()
-        planner = CBiRRT(robot, ik, collision, CBiRRTConfig(timeout=60.0, goal_bias=0.15, sample_draws=100))
+        cfg = CBiRRTConfig(timeout=60.0, goal_sample_probability=0.15, sample_draws=100)
+        planner = CBiRRT(robot, ik, collision, cfg)
         result = planner.plan(start=self.HOME, goal_tsrs=[create_grasp_tsr(np.array([0.45, 0.15, 0.47]))], seed=0,
                               return_details=True)  # fmt: skip
         assert result.success, result.failure_reason

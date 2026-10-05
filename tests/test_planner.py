@@ -1145,3 +1145,73 @@ class TestConfigurationInputs:
             ValueError, match=rf"start: expected one configuration of length 2 or a list of them, {message}"
         ):
             planner.plan(start=bad, goal=[1.0, 0.5])
+
+
+class TestSampleProbability:
+    """#196, CBiRRT's P_sample: on a tree's turn, a coin adds roots from the tree's own set instead of extending.
+
+    A full-height wall at joint 0 in (0.45, 0.55), and another across the seam at +-pi (the planar arm's joints wrap);
+    the goal is a band beyond the first wall (unreachable) or on the start's side. The native backend runs the same
+    cases in cpp/tests/test_planner.cpp, in a bounded space with the one wall.
+    """
+
+    class Walls:
+        def is_valid(self, q):
+            return not (0.45 < q[0] < 0.55 or abs(q[0]) > 2.5)
+
+    class Band:
+        def __init__(self, lo, hi):
+            self.lo, self.hi = lo, hi
+
+        def contains(self, q):
+            return self.lo <= q[0] <= self.hi
+
+        def sample(self, rng):
+            from sscbirrt.sets import Sample
+
+            return [Sample(np.array([self.lo + rng.random() * (self.hi - self.lo), 0.0]), ())]
+
+    def _solve(self, goal, seed, max_iterations=100000, **kw):
+        from sscbirrt.testing import PlanarArm, PlanarIK
+
+        cfg = CBiRRTConfig(step_size=0.2, edge_resolution=0.05, num_tree_roots=1, max_iterations=max_iterations, **kw)
+        planner = CBiRRT(PlanarArm(), PlanarIK(), self.Walls(), cfg, backend="python")
+        problem = PlanningProblem(
+            space=planner.space,
+            start=FiniteSet([np.zeros(2)], metric=planner.space.distance),
+            goal=goal,
+            validator=planner.collision,
+        )
+        return planner.solve(problem, seed=seed)
+
+    @staticmethod
+    def _roots(tree):
+        return [n for n in tree.nodes if n.parent is None]
+
+    def test_zero_adds_no_roots_during_the_search(self):
+        r = self._solve(self.Band(1.0, 1.2), seed=3, max_iterations=200, goal_sample_probability=0.0)
+        assert not r.success and r.stats["search_roots"] == 0
+        assert len(self._roots(r.tree_goal)) == 1
+
+    def test_one_adds_a_root_on_every_goal_turn_and_none_to_a_finite_start(self):
+        r = self._solve(
+            self.Band(1.0, 1.2), seed=3, max_iterations=200, goal_sample_probability=1.0, start_sample_probability=1.0
+        )
+        assert not r.success and r.stats["search_roots"] == 100  # 100 goal turns, one candidate per draw
+        roots = self._roots(r.tree_goal)
+        assert len(roots) == 101 and all(1.0 <= n.config[0] <= 1.2 for n in roots)
+        assert len(self._roots(r.tree_start)) == 1  # the finite start never tosses the coin
+
+    def test_a_path_to_a_root_added_during_the_search_reports_its_provenance(self):
+        from sscbirrt.sets import AnyOf
+
+        goal = AnyOf([self.Band(1.0, 1.2), self.Band(-1.2, -1.0)], weights=[1.0, 1.0])
+        checked = 0
+        for seed in range(40):
+            r = self._solve(goal, seed=seed, goal_sample_probability=0.5)
+            assert r.success and r.goal_source == (1,) and r.goal_index == 1  # only the near band is reachable
+            assert -1.2 <= r.path[-1][0] <= -1.0
+            if r.tree_goal.nodes[0].source_index == (0,):  # the first goal root was unreachable
+                assert r.stats["search_roots"] > 0
+                checked += 1
+        assert checked > 0

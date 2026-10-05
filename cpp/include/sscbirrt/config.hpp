@@ -20,8 +20,10 @@ struct PlannerConfig {
 
   // Growth
   double step_size = 0.1;
-  double goal_bias = 0.1;
-  double start_bias = 0.1;
+  // CBiRRT's P_sample (#196): on a tree's turn, the probability that the turn adds roots drawn from that tree's own
+  // set instead of extending toward a random configuration. A finite set never does: its members are all roots.
+  double start_sample_probability = 0.1;
+  double goal_sample_probability = 0.1;
   std::optional<int> extend_steps;   // nullopt: connect until blocked
   std::optional<int> connect_steps;
 

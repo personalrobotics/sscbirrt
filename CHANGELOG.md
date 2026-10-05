@@ -6,6 +6,43 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+The start and goal sets keep growing during the search, as in CBiRRT (#196).
+On each tree's turn a weighted coin, the paper's `P_sample`, either draws new
+members of that tree's own start or goal set and adds them as roots, or takes
+an ordinary turn toward a random configuration. Until now, roots were
+collected once, before the search, and frozen. Measured over 100 seeds per
+problem, with both versions interleaved on one machine
+(`tools/planning_benchmark.py`):
+- every run that used to time out now succeeds: pick goes from 97% to 100%
+  of seeds, and the TSR-chain crank from 93% to 100%;
+- the slow tail shrinks: pick's p90 goes from 1.69 to 0.84 s (worst case
+  from a 30 s timeout to 1.75 s); the crank's p90 from 11.0 to 5.4 s (worst
+  case from a 120 s timeout to 12.6 s); transport's p90 from 0.45 to 0.32 s;
+- medians hold or improve, for example pick from 0.68 to 0.54 s, measured
+  as root collection plus search;
+- the door, whose up-front roots already connect it in one iteration, is
+  unchanged.
+
+### Changed
+- **Behaviour.** The same seed now gives a different path, in both backends.
+  Every reference-artifact case keeps its outcome and passes validation;
+  native parity holds.
+- **Parameters.** New `start_sample_probability` and `goal_sample_probability`
+  (default 0.1) replace `start_bias` and `goal_bias`. The meaning changed: the
+  old biases steered a turn's extension toward a member of the *other* tree's
+  set. The new probabilities add roots to the tree's *own* set. A finite set
+  never tosses the coin, because its members are all roots already. The old
+  names still work until 4.0, mapped to the new ones, with a
+  `DeprecationWarning` that says the meaning changed.
+- **New stat.** `PlanResult.stats["search_roots"]` counts the roots added
+  during the search, on both backends.
+- **New tool.** `tools/planning_benchmark.py` measures planning time and work
+  on realistic problems. `benchmarks/` holds the v3.2.0 baseline and this
+  change's measurement.
+- **C++ consumers.** `PlannerConfig::goal_bias` and `start_bias` are renamed
+  to `goal_sample_probability` and `start_sample_probability`, with the new
+  meaning. `Tree::add_root` is new. `SolveStats::search_roots` is new.
+
 ## [3.2.0] - 2026-10-02
 
 TSR chains plan on the native backend (#184). sscbirrt's TSRs now come from

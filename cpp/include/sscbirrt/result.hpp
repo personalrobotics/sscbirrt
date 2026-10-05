@@ -28,6 +28,8 @@ class Tree {
   Tree() = default;
   explicit Tree(const std::vector<Config>& roots, const std::vector<Provenance>& sources = {});
   int add(Config q, int parent);
+  // A child of the tree's virtual root, with no edge to check: a start or goal member, before or during the search.
+  int add_root(Config q, Provenance source);
   int nearest(const JointSpace& space, ConfigView q) const;
   std::vector<Config> path_to_root(int idx) const;  // root first
   const Provenance& root_source(int idx) const;      // provenance of the root idx descends from
@@ -43,8 +45,9 @@ class Tree {
 struct SolveStats {
   long state_checks = 0;          // validator + space + constraint membership evaluations
   long edge_checks = 0;           // motion-validator calls (growth, connection, shortcuts)
-  long set_samples = 0;           // calls to a set's sample() (roots and bias); IK lives here for TSR sets
+  long set_samples = 0;           // calls to a set's sample() (roots, before and during the search); IK lives here for TSR sets
   long set_projections = 0;       // calls to a path constraint's project(); IK lives here too
+  long search_roots = 0;          // roots added during the search by the P_sample coin (#196)
   double seconds_state_checks = 0.0;
   double seconds_edge_checks = 0.0;   // includes the state checks made inside edges
   double seconds_set_samples = 0.0;

@@ -15,15 +15,16 @@ does not depend on it, and sets you define yourself take the same roles.
 
 <table>
 <tr><td><img src="docs/images/pick_yellow_seed5.gif" alt="UR5e reaching the yellow can, from the near side" width="100%"></td><td><img src="docs/images/pick_green_seed22.gif" alt="UR5e reaching the green can, straight in" width="100%"></td><td><img src="docs/images/pick_blue_seed12.gif" alt="UR5e reaching the blue can, over the boxes" width="100%"></td></tr>
-<tr><td align="center"><sub>yellow can, from the near side (seed 5)</sub></td><td align="center"><sub>green can, straight in (seed 22)</sub></td><td align="center"><sub>blue can, over the boxes (seed 12)</sub></td></tr>
+<tr><td align="center"><sub>yellow can, from the near side</sub></td><td align="center"><sub>green can, straight in</sub></td><td align="center"><sub>blue can, over the boxes</sub></td></tr>
 <tr><td><img src="docs/images/pick_yellow_seed15.gif" alt="UR5e reaching the yellow can, over the boxes" width="100%"></td><td><img src="docs/images/pick_green_seed57.gif" alt="UR5e reaching the green can, another grasp" width="100%"></td><td><img src="docs/images/pick_yellow_seed54.gif" alt="UR5e reaching the yellow can, a wide arc" width="100%"></td></tr>
-<tr><td align="center"><sub>yellow can, over the boxes (seed 15)</sub></td><td align="center"><sub>green can, another grasp (seed 57)</sub></td><td align="center"><sub>yellow can, a wide arc (seed 54)</sub></td></tr>
+<tr><td align="center"><sub>yellow can, over the boxes</sub></td><td align="center"><sub>green can, another grasp</sub></td><td align="center"><sub>yellow can, a wide arc</sub></td></tr>
 </table>
 
 Six runs of one call, `plan(model, data, arm, goal=grasps)`, where `grasps` is
-every side grasp of every can: 18 regions. Each seed lets the planner choose a
-different can, grasp, and route around the red boxes, planned natively in
-0.02 to 0.12 s. `sscbirrt-demo pick --seed N` renders any of them.
+every side grasp of every can: 18 regions. Each run lets the planner choose a
+different can, grasp, and route around the red boxes. Over 100 seeds every
+run succeeds, with a median of 0.54 s including root collection
+(`tools/planning_benchmark.py`). `sscbirrt-demo pick --seed N` renders a run.
 
 <table>
 <tr><td><img src="docs/images/transport.gif" alt="UR5e carrying a can upright over a box" width="100%"></td><td><img src="docs/images/door.gif" alt="UR5e opening a door: a TSR chain" width="100%"></td></tr>
@@ -244,9 +245,16 @@ Python with that list in `result.backend_reasons`.
 Two trees grow at once, blue from the start set and green from the goal set.
 The right panel is configuration space; red regions are in collision.
 
-1. **Sample** a random configuration, or a member of the other role's set
-   with probability `goal_bias` / `start_bias`.
-2. **Extend** the nearest tree toward it in steps of `step_size`.
+1. **Grow a set, or sample.** The trees take turns. On a tree's turn, with
+   probability `start_sample_probability` (start tree) or
+   `goal_sample_probability` (goal tree), the turn draws new members of that
+   tree's own set and adds them as roots, and that is the whole turn. This is
+   CBiRRT's `P_sample`: the trees keep gaining start and goal members
+   throughout the search, not only before it. Otherwise the turn samples a
+   random configuration. A finite set's members are all roots from the start,
+   so its tree always samples.
+2. **Extend** the tree whose turn it is toward the random configuration, in
+   steps of `step_size`.
 3. **Project** each new configuration onto the path-admissible set when a
    path constraint is present.
 4. **Connect** the trees when one reaches the other within
@@ -434,13 +442,13 @@ config = CBiRRTConfig(
 
     # Tree growth
     step_size=0.1,                      # Max joint-space step per iteration
-    goal_bias=0.1,                      # Probability of sampling from the goal set
-    start_bias=0.1,                     # Probability of sampling from the start set
+    start_sample_probability=0.1,       # On the start tree's turn, probability of adding start roots instead
+    goal_sample_probability=0.1,        # On the goal tree's turn, probability of adding goal roots instead
     max_projection_iters=50,            # Iterations to project onto the constraint set
 
     # Set sampling
     sample_draws=100,                    # Pose samples to try from each TSR
-    num_tree_roots=100,                 # Target root configs to seed each tree
+    num_tree_roots=100,                 # Root configs to seed each tree before the search
     max_per_draw=3,                  # IK solutions to take per pose sample
 
     # Extension behavior (None = connect until blocked)
