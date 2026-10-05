@@ -15,7 +15,7 @@ struct PlannerConfig {
 
   // Tolerances
   double connection_tolerance = 1e-3;     // growth has reached its target within this joint-space distance
-  std::optional<double> edge_resolution;  // spacing of validity checks along an edge; nullopt means step_size
+  std::optional<double> edge_resolution = 0.05;  // spacing of collision checks along an edge (#204); nullopt: step_size
   double progress_tolerance = 1e-6;       // growth stops when the distance to target shrinks by less than this
 
   // Growth

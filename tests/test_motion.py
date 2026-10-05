@@ -124,9 +124,12 @@ class TestDefaultReproducesBehavior:
         assert all(np.array_equal(a.config, b.config) for a, b in zip(tree_a.nodes, tree_b.nodes))
 
     def test_default_uses_edge_resolution_then_step_size(self):
-        planner = make_planner(step_size=0.3)
+        planner = make_planner(step_size=0.3)  # edge_resolution defaults to 0.05, independent of step_size (#204)
         v = planner._motion_validator(problem(planner, np.zeros(2), np.zeros(2)))
-        assert isinstance(v, DiscreteMotionValidator) and v.resolution == 0.3
+        assert isinstance(v, DiscreteMotionValidator) and v.resolution == 0.05
+        planner = make_planner(step_size=0.3, edge_resolution=None)
+        v = planner._motion_validator(problem(planner, np.zeros(2), np.zeros(2)))
+        assert v.resolution == 0.3
         planner = make_planner(step_size=0.3, edge_resolution=0.05)
         v = planner._motion_validator(problem(planner, np.zeros(2), np.zeros(2)))
         assert v.resolution == 0.05

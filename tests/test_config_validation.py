@@ -125,3 +125,11 @@ def test_tsrs_without_ik_say_so():
     planner = CBiRRT(PlanarArm(), collision_checker=NoCollision())
     with pytest.raises(ValueError, match="need IK: CBiRRT"):
         planner.plan(start=[0.0, 0.0], goal_tsrs=[TSR()])
+
+
+def test_edge_resolution_defaults_to_005_independent_of_step_size():
+    """#204: collision checks every 0.05 rad by default, whatever step_size is; None still means step_size."""
+    assert CBiRRTConfig().edge_resolution == 0.05
+    assert CBiRRTConfig(step_size=0.3).edge_resolution == 0.05
+    native = pytest.importorskip("sscbirrt._native")
+    assert native.PlannerConfig().edge_resolution == 0.05

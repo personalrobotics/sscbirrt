@@ -895,8 +895,9 @@ class TestConstraintTSRs:
 class TestPathSmoothing:
     """Tests for path smoothing."""
 
-    def test_smoothing_reduces_waypoints(self):
-        """Smoothing a jagged path should reduce waypoint count."""
+    def test_smoothing_shortens_a_jagged_path(self):
+        """Smoothing a jagged path shortens it. (Waypoint count is not the measure: a shortcut is stored at
+        edge_resolution, so a straight path can carry more waypoints than the zigzag it replaces.)"""
         robot = MockRobotModel()
         collision = MockCollisionChecker()
         ik = MockIKSolver(robot, collision)
@@ -923,7 +924,12 @@ class TestPathSmoothing:
         ]
 
         smoothed = planner._smooth_path(_unconstrained(planner, path), path)
-        assert len(smoothed) <= len(path)
+
+        def length(p):
+            return sum(np.linalg.norm(b - a) for a, b in zip(p, p[1:]))
+
+        assert length(smoothed) < length(path)
+        assert np.array_equal(smoothed[0], path[0]) and np.array_equal(smoothed[-1], path[-1])
 
     def test_smoothing_short_path_unchanged(self):
         """Path with 2 or fewer waypoints should not be modified."""

@@ -124,6 +124,14 @@ TEST(config_ranges_are_validated_with_pythons_messages) {
   (void)ok;
 }
 
+TEST(edge_resolution_defaults_to_005_independent_of_step_size) {
+  PlannerConfig c;  // #204
+  c.step_size = 0.3;
+  CHECK(c.resolution() == 0.05);
+  c.edge_resolution = std::nullopt;
+  CHECK(c.resolution() == 0.3);
+}
+
 TEST(fixed_to_fixed) {
   auto s = planar();
   Planner planner(base());
