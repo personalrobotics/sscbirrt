@@ -99,4 +99,10 @@ std::vector<InvalidContact> SceneValidator::invalid_contacts(ConfigView q) const
 
 bool SceneValidator::is_valid(ConfigView q) const { return invalid_contacts(q).empty(); }
 
+bool SceneValidator::full_turn_invariant() const {
+  const ::mjModel* m = scene_->model();
+  return std::all_of(scene_->joint_ids().begin(), scene_->joint_ids().end(),
+                     [m](int id) { return m->jnt_type[id] == mjJNT_HINGE; });
+}
+
 }  // namespace sscbirrt::mujoco

@@ -99,6 +99,13 @@ class SSIKSolver:
         return native_ssik.arm_from_manipulator(self.solver, T_base=self.T_base, T_ee=self.T_ee)
 
     @property
+    def revolute_joints(self) -> tuple[bool, ...] | None:
+        """Every SSIK joint is revolute: q and q + 2*pi*k place the links identically (#200). ``None`` when the
+        wrapped solver does not report its ``dof``."""
+        dof = getattr(self.solver, "dof", None)
+        return None if dof is None else (True,) * int(dof)
+
+    @property
     def provenance(self) -> dict[str, Any]:
         name = getattr(self.solver, "solver_name", None)
         return {} if name is None else {"ssik_solver_name": str(name)}

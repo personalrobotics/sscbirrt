@@ -3,7 +3,9 @@
 #include "sscbirrt/sets.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
+#include <numbers>
 #include <sstream>
 #include <stdexcept>
 
@@ -181,6 +183,15 @@ double AnyOf::violation(ConfigView q) const {
   double best = std::numeric_limits<double>::infinity();
   for (const SetPtr& c : children_) best = std::min(best, c->violator()->violation(q));
   return best;
+}
+
+std::vector<std::int64_t> full_turn_key(ConfigView q, const std::vector<bool>& revolute) {
+  std::vector<std::int64_t> key(q.size());
+  for (std::size_t i = 0; i < q.size(); ++i) {
+    const double v = i < revolute.size() && revolute[i] ? std::remainder(q[i], 2.0 * std::numbers::pi) : q[i];
+    key[i] = std::llround(v * 1e9);
+  }
+  return key;
 }
 
 std::vector<Sample> AnyOf::sample(Rng& rng) const {

@@ -206,6 +206,7 @@ PYBIND11_MODULE(_native, m) {
       .def_readonly("set_samples", &SolveStats::set_samples)
       .def_readonly("set_projections", &SolveStats::set_projections)
       .def_readonly("search_roots", &SolveStats::search_roots)
+      .def_readonly("reused_verdicts", &SolveStats::reused_verdicts)
       .def_readonly("seconds_state_checks", &SolveStats::seconds_state_checks)
       .def_readonly("seconds_edge_checks", &SolveStats::seconds_edge_checks)
       .def_readonly("seconds_set_samples", &SolveStats::seconds_set_samples)

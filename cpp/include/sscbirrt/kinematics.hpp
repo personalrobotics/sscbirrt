@@ -24,6 +24,9 @@ class IKSolver {
   virtual ~IKSolver() = default;
   virtual int dof() const = 0;
   virtual std::vector<Config> solve(const Transform& pose, ConfigView seed) const = 0;
+  // Joints on which q and q + 2*pi*k place the links identically, as declared by the solver (#200). Empty: none
+  // declared, so solutions are never treated as the same physical configuration.
+  virtual std::vector<bool> revolute_joints() const { return {}; }
 };
 
 }  // namespace sscbirrt

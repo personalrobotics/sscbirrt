@@ -47,6 +47,7 @@ class SSIKArm final : public ForwardKinematics, public IKSolver {
   int dof() const override { return 6; }
   Transform fk(ConfigView q) const override;
   std::vector<Config> solve(const Transform& pose, ConfigView seed) const override;
+  std::vector<bool> revolute_joints() const override { return std::vector<bool>(6, true); }  // ssik arms are all revolute
 
   Family family() const { return family_; }
   const ArmSpec& spec() const { return spec_; }

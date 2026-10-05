@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cmath>
 #include <limits>
+#include <map>
 #include <random>
 #include <sstream>
 #include <stdexcept>
@@ -115,6 +116,17 @@ class Solve {
     stats_.seconds_state_checks += std::chrono::duration<double>(Clock::now() - t).count();
     return why;
   }
+  // As Planner::why_inadmissible, with the validator's verdict already known (#200).
+  std::optional<std::string> why_inadmissible_counted(ConfigView q, bool valid) const {
+    const auto t = Clock::now();
+    std::optional<std::string> why;
+    if (auto w = p_.space->why_invalid(q)) why = "outside joint space (" + *w + ")";
+    else if (!valid) why = std::string("in collision");
+    else if (p_.path_constraint && !p_.path_constraint->contains(q)) why = std::string("violates path constraints");
+    ++stats_.state_checks;
+    stats_.seconds_state_checks += std::chrono::duration<double>(Clock::now() - t).count();
+    return why;
+  }
   std::vector<Sample> sample_counted(const StateSet& s) {
     const auto t = Clock::now();
     std::vector<Sample> out = s.sampler()->sample(rng_);
@@ -220,12 +232,28 @@ std::vector<Sample> Solve::draw_roots(const StateSet& s, const std::vector<Sampl
     for (std::size_t k = candidates.size() - 1; k > 0; --k) std::swap(candidates[k], candidates[index(rng_, k + 1)]);
   }
   const int limit = std::min(cfg_.max_per_draw, room);
+  // Windings of one physical configuration share the validator's verdict when it declares that full turns cannot
+  // change it (#200); the joint-space and path-constraint checks stay per candidate.
+  const bool share = p_.validator->full_turn_invariant();
+  std::map<std::vector<std::int64_t>, bool> verdicts;
   for (Sample& c : candidates) {
     if (static_cast<int>(out.size()) >= limit) break;
     const bool repeats_seed =
         std::any_of(seeds.begin(), seeds.end(), [&c](const Sample& e) { return e.source == c.source; });
     if (repeats_seed) continue;  // an explicit seed drawn again; already a root or already rejected
-    if (auto why = why_inadmissible_counted(c.q)) {
+    std::optional<std::string> verdict;
+    const auto known = share && !c.key.empty() ? verdicts.find(c.key) : verdicts.end();
+    if (known != verdicts.end()) {
+      verdict = why_inadmissible_counted(c.q, known->second);
+      ++stats_.reused_verdicts;
+    } else {
+      verdict = why_inadmissible_counted(c.q);
+      // The validator ran unless the joint-space check failed first.
+      if (share && !c.key.empty() && !(verdict && verdict->rfind("outside joint space", 0) == 0)) {
+        verdicts.emplace(c.key, !(verdict && *verdict == "in collision"));
+      }
+    }
+    if (auto why = verdict) {
       if (report) {
         if (*why == "in collision") ++report->in_collision;
         else if (why->rfind("outside joint space", 0) == 0) ++report->outside_space;

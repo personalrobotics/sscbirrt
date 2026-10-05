@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Siddhartha Srinivasa
 #pragma once
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -16,7 +17,13 @@ namespace sscbirrt {
 struct Sample {
   Config q;
   Provenance source;  // AnyOf prepends its child index; FiniteSet contributes the member index
+  // Equal for candidates of one draw that differ only by full turns of revolute joints: the same physical
+  // configuration, so a validator that declares full_turn_invariant() judges them alike (#200). Empty: no key.
+  std::vector<std::int64_t> key = {};
 };
+
+// The key of q: each joint the IK declares revolute reduced to [-pi, pi], every joint rounded to nanoradians.
+std::vector<std::int64_t> full_turn_key(ConfigView q, const std::vector<bool>& revolute);
 
 enum class Capability { Sampler, Distance, Violation, Projector };
 const char* capability_name(Capability c);

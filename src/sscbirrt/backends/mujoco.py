@@ -157,6 +157,11 @@ class MuJoCoCollisionChecker:
         self.data = data
         self.joint_ids = _joint_ids(model, joint_names)
 
+    @property
+    def full_turn_invariant(self) -> bool:
+        """With only hinges, a full turn leaves the world unchanged: no verdict depends on winding (#200)."""
+        return all(int(self.model.jnt_type[j]) == int(mujoco.mjtJoint.mjJNT_HINGE) for j in self.joint_ids)
+
     def is_valid(self, q: np.ndarray) -> bool:
         """Check if configuration is collision-free.
 

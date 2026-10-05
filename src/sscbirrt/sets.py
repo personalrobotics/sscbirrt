@@ -62,10 +62,15 @@ class Sample:
             outermost choice first. ``AnyOf`` prepends the index of the child
             it chose; ``FiniteSet`` contributes the index of the member it
             drew; other leaves contribute nothing.
+        key: Equal for candidates of one draw that differ only by full turns
+            of revolute joints, so the same physical configuration; a validator
+            that declares ``full_turn_invariant`` judges them alike (#200).
+            ``None``: no key.
     """
 
     q: np.ndarray
     source: tuple[int, ...] = field(default=())
+    key: tuple[int, ...] | None = None
 
 
 @runtime_checkable
@@ -331,7 +336,7 @@ class AnyOf(_Composite):
             i = 0
         else:
             i = int(rng.choice(len(self.children), p=self.weights))
-        return [Sample(s.q, (i, *s.source)) for s in self.children[i].sample(rng)]
+        return [Sample(s.q, (i, *s.source), s.key) for s in self.children[i].sample(rng)]
 
     def project(self, q_previous: np.ndarray, q_proposed: np.ndarray) -> np.ndarray | None:
         self._require(SetProjector)

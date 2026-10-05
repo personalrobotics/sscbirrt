@@ -1634,3 +1634,32 @@ during the search. In both backends now:
 - **Configuration.** The C++ `PlannerConfig` fields are renamed. In Python,
   `goal_bias` and `start_bias` are deprecated aliases of the new names until
   4.0, and they warn that their meaning changed.
+
+## Windings share a verdict (#200)
+
+SSIK enumerates every in-limit winding of every geometric branch: on the
+UR5e's ±2π joints, 320 solutions per pose for a median of 12 physically
+distinct arm poses. q and q + 2πk place the links identically, so a
+collision verdict cannot tell windings apart. Root collection now judges each
+physical configuration once per draw. Two declarations, never inferred,
+license it:
+
+- **`IKSolver::revolute_joints()`** (Python: `revolute_joints`). These are the
+  joints on which full turns are the same physical configuration. SSIK
+  declares every joint; the default is none.
+- **`StateValidator::full_turn_invariant()`** (Python: `full_turn_invariant`).
+  The validator's verdict never changes under a full turn. The MuJoCo scene
+  validator and `MuJoCoCollisionChecker` declare it when every controlled joint
+  is a hinge. A validator over raw joint values, such as `JointBoxObstacles`,
+  does not.
+
+`TSRConfigurationSet` tags each candidate with `Sample::key`: the revolute
+joints reduced to [-π, π], every joint rounded to nanoradians. `AnyOf`
+preserves the key. In `draw_roots`, when the validator declares invariance,
+the first candidate with a key runs the validator and later candidates with
+that key reuse its verdict. The joint-space and path-constraint checks still
+run per candidate, because limits do tell windings apart, and only the
+validator's invariance is declared. Candidates, their order and their
+verdicts are unchanged, so results are identical apart from cost.
+`state_checks` still counts every candidate; `reused_verdicts` counts the
+validator calls saved.

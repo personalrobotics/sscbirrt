@@ -277,7 +277,7 @@ class CBiRRT:
                 logger.info("native backend not used; planning in Python: %s", "; ".join(reasons))
             else:
                 return native.solve(lowered, seed, self.config.abort_fn)
-        self._counts = {"state_checks": 0, "edge_checks": 0, "search_roots": 0}
+        self._counts = {"state_checks": 0, "edge_checks": 0, "search_roots": 0, "reused_verdicts": 0}
         result = self._solve_python(problem, seed)
         result.backend = "python"
         result.backend_reasons = reasons
@@ -446,13 +446,16 @@ class CBiRRT:
         """Whether ``abort_fn`` asks to stop. Polled once per iteration, per root draw, and per smoothing attempt."""
         return self.config.abort_fn is not None and bool(self.config.abort_fn())
 
-    def _admissible(self, problem: PlanningProblem, q: np.ndarray) -> tuple[bool, str | None]:
+    def _admissible(
+        self, problem: PlanningProblem, q: np.ndarray, valid: bool | None = None
+    ) -> tuple[bool, str | None]:
         """Whether ``q`` may appear on a path, and if not, why.
 
         Checked in order: membership in the ambient joint space (shape,
         finiteness, limits), then the validator, then the path constraint.
         Every root, sample, projected extension, and edge sample goes through
         this, so nothing outside ``problem.space`` is ever stored in a tree.
+        ``valid`` is the validator's verdict when it is already known (#200).
         """
         counts = getattr(self, "_counts", None)
         if counts is not None:
@@ -460,7 +463,7 @@ class CBiRRT:
         why = problem.space.why_invalid(q)
         if why is not None:
             return False, f"outside joint space ({why})"
-        if not problem.validator.is_valid(q):
+        if not (problem.validator.is_valid(q) if valid is None else valid):
             return False, "in collision"
         if problem.path_constraint is not None and not problem.path_constraint.contains(q):
             return False, "violates path constraints"
@@ -492,13 +495,27 @@ class CBiRRT:
             # windings returns hundreds, in a fixed order); visit them in a random order (#168).
             candidates = [candidates[k] for k in self._rng.permutation(len(candidates))]
         limit = min(self.config.max_per_draw, room)
+        # Windings of one physical configuration share the validator's verdict when it declares that full turns
+        # cannot change it (#200); the joint-space and path-constraint checks stay per candidate.
+        share = bool(getattr(problem.validator, "full_turn_invariant", False))
+        verdicts: dict[tuple[int, ...], bool] = {}
+        counts = getattr(self, "_counts", None)
         kept: list[Sample] = []
         for smp in candidates:
             if len(kept) >= limit:
                 break
             if smp.source in seed_sources:
                 continue
-            ok, reason = self._admissible(problem, smp.q)
+            keyed = share and smp.key is not None
+            if keyed and smp.key in verdicts:
+                ok, reason = self._admissible(problem, smp.q, valid=verdicts[smp.key])
+                if counts is not None:
+                    counts["reused_verdicts"] += 1
+            else:
+                ok, reason = self._admissible(problem, smp.q)
+                # The validator ran unless the joint-space check failed first
+                if keyed and not (reason or "").startswith("outside joint space"):
+                    verdicts[smp.key] = reason != "in collision"
             if ok:
                 kept.append(smp)
             elif stats is None:

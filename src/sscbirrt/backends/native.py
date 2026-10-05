@@ -389,6 +389,7 @@ def convert(r, provenance: dict | None = None):
         "set_samples": s.set_samples,
         "set_projections": s.set_projections,
         "search_roots": s.search_roots,
+        "reused_verdicts": s.reused_verdicts,
         "seconds_state_checks": s.seconds_state_checks,
         "seconds_edge_checks": s.seconds_edge_checks,
         "seconds_set_samples": s.seconds_set_samples,

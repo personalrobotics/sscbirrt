@@ -1215,3 +1215,60 @@ class TestSampleProbability:
                 assert r.stats["search_roots"] > 0
                 checked += 1
         assert checked > 0
+
+
+class TestWindingsShareVerdicts:
+    """#200: windings of one physical configuration share the validator's verdict, only when it declares
+    invariance to full turns. Results are identical; only the number of validator calls changes."""
+
+    class Cos:
+        def __init__(self, invariant):
+            self.full_turn_invariant, self.calls = invariant, 0
+
+        def is_valid(self, q):
+            self.calls += 1
+            return np.cos(q[0]) > -0.5  # depends on q[0] only through its angle
+
+    class Windings:
+        def contains(self, q):
+            return abs(q[1] - 1.0) < 1e-9
+
+        def sample(self, rng):
+            from sscbirrt.sets import Sample
+            from sscbirrt.tsr_set import full_turn_key
+
+            a = -np.pi + rng.random() * 2 * np.pi
+            qs = [np.array([w, 1.0]) for w in (a, a + 2 * np.pi, a - 2 * np.pi)]
+            return [Sample(q, (), full_turn_key(q, (True, False))) for q in qs]
+
+    def test_full_turn_key(self):
+        from sscbirrt.tsr_set import full_turn_key
+
+        k = full_turn_key(np.array([0.3, 1.0]), (True, False))
+        assert k == full_turn_key(np.array([0.3 + 2 * np.pi, 1.0]), (True, False))
+        assert k != full_turn_key(np.array([0.3, 1.0 + 2 * np.pi]), (True, False))
+        assert k != full_turn_key(np.array([0.31, 1.0]), (True, False))
+
+    def test_shared_only_when_declared_and_results_identical(self):
+        from sscbirrt.space import JointSpace
+
+        def run(invariant):
+            v = self.Cos(invariant)
+            space = JointSpace(np.array([-7.0, -1.5]), np.array([7.0, 1.5]))
+            cfg = CBiRRTConfig(step_size=0.2, num_tree_roots=30, max_per_draw=3, goal_sample_probability=0.0)
+            planner = CBiRRT(MockRobotModel(), None, v, cfg, backend="python")
+            problem = PlanningProblem(
+                space=space,
+                start=FiniteSet([np.array([0.0, 1.0])], metric=space.distance),
+                goal=self.Windings(),
+                validator=v,
+            )
+            return planner.solve(problem, seed=5), v.calls
+
+        (shared, shared_calls), (unshared, unshared_calls) = run(True), run(False)
+        assert shared.success and unshared.success
+        assert all(np.array_equal(a, b) for a, b in zip(shared.path, unshared.path))
+        assert shared.iterations == unshared.iterations
+        assert shared.stats["state_checks"] == unshared.stats["state_checks"]  # every candidate is still judged
+        assert shared.stats["reused_verdicts"] > 0 and unshared.stats["reused_verdicts"] == 0
+        assert shared_calls < unshared_calls

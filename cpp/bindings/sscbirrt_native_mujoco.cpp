@@ -129,6 +129,7 @@ PYBIND11_MODULE(_native_mujoco, m) {
       .def(py::init([](std::shared_ptr<const Scene> scene, const Snapshot& snapshot) { return std::make_shared<SceneValidator>(std::move(scene), snapshot); }),
            py::arg("scene"), py::arg("snapshot"), "One private mjData per validator; use one validator per solve.")
       .def("is_valid", [](const SceneValidator& v, const Config& q) { return v.is_valid(q); })
+      .def("full_turn_invariant", &SceneValidator::full_turn_invariant)
       .def("invalid_contacts", [](const SceneValidator& v, const Config& q) { return v.invalid_contacts(q); })
       .def_property_readonly("snapshot", &SceneValidator::snapshot);
 }

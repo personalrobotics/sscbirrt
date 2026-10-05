@@ -426,4 +426,65 @@ TEST(a_path_to_a_root_added_during_the_search_reports_its_provenance) {
   CHECK(checked > 0);
 }
 
+// #200: windings of one physical configuration share the validator's verdict, only when it declares invariance.
+namespace {
+struct CosValidator final : StateValidator {
+  explicit CosValidator(bool invariant) : invariant(invariant) {}
+  bool is_valid(ConfigView q) const override {
+    ++calls;
+    return std::cos(q[0]) > -0.5;  // depends on q[0] only through its angle
+  }
+  bool full_turn_invariant() const override { return invariant; }
+  bool invariant;
+  mutable int calls = 0;
+};
+
+// Each draw offers one angle in three windings (as SSIK enumerates them), keyed as the same physical configuration.
+class Windings final : public StateSet, public SetSampler {
+ public:
+  bool contains(ConfigView q) const override { return std::fabs(q[1] - 1.0) < 1e-9; }
+  std::vector<Sample> sample(Rng& rng) const override {
+    const double a = -kPi + unit(rng) * 2.0 * kPi;
+    std::vector<Sample> out;
+    for (double w : {a, a + 2.0 * kPi, a - 2.0 * kPi}) {
+      Config q{w, 1.0};
+      std::vector<std::int64_t> key = full_turn_key(q, {true, false});
+      out.push_back(Sample{std::move(q), {}, std::move(key)});
+    }
+    return out;
+  }
+  const SetSampler* sampler() const override { return this; }
+  std::string describe() const override { return "Windings"; }
+};
+}  // namespace
+
+TEST(full_turn_key_identifies_windings_and_only_windings) {
+  CHECK(full_turn_key(Config{0.3, 1.0}, {true, false}) == full_turn_key(Config{0.3 + 2 * kPi, 1.0}, {true, false}));
+  CHECK(full_turn_key(Config{0.3, 1.0}, {true, false}) != full_turn_key(Config{0.3, 1.0 + 2 * kPi}, {true, false}));
+  CHECK(full_turn_key(Config{0.3, 1.0}, {true, false}) != full_turn_key(Config{0.31, 1.0}, {true, false}));
+}
+
+TEST(windings_share_a_verdict_only_when_the_validator_declares_invariance) {
+  auto s = std::make_shared<JointSpace>(std::vector<double>{-7.0, -1.5}, std::vector<double>{7.0, 1.5});
+  PlannerConfig c = base();
+  c.num_tree_roots = 30;
+  c.max_per_draw = 3;
+  c.goal_sample_probability = 0.0;
+  Planner planner(c);
+  auto run = [&](bool invariant) {
+    auto v = std::make_shared<CosValidator>(invariant);
+    auto p = problem(s, finite(*s, {{0.0, 1.0}}), std::make_shared<Windings>(), nullptr, v);
+    PlanResult r = planner.solve(p, seeded(5));
+    return std::make_pair(r, v->calls);
+  };
+  auto [shared, shared_calls] = run(true);
+  auto [unshared, unshared_calls] = run(false);
+  CHECK(shared.success() && unshared.success());
+  CHECK(shared.path == unshared.path && shared.iterations == unshared.iterations);  // identical but for the cost
+  CHECK(shared.goal_roots.roots == unshared.goal_roots.roots);
+  CHECK(shared.stats.state_checks == unshared.stats.state_checks);  // every candidate is still judged
+  CHECK(shared.stats.reused_verdicts > 0 && unshared.stats.reused_verdicts == 0);
+  CHECK(shared_calls < unshared_calls);
+}
+
 HARNESS_MAIN()

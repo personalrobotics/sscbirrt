@@ -207,6 +207,11 @@ class NativeCollisionChecker:
             "snapshot_sha256": self.snapshot.sha256,
         }
 
+    @property
+    def full_turn_invariant(self) -> bool:
+        """Every controlled joint is a hinge, so no verdict depends on winding (#200)."""
+        return bool(self.native.full_turn_invariant())
+
     def is_valid(self, q) -> bool:
         return bool(self.native.is_valid([float(x) for x in np.asarray(q, dtype=float)]))
 
