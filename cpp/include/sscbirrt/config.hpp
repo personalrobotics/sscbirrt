@@ -30,7 +30,7 @@ struct PlannerConfig {
   // Roots (Python: tsr_samples, num_tree_roots, max_ik_per_pose)
   int sample_draws = 100;
   int num_tree_roots = 100;
-  int max_per_draw = 3;
+  std::optional<int> max_per_draw;  // nullopt: every admissible candidate of a draw (#186; 3 until 3.4)
 
   // Smoothing
   bool smooth_path = true;

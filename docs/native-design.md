@@ -422,7 +422,7 @@ struct PlannerConfig {
   // Roots
   int sample_draws     = 100;   // Python: tsr_samples, the draw budget per role
   int num_tree_roots   = 100;
-  int max_per_draw     = 3;     // Python: max_ik_per_pose
+  std::optional<int> max_per_draw;  // nullopt: every candidate (#186; 3 and Python's max_ik_per_pose before)
 
   // Smoothing
   bool smooth_path         = true;
@@ -444,7 +444,7 @@ with Python's message shape ("<field> must be <requirement>, got <value>")
 and Python's ranges (#108): positive `timeout_seconds`, `step_size`,
 `progress_tolerance`; nonnegative `connection_tolerance`,
 `smoothing_iterations`, `smoothing_patience`; at least 1 for
-`max_iterations`, `sample_draws`, `num_tree_roots`, `max_per_draw`;
+`max_iterations`, `sample_draws`, `num_tree_roots`, and `max_per_draw` when set;
 `edge_resolution` empty or positive; `extend_steps` and `connect_steps`
 empty or at least 1; `start_sample_probability` and
 `goal_sample_probability` (`goal_bias`/`start_bias` until #196) within $[0, 1]$. The
@@ -567,7 +567,8 @@ contract; `planner.py` is the reference for anything it leaves open.
    draw up to `sample_draws` times or until `num_tree_roots` roots exist,
    keeping at most `max_per_draw` admissible candidates per draw, skipping
    a candidate whose provenance equals an explicit seed's. A draw with more
-   candidates than `max_per_draw` is first put in a random order
+   candidates than can be kept (`max_per_draw` or the roots still wanted,
+   whichever is smaller; since #186) is first put in a random order
    (Fisher-Yates on `index()`), as the reference does (#168). Rejections are
    counted in the `RootReport`. No roots for a role throws `NoRoots`.
    Before each draw the cancellation token is checked; if set, the solve

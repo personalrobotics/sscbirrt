@@ -226,12 +226,12 @@ std::vector<Sample> Solve::draw_roots(const StateSet& s, const std::vector<Sampl
     if (report) ++report->draws_empty;
     return out;
   }
-  if (static_cast<int>(candidates.size()) > cfg_.max_per_draw) {
-    // Visit a large draw in a random order so the kept candidates are a uniform subset, not the first
-    // corner of an enumeration (#168). Fisher-Yates on index(), not std::shuffle, for portability.
+  const int limit = std::min(cfg_.max_per_draw.value_or(std::numeric_limits<int>::max()), room);
+  if (static_cast<int>(candidates.size()) > limit) {
+    // Visit a draw with more candidates than can be kept in a random order so the kept ones are a uniform subset,
+    // not the first corner of an enumeration (#168). Fisher-Yates on index(), not std::shuffle, for portability.
     for (std::size_t k = candidates.size() - 1; k > 0; --k) std::swap(candidates[k], candidates[index(rng_, k + 1)]);
   }
-  const int limit = std::min(cfg_.max_per_draw, room);
   // Windings of one physical configuration share the validator's verdict when it declares that full turns cannot
   // change it (#200); the joint-space and path-constraint checks stay per candidate.
   const bool share = p_.validator->full_turn_invariant();
@@ -487,7 +487,7 @@ PlanResult Solve::run() {
     const double p_sample = a_is_start ? cfg_.start_sample_probability : cfg_.goal_sample_probability;
     if (grows && unit(rng_) < p_sample) {
       const StateSet& own = a_is_start ? *p_.start : *p_.goal;
-      for (Sample& c : draw_roots(own, a_is_start ? start_seeds : goal_seeds, cfg_.max_per_draw, nullptr)) {
+      for (Sample& c : draw_roots(own, a_is_start ? start_seeds : goal_seeds, std::numeric_limits<int>::max(), nullptr)) {
         tree_a.add_root(std::move(c.q), std::move(c.source));
         ++stats_.search_roots;
       }

@@ -55,7 +55,10 @@ class CBiRRTConfig:
     # Roots: how many configurations each tree starts from, drawn from a sampleable start or goal set
     sample_draws: int = 100  # Sampling draws per role (a TSR set's draw is one pose and its IK solutions)
     num_tree_roots: int = 100  # Target number of root configs to seed each tree with
-    max_per_draw: int = 3  # Candidates kept per draw, a random subset when a draw has more (for diversity)
+    # Candidates kept per draw; None keeps every admissible one (bounded by num_tree_roots before the search). Since
+    # #200 the windings of one arm pose share a collision verdict, so keeping them all is cheap, and #186's ablation
+    # measured None as 1.7-1.9x faster than 3 on the median, with shorter or equal paths (3 until 3.4).
+    max_per_draw: int | None = None
 
     # Smoothing
     smooth_path: bool = True
@@ -88,8 +91,9 @@ class CBiRRTConfig:
             check(name, getattr(self, name) > 0, "positive")
         for name in ("membership_tolerance", "connection_tolerance"):
             check(name, getattr(self, name) >= 0, "nonnegative")
-        for name in ("max_iterations", "sample_draws", "num_tree_roots", "max_per_draw", "max_projection_iters"):
+        for name in ("max_iterations", "sample_draws", "num_tree_roots", "max_projection_iters"):
             check(name, getattr(self, name) >= 1, "at least 1")
+        check("max_per_draw", self.max_per_draw is None or self.max_per_draw >= 1, "None or at least 1")
         for name in ("smoothing_iterations", "smoothing_patience"):
             check(name, getattr(self, name) >= 0, "nonnegative")
         for name in ("edge_resolution",):

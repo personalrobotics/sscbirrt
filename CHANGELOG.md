@@ -7,6 +7,33 @@ follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- **`max_per_draw` defaults to `None`, keeping every candidate of a draw
+  (#186).** A parameter study chose this. It is in `benchmarks/ablation/`,
+  run with `tools/planning_benchmark.py sweep` / `analyze`, with a decision
+  rule fixed before the data. Stages:
+  - screening: 240 settings of `num_tree_roots`, the sample probabilities,
+    `max_per_draw` and `step_size` on pick, 20 seeds each;
+  - confirmation: the shortlist on 100 fresh seeds;
+  - generalization: transport and the door.
+
+  Only `max_per_draw` beat today's defaults. On fresh seeds, pick's median
+  solve is ×0.54 [0.46, 0.65] and its p90 ×0.58 [0.32, 0.92], with paths 12%
+  shorter. Under the library's own defaults, pick is ×0.60 and transport
+  ×0.53. Since #200, keeping all of a pose's IK solutions is cheap, and they
+  give a tree roots on every branch. The other parameters were not better
+  than today's values within the CI, so they stay. A sample probability of
+  0 is the one setting that breaks the planner (72% success). The door
+  keeps its explicit 400 roots: for a fixed grasp, fewer roots made its p90
+  2.3–2.5× worse. `max_per_draw` takes `None` or an int (C++:
+  `std::optional<int>`). A draw is now visited in random order whenever it
+  offers more candidates than can be kept, including when the cap comes
+  from `num_tree_roots` (#168).
+- **The door demo reaches the handle first, then opens the door (#198).**
+  It used to plan the opening first and then reach its start. That start is
+  one IK solution, which can lie on a joint winding HOME cannot reach. The
+  demo failed at seed 1 that way, and at seed 0 once candidate order
+  changed. Reaching any grasp first, then opening from there, succeeded on
+  seeds 0–9.
 - **`edge_resolution` defaults to 0.05 rad, independent of `step_size` (#204).**
   It is the spacing of collision checks along an edge, a joint-space distance.
   It used to default to `step_size` (0.1 rad). On a UR5e with gripper, a point
