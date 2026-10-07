@@ -1,0 +1,16 @@
+{
+  "issue": 186,
+  "stage": "confirmation: pick, screening's shortlist and today's defaults, fresh seeds 100-199, shuffled",
+  "fixed": {"timeout": 10, "sample_draws": 1000, "edge_resolution": 0.05},
+  "cells": [
+    {"num_tree_roots": 20, "sample_probability": 0.1, "max_per_draw": 1000, "step_size": 0.2},
+    {"num_tree_roots": 20, "sample_probability": 0.25, "max_per_draw": 1000, "step_size": 0.4},
+    {"num_tree_roots": 5, "sample_probability": 0.25, "max_per_draw": 1000, "step_size": 0.4},
+    {"num_tree_roots": 20, "sample_probability": 0.1, "max_per_draw": 1000, "step_size": 0.4},
+    {"num_tree_roots": 20, "sample_probability": 0.25, "max_per_draw": 1000, "step_size": 0.2},
+    {"num_tree_roots": 5, "sample_probability": 0.05, "max_per_draw": 1000, "step_size": 0.2},
+    {"num_tree_roots": 20, "sample_probability": 0.25, "max_per_draw": 1000, "step_size": 0.1},
+    {"num_tree_roots": 5, "sample_probability": 0.1, "max_per_draw": 3, "step_size": 0.2}
+  ],
+  "baseline": {"num_tree_roots": 20, "sample_probability": 0.1, "max_per_draw": 3, "step_size": 0.2}
+}

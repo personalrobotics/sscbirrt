@@ -1,0 +1,4 @@
+{"issue": 186, "stage": "check: the library's own defaults (100 roots, step 0.1, 100 draws) with max_per_draw 3 vs all, seeds 200-299",
+ "fixed": {"timeout": 10, "edge_resolution": 0.05, "num_tree_roots": 100, "step_size": 0.1, "sample_draws": 100},
+ "cells": [{"max_per_draw": 1000}],
+ "baseline": {"max_per_draw": 3}}
