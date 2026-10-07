@@ -6,6 +6,21 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-10-07
+
+Defaults set from measurement. Collision checking is finer by default, and
+root collection keeps every IK candidate of a draw, which a 240-setting
+parameter study found 1.7–1.9× faster on the median, with shorter or equal
+paths (#186). On the pick demo, the median solve is now 0.05 s.
+
+Migrating from 3.3.0:
+- Code that relied on the old defaults plans different, denser paths.
+  Collision is checked every 0.05 rad instead of every `step_size`, and up to
+  every IK candidate of a draw becomes a root instead of 3.
+- To get the old behaviour, set `edge_resolution=None` and `max_per_draw=3`.
+- `max_per_draw` now accepts `None`. C++: `PlannerConfig::max_per_draw` is
+  `std::optional<int>`, and `edge_resolution` defaults to 0.05.
+
 ### Changed
 - **`max_per_draw` defaults to `None`, keeping every candidate of a draw
   (#186).** A parameter study chose this. It is in `benchmarks/ablation/`,
