@@ -387,7 +387,7 @@ class CBiRRT:
             # Heads: this turn adds roots to tree_a from its own set, and that is the whole turn
             own, p_sample = roles[id(tree_a)]
             if grows[id(tree_a)] and self._rng.random() < p_sample:
-                for smp in self._draw_roots(problem, own, seeds[id(tree_a)], self.config.max_per_draw):
+                for smp in self._draw_roots(problem, own, seeds[id(tree_a)], None):
                     tree_a.add_root(smp.q, smp.source)
                     if counts is not None:
                         counts["search_roots"] += 1
@@ -474,14 +474,15 @@ class CBiRRT:
         problem: PlanningProblem,
         s: StateSet,
         seed_sources: set,
-        room: int,
+        room: int | None,
         stats: dict[str, int] | None = None,
     ) -> list[Sample]:
-        """One sampling draw from ``s``: its admissible candidates, at most ``min(max_per_draw, room)`` of them.
+        """One sampling draw from ``s``: its admissible candidates, at most ``min(max_per_draw, room)`` of them
+        (``None`` for either means no limit from it).
 
         A draw may yield several candidates (for example every IK solution of one pose). When it yields more than
-        ``max_per_draw`` they are visited in a uniformly random order, so the kept ones are a random subset rather
-        than the first ones the sampler listed (#168). A candidate that repeats an explicit seed of the set (same
+        can be kept they are visited in a uniformly random order, so the kept ones are a random subset rather than
+        the first ones the sampler listed (#168). A candidate that repeats an explicit seed of the set (same
         provenance) is skipped: it is already a root or already rejected. ``stats`` counts why candidates failed.
         The same step builds the trees before the search and adds roots during it (#196).
         """
@@ -490,11 +491,12 @@ class CBiRRT:
             if stats is not None:
                 stats["sample_failed"] += 1
             return []
-        if len(candidates) > self.config.max_per_draw:
+        limits = [n for n in (self.config.max_per_draw, room) if n is not None]
+        limit = min(limits) if limits else len(candidates)
+        if len(candidates) > limit:
             # A draw can yield many more candidates than are kept (an IK solver that enumerates branches and joint
             # windings returns hundreds, in a fixed order); visit them in a random order (#168).
             candidates = [candidates[k] for k in self._rng.permutation(len(candidates))]
-        limit = min(self.config.max_per_draw, room)
         # Windings of one physical configuration share the validator's verdict when it declares that full turns
         # cannot change it (#200); the joint-space and path-constraint checks stay per candidate.
         share = bool(getattr(problem.validator, "full_turn_invariant", False))

@@ -188,8 +188,10 @@ sampler or projector.
   whether a fixed configuration is a root. If the set is not finite and can
   sample, admissible candidates are added until `num_tree_roots` roots
   exist or the draw budget (`sample_draws`) is spent, keeping at most
-  `max_per_draw` per draw for diversity and skipping candidates that
-  repeat a seed. A draw with more candidates than the cap is visited in a
+  `max_per_draw` per draw (default `None`: every admissible candidate,
+  since #186) and skipping candidates that repeat a seed. A draw with more
+  candidates than can be kept (`max_per_draw` or the roots still wanted,
+  whichever is smaller) is visited in a
   random order from the planner's RNG, so the kept ones are a uniform
   subset; an IK solver that enumerates branches and joint windings lists
   hundreds in a fixed order, and the first few are one corner of that set
@@ -277,7 +279,7 @@ naming the field: `timeout`, `step_size`, `progress_tolerance`, and
 forever under a projector that stalls); `membership_tolerance` and
 `connection_tolerance` nonnegative (zero means exact); `edge_resolution`
 None or positive; `max_iterations`, `sample_draws`, `num_tree_roots`,
-`max_per_draw`, and `max_projection_iters` at least 1;
+and `max_projection_iters` at least 1; `max_per_draw` None or at least 1;
 `smoothing_iterations` and `smoothing_patience` nonnegative; `extend_steps`
 and `connect_steps` None or at least 1; `start_sample_probability` and
 `goal_sample_probability` within $[0, 1]$. The native `PlannerConfig` applies the same ranges.

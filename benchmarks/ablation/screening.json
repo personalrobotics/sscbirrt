@@ -1,0 +1,12 @@
+{
+  "issue": 186,
+  "stage": "screening: pick, all 240 settings, seeds 0-19 (paired), shuffled order",
+  "fixed": {"timeout": 10, "sample_draws": 1000, "edge_resolution": 0.05},
+  "factors": {
+    "num_tree_roots": [1, 5, 20, 100],
+    "sample_probability": [0.0, 0.05, 0.1, 0.25, 0.5],
+    "max_per_draw": [1, 3, 10, 1000],
+    "step_size": [0.1, 0.2, 0.4]
+  },
+  "baseline": {"num_tree_roots": 20, "sample_probability": 0.1, "max_per_draw": 3, "step_size": 0.2}
+}

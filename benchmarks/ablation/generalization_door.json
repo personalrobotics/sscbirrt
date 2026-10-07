@@ -1,0 +1,5 @@
+{"issue": 186, "stage": "generalization: door demo config (400 roots, 400 per draw) vs fewer roots with every candidate kept, seeds 100-199",
+ "fixed": {"timeout": 10, "edge_resolution": 0.05},
+ "cells": [{"num_tree_roots": 20, "max_per_draw": 1000, "sample_draws": 100},
+           {"num_tree_roots": 100, "max_per_draw": 1000, "sample_draws": 100}],
+ "baseline": {"num_tree_roots": 400, "max_per_draw": 400, "sample_draws": 2}}

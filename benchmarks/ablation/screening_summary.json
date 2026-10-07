@@ -1,0 +1,5836 @@
+{
+ "calibration_seconds_range": [
+  0.021781917195767164,
+  0.054273790679872036
+ ],
+ "cells": [
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0328,
+   "p90_solve_s": 0.0531,
+   "path_median": 6.023,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 356.5,
+    "iterations": 26.0,
+    "roots": 45.0,
+    "search_roots": 24.0,
+    "set_samples": 12.0,
+    "state_checks": 5146.5,
+    "tree_nodes": 804.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.033,
+   "p90_solve_s": 0.058,
+   "path_median": 6.453,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 361.0,
+    "iterations": 30.0,
+    "roots": 54.0,
+    "search_roots": 48.0,
+    "set_samples": 13.5,
+    "state_checks": 6004.0,
+    "tree_nodes": 820.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0345,
+   "p90_solve_s": 0.1299,
+   "path_median": 6.432,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 382.5,
+    "iterations": 31.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 12.0,
+    "state_checks": 5373.0,
+    "tree_nodes": 1016.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0354,
+   "p90_solve_s": 0.0644,
+   "path_median": 6.26,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 659.0,
+    "iterations": 28.0,
+    "roots": 45.0,
+    "search_roots": 24.0,
+    "set_samples": 12.0,
+    "state_checks": 5507.5,
+    "tree_nodes": 901.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.0356,
+   "p90_solve_s": 10.0,
+   "path_median": 7.372,
+   "success_rate": 0.65,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 671.0,
+    "iterations": 16.5,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 5.0,
+    "state_checks": 5395.5,
+    "tree_nodes": 685.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0361,
+   "p90_solve_s": 0.0905,
+   "path_median": 6.828,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 671.0,
+    "iterations": 16.5,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 10.0,
+    "state_checks": 5054.5,
+    "tree_nodes": 685.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0366,
+   "p90_solve_s": 0.1209,
+   "path_median": 6.646,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 663.0,
+    "iterations": 34.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 12.0,
+    "state_checks": 5513.0,
+    "tree_nodes": 1113.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0367,
+   "p90_solve_s": 0.0643,
+   "path_median": 6.14,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 688.0,
+    "iterations": 40.0,
+    "roots": 54.0,
+    "search_roots": 48.0,
+    "set_samples": 13.5,
+    "state_checks": 6159.0,
+    "tree_nodes": 855.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0376,
+   "p90_solve_s": 0.0906,
+   "path_median": 7.467,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 368.0,
+    "iterations": 44.0,
+    "roots": 54.0,
+    "search_roots": 48.0,
+    "set_samples": 15.0,
+    "state_checks": 6048.5,
+    "tree_nodes": 821.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0377,
+   "p90_solve_s": 0.0564,
+   "path_median": 6.387,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 647.5,
+    "iterations": 38.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 20.5,
+    "state_checks": 7875.0,
+    "tree_nodes": 995.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.038,
+   "p90_solve_s": 10.0,
+   "path_median": 6.659,
+   "success_rate": 0.75,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 431.5,
+    "iterations": 34.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 5.0,
+    "state_checks": 4747.0,
+    "tree_nodes": 939.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0384,
+   "p90_solve_s": 0.0649,
+   "path_median": 6.255,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1461.5,
+    "iterations": 28.0,
+    "roots": 45.0,
+    "search_roots": 24.0,
+    "set_samples": 13.0,
+    "state_checks": 6236.0,
+    "tree_nodes": 1013.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0392,
+   "p90_solve_s": 0.1108,
+   "path_median": 6.515,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 399.0,
+    "iterations": 34.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 8.0,
+    "state_checks": 4434.5,
+    "tree_nodes": 990.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.0394,
+   "p90_solve_s": 10.0,
+   "path_median": 6.611,
+   "success_rate": 0.75,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 683.0,
+    "iterations": 31.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 5.0,
+    "state_checks": 4641.5,
+    "tree_nodes": 721.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0397,
+   "p90_solve_s": 0.1157,
+   "path_median": 6.498,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 767.5,
+    "iterations": 34.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 8.5,
+    "state_checks": 4720.0,
+    "tree_nodes": 1092.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.04,
+   "p90_solve_s": 0.1787,
+   "path_median": 6.506,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1379.0,
+    "iterations": 34.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 8.5,
+    "state_checks": 5128.5,
+    "tree_nodes": 1052.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0404,
+   "p90_solve_s": 0.0647,
+   "path_median": 6.355,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 756.0,
+    "iterations": 40.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 20.0,
+    "state_checks": 7875.0,
+    "tree_nodes": 1078.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.041,
+   "p90_solve_s": 0.0939,
+   "path_median": 6.115,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 747.0,
+    "iterations": 81.5,
+    "roots": 58.0,
+    "search_roots": 56.0,
+    "set_samples": 14.0,
+    "state_checks": 6357.0,
+    "tree_nodes": 1414.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.041,
+   "p90_solve_s": 10.0,
+   "path_median": 6.654,
+   "success_rate": 0.75,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 1435.0,
+    "iterations": 34.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 5.0,
+    "state_checks": 5074.0,
+    "tree_nodes": 963.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0411,
+   "p90_solve_s": 0.0575,
+   "path_median": 6.441,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 418.0,
+    "iterations": 38.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 20.5,
+    "state_checks": 8137.5,
+    "tree_nodes": 951.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0411,
+   "p90_solve_s": 0.0592,
+   "path_median": 6.531,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1232.5,
+    "iterations": 33.0,
+    "roots": 54.0,
+    "search_roots": 48.0,
+    "set_samples": 13.5,
+    "state_checks": 6364.5,
+    "tree_nodes": 939.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0415,
+   "p90_solve_s": 0.0655,
+   "path_median": 6.38,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 439.0,
+    "iterations": 43.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 20.0,
+    "state_checks": 7842.5,
+    "tree_nodes": 974.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0422,
+   "p90_solve_s": 0.1243,
+   "path_median": 6.58,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1260.5,
+    "iterations": 34.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 11.5,
+    "state_checks": 5696.5,
+    "tree_nodes": 1072.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0428,
+   "p90_solve_s": 0.1096,
+   "path_median": 6.243,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1353.5,
+    "iterations": 42.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 20.0,
+    "state_checks": 8561.0,
+    "tree_nodes": 1161.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0429,
+   "p90_solve_s": 0.155,
+   "path_median": 5.853,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 820.0,
+    "iterations": 82.5,
+    "roots": 42.0,
+    "search_roots": 40.0,
+    "set_samples": 12.5,
+    "state_checks": 6314.0,
+    "tree_nodes": 1511.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0431,
+   "p90_solve_s": 0.1049,
+   "path_median": 5.972,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 439.5,
+    "iterations": 85.0,
+    "roots": 154.0,
+    "search_roots": 152.0,
+    "set_samples": 25.0,
+    "state_checks": 8827.0,
+    "tree_nodes": 1345.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.0431,
+   "p90_solve_s": 10.0,
+   "path_median": 7.312,
+   "success_rate": 0.8,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 424.5,
+    "iterations": 39.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 14.0,
+    "state_checks": 6439.0,
+    "tree_nodes": 1078.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0436,
+   "p90_solve_s": 0.0744,
+   "path_median": 6.49,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 674.0,
+    "iterations": 37.0,
+    "roots": 133.0,
+    "search_roots": 32.0,
+    "set_samples": 23.0,
+    "state_checks": 8401.5,
+    "tree_nodes": 894.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0438,
+   "p90_solve_s": 0.1028,
+   "path_median": 6.716,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 451.5,
+    "iterations": 74.5,
+    "roots": 101.0,
+    "search_roots": 80.0,
+    "set_samples": 21.5,
+    "state_checks": 8345.5,
+    "tree_nodes": 1351.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0439,
+   "p90_solve_s": 0.1879,
+   "path_median": 6.641,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 529.5,
+    "iterations": 77.0,
+    "roots": 22.0,
+    "search_roots": 16.0,
+    "set_samples": 10.0,
+    "state_checks": 5217.0,
+    "tree_nodes": 935.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0446,
+   "p90_solve_s": 0.1182,
+   "path_median": 6.584,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1400.5,
+    "iterations": 43.5,
+    "roots": 22.0,
+    "search_roots": 16.0,
+    "set_samples": 10.0,
+    "state_checks": 5306.5,
+    "tree_nodes": 905.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0455,
+   "p90_solve_s": 0.1012,
+   "path_median": 6.616,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 527.0,
+    "iterations": 83.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 19.5,
+    "state_checks": 7937.5,
+    "tree_nodes": 1330.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0457,
+   "p90_solve_s": 0.1259,
+   "path_median": 6.855,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 531.0,
+    "iterations": 77.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 12.5,
+    "state_checks": 6188.0,
+    "tree_nodes": 1091.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0459,
+   "p90_solve_s": 0.1763,
+   "path_median": 7.405,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 529.5,
+    "iterations": 68.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 17.0,
+    "state_checks": 8654.0,
+    "tree_nodes": 1450.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0462,
+   "p90_solve_s": 0.0806,
+   "path_median": 6.494,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 417.0,
+    "iterations": 44.0,
+    "roots": 133.0,
+    "search_roots": 32.0,
+    "set_samples": 23.0,
+    "state_checks": 9366.5,
+    "tree_nodes": 992.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.0464,
+   "p90_solve_s": 10.0,
+   "path_median": 7.388,
+   "success_rate": 0.65,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 1421.5,
+    "iterations": 29.5,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 5.0,
+    "state_checks": 5754.5,
+    "tree_nodes": 857.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0464,
+   "p90_solve_s": 0.113,
+   "path_median": 7.041,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 829.0,
+    "iterations": 61.5,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 12.5,
+    "state_checks": 6430.5,
+    "tree_nodes": 929.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.0465,
+   "p90_solve_s": 10.0,
+   "path_median": 7.982,
+   "success_rate": 0.8,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 844.0,
+    "iterations": 52.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 14.0,
+    "state_checks": 6740.0,
+    "tree_nodes": 1133.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.047,
+   "p90_solve_s": 0.3856,
+   "path_median": 6.876,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1435.5,
+    "iterations": 43.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 15.0,
+    "state_checks": 6546.0,
+    "tree_nodes": 1363.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0485,
+   "p90_solve_s": 0.1204,
+   "path_median": 7.466,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 788.5,
+    "iterations": 81.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 17.5,
+    "state_checks": 7556.5,
+    "tree_nodes": 1281.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0489,
+   "p90_solve_s": 0.0926,
+   "path_median": 6.308,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1426.0,
+    "iterations": 82.5,
+    "roots": 74.0,
+    "search_roots": 72.0,
+    "set_samples": 16.0,
+    "state_checks": 7075.5,
+    "tree_nodes": 1615.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0492,
+   "p90_solve_s": 0.1308,
+   "path_median": 6.745,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 771.0,
+    "iterations": 75.5,
+    "roots": 101.0,
+    "search_roots": 80.0,
+    "set_samples": 23.0,
+    "state_checks": 9106.0,
+    "tree_nodes": 1252.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0492,
+   "p90_solve_s": 0.1185,
+   "path_median": 6.955,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1434.5,
+    "iterations": 75.5,
+    "roots": 77.0,
+    "search_roots": 56.0,
+    "set_samples": 23.0,
+    "state_checks": 9365.5,
+    "tree_nodes": 1427.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0492,
+   "p90_solve_s": 0.1184,
+   "path_median": 6.992,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 489.0,
+    "iterations": 65.5,
+    "roots": 31.0,
+    "search_roots": 10.0,
+    "set_samples": 24.0,
+    "state_checks": 8972.0,
+    "tree_nodes": 1228.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0492,
+   "p90_solve_s": 0.0734,
+   "path_median": 6.602,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1401.0,
+    "iterations": 42.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 21.0,
+    "state_checks": 8974.5,
+    "tree_nodes": 1253.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0499,
+   "p90_solve_s": 0.075,
+   "path_median": 6.282,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 534.5,
+    "iterations": 82.5,
+    "roots": 74.0,
+    "search_roots": 72.0,
+    "set_samples": 16.0,
+    "state_checks": 7148.5,
+    "tree_nodes": 1563.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0502,
+   "p90_solve_s": 0.0815,
+   "path_median": 6.2,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1411.5,
+    "iterations": 51.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 17.0,
+    "state_checks": 8923.5,
+    "tree_nodes": 1561.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0504,
+   "p90_solve_s": 0.1006,
+   "path_median": 7.091,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 768.0,
+    "iterations": 86.0,
+    "roots": 118.0,
+    "search_roots": 112.0,
+    "set_samples": 25.5,
+    "state_checks": 9861.0,
+    "tree_nodes": 1426.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0505,
+   "p90_solve_s": 0.1357,
+   "path_median": 7.018,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 514.0,
+    "iterations": 73.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 20.0,
+    "state_checks": 7839.5,
+    "tree_nodes": 1175.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0505,
+   "p90_solve_s": 0.1298,
+   "path_median": 7.13,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1566.0,
+    "iterations": 61.5,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 12.5,
+    "state_checks": 7065.0,
+    "tree_nodes": 1050.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0506,
+   "p90_solve_s": 0.0967,
+   "path_median": 7.479,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1332.5,
+    "iterations": 54.0,
+    "roots": 102.0,
+    "search_roots": 96.0,
+    "set_samples": 20.0,
+    "state_checks": 7950.5,
+    "tree_nodes": 1426.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0509,
+   "p90_solve_s": 0.125,
+   "path_median": 6.843,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 975.5,
+    "iterations": 51.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 17.0,
+    "state_checks": 8659.5,
+    "tree_nodes": 1548.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.051,
+   "p90_solve_s": 0.149,
+   "path_median": 6.884,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 810.5,
+    "iterations": 65.5,
+    "roots": 26.0,
+    "search_roots": 5.0,
+    "set_samples": 25.5,
+    "state_checks": 9805.5,
+    "tree_nodes": 1413.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0512,
+   "p90_solve_s": 0.2285,
+   "path_median": 7.681,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1008.5,
+    "iterations": 46.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 19.5,
+    "state_checks": 7730.0,
+    "tree_nodes": 1160.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0514,
+   "p90_solve_s": 0.2094,
+   "path_median": 7.4,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1754.0,
+    "iterations": 44.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 19.0,
+    "state_checks": 7273.0,
+    "tree_nodes": 1075.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0514,
+   "p90_solve_s": 0.2876,
+   "path_median": 6.961,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 567.5,
+    "iterations": 65.5,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 15.0,
+    "state_checks": 6298.5,
+    "tree_nodes": 1181.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0515,
+   "p90_solve_s": 0.1839,
+   "path_median": 6.23,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1727.0,
+    "iterations": 98.5,
+    "roots": 42.0,
+    "search_roots": 40.0,
+    "set_samples": 12.5,
+    "state_checks": 6571.5,
+    "tree_nodes": 1754.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0515,
+   "p90_solve_s": 0.1779,
+   "path_median": 7.383,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1434.5,
+    "iterations": 55.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 19.0,
+    "state_checks": 8095.5,
+    "tree_nodes": 1235.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0523,
+   "p90_solve_s": 0.1145,
+   "path_median": 7.653,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 581.0,
+    "iterations": 120.5,
+    "roots": 22.0,
+    "search_roots": 20.0,
+    "set_samples": 18.5,
+    "state_checks": 7511.5,
+    "tree_nodes": 1353.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0527,
+   "p90_solve_s": 0.1196,
+   "path_median": 6.868,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 816.5,
+    "iterations": 131.0,
+    "roots": 37.0,
+    "search_roots": 35.0,
+    "set_samples": 38.5,
+    "state_checks": 11700.0,
+    "tree_nodes": 1439.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0529,
+   "p90_solve_s": 0.1956,
+   "path_median": 5.917,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 604.0,
+    "iterations": 145.5,
+    "roots": 36.0,
+    "search_roots": 30.0,
+    "set_samples": 21.5,
+    "state_checks": 8328.0,
+    "tree_nodes": 1616.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0529,
+   "p90_solve_s": 0.4321,
+   "path_median": 5.816,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1021.5,
+    "iterations": 137.0,
+    "roots": 16.0,
+    "search_roots": 10.0,
+    "set_samples": 13.5,
+    "state_checks": 7153.5,
+    "tree_nodes": 1806.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.053,
+   "p90_solve_s": 0.237,
+   "path_median": 6.256,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 663.5,
+    "iterations": 145.0,
+    "roots": 16.0,
+    "search_roots": 10.0,
+    "set_samples": 12.5,
+    "state_checks": 5599.0,
+    "tree_nodes": 1467.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0533,
+   "p90_solve_s": 0.1787,
+   "path_median": 7.024,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 660.5,
+    "iterations": 143.0,
+    "roots": 12.0,
+    "search_roots": 10.0,
+    "set_samples": 13.5,
+    "state_checks": 6346.0,
+    "tree_nodes": 1581.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0538,
+   "p90_solve_s": 0.1729,
+   "path_median": 7.177,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1512.0,
+    "iterations": 70.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 25.5,
+    "state_checks": 10200.5,
+    "tree_nodes": 1615.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0539,
+   "p90_solve_s": 0.2912,
+   "path_median": 7.626,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 591.0,
+    "iterations": 46.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 19.5,
+    "state_checks": 7658.0,
+    "tree_nodes": 1129.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.055,
+   "p90_solve_s": 0.1158,
+   "path_median": 6.412,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 561.5,
+    "iterations": 98.5,
+    "roots": 42.0,
+    "search_roots": 40.0,
+    "set_samples": 13.0,
+    "state_checks": 6201.5,
+    "tree_nodes": 1573.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.0553,
+   "p90_solve_s": 10.0,
+   "path_median": 7.308,
+   "success_rate": 0.8,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 1557.0,
+    "iterations": 49.5,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 14.0,
+    "state_checks": 6857.5,
+    "tree_nodes": 1238.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0553,
+   "p90_solve_s": 0.12,
+   "path_median": 5.992,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1378.0,
+    "iterations": 91.0,
+    "roots": 162.0,
+    "search_roots": 160.0,
+    "set_samples": 32.0,
+    "state_checks": 11818.5,
+    "tree_nodes": 1684.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0556,
+   "p90_solve_s": 0.2967,
+   "path_median": 5.982,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1440.5,
+    "iterations": 133.5,
+    "roots": 16.0,
+    "search_roots": 10.0,
+    "set_samples": 12.5,
+    "state_checks": 5832.5,
+    "tree_nodes": 1805.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.056,
+   "p90_solve_s": 0.1565,
+   "path_median": 6.662,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1577.5,
+    "iterations": 154.5,
+    "roots": 36.0,
+    "search_roots": 30.0,
+    "set_samples": 21.5,
+    "state_checks": 8933.0,
+    "tree_nodes": 1914.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0567,
+   "p90_solve_s": 0.2814,
+   "path_median": 6.889,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 902.0,
+    "iterations": 46.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 15.0,
+    "state_checks": 6324.5,
+    "tree_nodes": 1236.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.057,
+   "p90_solve_s": 0.1868,
+   "path_median": 6.958,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 948.0,
+    "iterations": 64.5,
+    "roots": 10.5,
+    "search_roots": 4.5,
+    "set_samples": 25.5,
+    "state_checks": 9737.0,
+    "tree_nodes": 1346.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0571,
+   "p90_solve_s": 0.0987,
+   "path_median": 6.708,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 496.0,
+    "iterations": 100.0,
+    "roots": 18.0,
+    "search_roots": 12.0,
+    "set_samples": 42.5,
+    "state_checks": 13109.5,
+    "tree_nodes": 1141.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0572,
+   "p90_solve_s": 0.1332,
+   "path_median": 5.923,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1001.0,
+    "iterations": 160.0,
+    "roots": 36.0,
+    "search_roots": 30.0,
+    "set_samples": 25.0,
+    "state_checks": 9333.0,
+    "tree_nodes": 1688.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0576,
+   "p90_solve_s": 0.1511,
+   "path_median": 6.512,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 799.5,
+    "iterations": 63.5,
+    "roots": 189.0,
+    "search_roots": 88.0,
+    "set_samples": 40.0,
+    "state_checks": 14432.0,
+    "tree_nodes": 1282.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0578,
+   "p90_solve_s": 0.1262,
+   "path_median": 6.611,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 867.0,
+    "iterations": 145.0,
+    "roots": 46.0,
+    "search_roots": 40.0,
+    "set_samples": 41.5,
+    "state_checks": 12276.0,
+    "tree_nodes": 1559.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0581,
+   "p90_solve_s": 0.1492,
+   "path_median": 7.359,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1588.5,
+    "iterations": 73.5,
+    "roots": 31.0,
+    "search_roots": 10.0,
+    "set_samples": 27.0,
+    "state_checks": 10422.0,
+    "tree_nodes": 1565.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0582,
+   "p90_solve_s": 0.3455,
+   "path_median": 6.648,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1206.5,
+    "iterations": 171.5,
+    "roots": 16.0,
+    "search_roots": 10.0,
+    "set_samples": 9.5,
+    "state_checks": 5993.0,
+    "tree_nodes": 1891.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0582,
+   "p90_solve_s": 0.1069,
+   "path_median": 6.502,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1415.5,
+    "iterations": 48.0,
+    "roots": 149.0,
+    "search_roots": 48.0,
+    "set_samples": 29.0,
+    "state_checks": 11373.0,
+    "tree_nodes": 1237.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0586,
+   "p90_solve_s": 0.1442,
+   "path_median": 5.96,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 873.0,
+    "iterations": 131.0,
+    "roots": 162.0,
+    "search_roots": 160.0,
+    "set_samples": 35.5,
+    "state_checks": 13254.5,
+    "tree_nodes": 1621.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0586,
+   "p90_solve_s": 0.0822,
+   "path_median": 6.956,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1556.5,
+    "iterations": 123.0,
+    "roots": 32.0,
+    "search_roots": 30.0,
+    "set_samples": 35.5,
+    "state_checks": 11633.0,
+    "tree_nodes": 1575.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0591,
+   "p90_solve_s": 0.0995,
+   "path_median": 6.453,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1753.5,
+    "iterations": 131.5,
+    "roots": 22.0,
+    "search_roots": 20.0,
+    "set_samples": 18.5,
+    "state_checks": 8188.5,
+    "tree_nodes": 1729.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0594,
+   "p90_solve_s": 0.1201,
+   "path_median": 6.906,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 533.5,
+    "iterations": 124.0,
+    "roots": 27.0,
+    "search_roots": 25.0,
+    "set_samples": 38.0,
+    "state_checks": 11295.5,
+    "tree_nodes": 1394.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.0595,
+   "p90_solve_s": 1.7779,
+   "path_median": 7.844,
+   "success_rate": 0.95,
+   "why_not": [
+    "not 100% success"
+   ],
+   "work_median": {
+    "edge_checks": 706.0,
+    "iterations": 142.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 14.0,
+    "state_checks": 6997.0,
+    "tree_nodes": 1764.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0595,
+   "p90_solve_s": 0.1182,
+   "path_median": 6.462,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 800.5,
+    "iterations": 84.0,
+    "roots": 16.5,
+    "search_roots": 10.5,
+    "set_samples": 47.0,
+    "state_checks": 13406.5,
+    "tree_nodes": 1250.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0599,
+   "p90_solve_s": 0.1185,
+   "path_median": 6.606,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 560.0,
+    "iterations": 138.5,
+    "roots": 14.0,
+    "search_roots": 12.0,
+    "set_samples": 41.5,
+    "state_checks": 12152.0,
+    "tree_nodes": 1327.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.06,
+   "p90_solve_s": 0.1263,
+   "path_median": 7.001,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1526.0,
+    "iterations": 128.0,
+    "roots": 46.0,
+    "search_roots": 40.0,
+    "set_samples": 38.0,
+    "state_checks": 12134.5,
+    "tree_nodes": 1683.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0604,
+   "p90_solve_s": 0.158,
+   "path_median": 6.363,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1545.5,
+    "iterations": 69.5,
+    "roots": 197.0,
+    "search_roots": 96.0,
+    "set_samples": 40.0,
+    "state_checks": 14615.0,
+    "tree_nodes": 1491.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0604,
+   "p90_solve_s": 0.1788,
+   "path_median": 6.668,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1696.0,
+    "iterations": 62.0,
+    "roots": 10.5,
+    "search_roots": 4.5,
+    "set_samples": 23.0,
+    "state_checks": 9948.0,
+    "tree_nodes": 1453.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0604,
+   "p90_solve_s": 0.1243,
+   "path_median": 7.643,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 644.5,
+    "iterations": 163.0,
+    "roots": 11.0,
+    "search_roots": 9.0,
+    "set_samples": 22.0,
+    "state_checks": 9170.0,
+    "tree_nodes": 1534.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.0606,
+   "p90_solve_s": 1.4991,
+   "path_median": 8.503,
+   "success_rate": 0.9,
+   "why_not": [
+    "not 100% success",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 1876.0,
+    "iterations": 120.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 14.0,
+    "state_checks": 7631.5,
+    "tree_nodes": 2059.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0611,
+   "p90_solve_s": 0.1402,
+   "path_median": 6.373,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 543.5,
+    "iterations": 152.0,
+    "roots": 56.0,
+    "search_roots": 50.0,
+    "set_samples": 41.5,
+    "state_checks": 11852.5,
+    "tree_nodes": 1414.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0612,
+   "p90_solve_s": 0.1061,
+   "path_median": 6.58,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 851.0,
+    "iterations": 110.5,
+    "roots": 51.0,
+    "search_roots": 30.0,
+    "set_samples": 40.0,
+    "state_checks": 12358.0,
+    "tree_nodes": 1592.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0623,
+   "p90_solve_s": 0.1683,
+   "path_median": 6.885,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 868.5,
+    "iterations": 71.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 25.5,
+    "state_checks": 9409.5,
+    "tree_nodes": 1465.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0624,
+   "p90_solve_s": 0.0965,
+   "path_median": 6.895,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 950.0,
+    "iterations": 163.5,
+    "roots": 14.0,
+    "search_roots": 12.0,
+    "set_samples": 42.0,
+    "state_checks": 13618.5,
+    "tree_nodes": 1557.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0628,
+   "p90_solve_s": 0.1055,
+   "path_median": 6.722,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1613.5,
+    "iterations": 140.5,
+    "roots": 14.0,
+    "search_roots": 12.0,
+    "set_samples": 41.5,
+    "state_checks": 12970.0,
+    "tree_nodes": 1643.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0629,
+   "p90_solve_s": 0.1452,
+   "path_median": 6.869,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 765.0,
+    "iterations": 189.0,
+    "roots": 50.0,
+    "search_roots": 48.0,
+    "set_samples": 16.0,
+    "state_checks": 7268.5,
+    "tree_nodes": 1813.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0629,
+   "p90_solve_s": 0.1095,
+   "path_median": 6.793,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1211.5,
+    "iterations": 169.5,
+    "roots": 42.0,
+    "search_roots": 40.0,
+    "set_samples": 14.0,
+    "state_checks": 7710.0,
+    "tree_nodes": 1838.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0634,
+   "p90_solve_s": 0.1795,
+   "path_median": 6.701,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1206.0,
+    "iterations": 182.0,
+    "roots": 17.0,
+    "search_roots": 15.0,
+    "set_samples": 19.0,
+    "state_checks": 8591.0,
+    "tree_nodes": 1644.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0643,
+   "p90_solve_s": 0.1375,
+   "path_median": 6.978,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 497.5,
+    "iterations": 72.0,
+    "roots": 197.0,
+    "search_roots": 96.0,
+    "set_samples": 40.0,
+    "state_checks": 13775.5,
+    "tree_nodes": 1552.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0649,
+   "p90_solve_s": 0.1122,
+   "path_median": 6.169,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 425.0,
+    "iterations": 40.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 89.5,
+    "state_checks": 24106.5,
+    "tree_nodes": 1117.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0649,
+   "p90_solve_s": 0.2056,
+   "path_median": 6.963,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 621.0,
+    "iterations": 87.0,
+    "roots": 12.0,
+    "search_roots": 6.0,
+    "set_samples": 25.5,
+    "state_checks": 9920.5,
+    "tree_nodes": 1362.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.0649,
+   "p90_solve_s": 10.0,
+   "path_median": 7.503,
+   "success_rate": 0.65,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 481.0,
+    "iterations": 59.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 5.0,
+    "state_checks": 5296.0,
+    "tree_nodes": 910.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0654,
+   "p90_solve_s": 0.1296,
+   "path_median": 7.45,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 2041.0,
+    "iterations": 136.0,
+    "roots": 42.0,
+    "search_roots": 40.0,
+    "set_samples": 16.0,
+    "state_checks": 8113.0,
+    "tree_nodes": 2009.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0656,
+   "p90_solve_s": 0.1093,
+   "path_median": 6.483,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1556.0,
+    "iterations": 109.5,
+    "roots": 19.5,
+    "search_roots": 13.5,
+    "set_samples": 51.5,
+    "state_checks": 15012.5,
+    "tree_nodes": 1469.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.066,
+   "p90_solve_s": 0.2279,
+   "path_median": 6.808,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 2195.0,
+    "iterations": 192.0,
+    "roots": 16.0,
+    "search_roots": 10.0,
+    "set_samples": 9.5,
+    "state_checks": 6413.0,
+    "tree_nodes": 2187.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0665,
+   "p90_solve_s": 0.0995,
+   "path_median": 6.805,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1070.5,
+    "iterations": 145.5,
+    "roots": 22.0,
+    "search_roots": 20.0,
+    "set_samples": 22.5,
+    "state_checks": 9042.0,
+    "tree_nodes": 1589.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0666,
+   "p90_solve_s": 0.1148,
+   "path_median": 6.845,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 567.5,
+    "iterations": 122.5,
+    "roots": 61.0,
+    "search_roots": 40.0,
+    "set_samples": 47.0,
+    "state_checks": 14434.5,
+    "tree_nodes": 1532.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.068,
+   "p90_solve_s": 0.5262,
+   "path_median": 6.699,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 872.0,
+    "iterations": 114.0,
+    "roots": 8.5,
+    "search_roots": 2.5,
+    "set_samples": 72.5,
+    "state_checks": 20431.5,
+    "tree_nodes": 1247.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0681,
+   "p90_solve_s": 0.2721,
+   "path_median": 7.11,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 2076.0,
+    "iterations": 157.5,
+    "roots": 17.0,
+    "search_roots": 15.0,
+    "set_samples": 16.5,
+    "state_checks": 8236.0,
+    "tree_nodes": 1873.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0684,
+   "p90_solve_s": 0.2452,
+   "path_median": 6.804,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 836.0,
+    "iterations": 94.0,
+    "roots": 24.0,
+    "search_roots": 3.0,
+    "set_samples": 63.5,
+    "state_checks": 18758.0,
+    "tree_nodes": 1364.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.0691,
+   "p90_solve_s": 0.3432,
+   "path_median": 8.487,
+   "success_rate": 1.0,
+   "why_not": [
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 1001.0,
+    "iterations": 256.5,
+    "roots": 12.0,
+    "search_roots": 10.0,
+    "set_samples": 12.0,
+    "state_checks": 6829.0,
+    "tree_nodes": 2321.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.0696,
+   "p90_solve_s": 0.1839,
+   "path_median": 6.414,
+   "success_rate": 0.95,
+   "why_not": [
+    "not 100% success"
+   ],
+   "work_median": {
+    "edge_checks": 433.0,
+    "iterations": 65.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 59.5,
+    "state_checks": 16576.5,
+    "tree_nodes": 1170.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0702,
+   "p90_solve_s": 0.1645,
+   "path_median": 7.128,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 942.0,
+    "iterations": 245.5,
+    "roots": 16.0,
+    "search_roots": 10.0,
+    "set_samples": 10.5,
+    "state_checks": 6712.5,
+    "tree_nodes": 2408.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.071,
+   "p90_solve_s": 0.2145,
+   "path_median": 6.51,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 493.0,
+    "iterations": 68.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 62.0,
+    "state_checks": 18056.0,
+    "tree_nodes": 1215.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0727,
+   "p90_solve_s": 0.1812,
+   "path_median": 7.366,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 886.5,
+    "iterations": 95.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 64.0,
+    "state_checks": 19000.5,
+    "tree_nodes": 1457.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0729,
+   "p90_solve_s": 0.1327,
+   "path_median": 5.623,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 449.5,
+    "iterations": 65.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 91.0,
+    "state_checks": 24683.5,
+    "tree_nodes": 1348.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0732,
+   "p90_solve_s": 0.1132,
+   "path_median": 6.893,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1750.5,
+    "iterations": 124.0,
+    "roots": 71.0,
+    "search_roots": 50.0,
+    "set_samples": 46.0,
+    "state_checks": 14606.0,
+    "tree_nodes": 2025.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.0733,
+   "p90_solve_s": 0.1873,
+   "path_median": 6.227,
+   "success_rate": 0.95,
+   "why_not": [
+    "not 100% success"
+   ],
+   "work_median": {
+    "edge_checks": 740.5,
+    "iterations": 65.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 59.5,
+    "state_checks": 17362.0,
+    "tree_nodes": 1336.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0735,
+   "p90_solve_s": 0.1853,
+   "path_median": 6.816,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 704.0,
+    "iterations": 83.0,
+    "roots": 27.0,
+    "search_roots": 6.0,
+    "set_samples": 81.5,
+    "state_checks": 23638.5,
+    "tree_nodes": 1146.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0735,
+   "p90_solve_s": 0.1269,
+   "path_median": 5.687,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1148.5,
+    "iterations": 40.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 89.5,
+    "state_checks": 24393.0,
+    "tree_nodes": 1210.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0736,
+   "p90_solve_s": 0.1508,
+   "path_median": 7.246,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1303.5,
+    "iterations": 216.0,
+    "roots": 12.5,
+    "search_roots": 10.5,
+    "set_samples": 32.0,
+    "state_checks": 11992.5,
+    "tree_nodes": 2002.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.0737,
+   "p90_solve_s": 0.3496,
+   "path_median": 8.179,
+   "success_rate": 1.0,
+   "why_not": [
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 1332.0,
+    "iterations": 220.0,
+    "roots": 5.5,
+    "search_roots": 3.5,
+    "set_samples": 27.0,
+    "state_checks": 10545.5,
+    "tree_nodes": 2324.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0741,
+   "p90_solve_s": 0.1469,
+   "path_median": 5.415,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1261.5,
+    "iterations": 63.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 90.5,
+    "state_checks": 24393.0,
+    "tree_nodes": 1213.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0745,
+   "p90_solve_s": 0.3351,
+   "path_median": 6.501,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 530.5,
+    "iterations": 96.0,
+    "roots": 9.0,
+    "search_roots": 3.0,
+    "set_samples": 72.5,
+    "state_checks": 20513.5,
+    "tree_nodes": 1493.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0745,
+   "p90_solve_s": 0.1215,
+   "path_median": 6.606,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 859.5,
+    "iterations": 60.5,
+    "roots": 27.0,
+    "search_roots": 6.0,
+    "set_samples": 79.0,
+    "state_checks": 22034.0,
+    "tree_nodes": 1342.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0751,
+   "p90_solve_s": 0.1488,
+   "path_median": 5.588,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 726.0,
+    "iterations": 63.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 90.5,
+    "state_checks": 24176.0,
+    "tree_nodes": 1350.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0754,
+   "p90_solve_s": 0.1605,
+   "path_median": 7.176,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1518.5,
+    "iterations": 87.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 64.0,
+    "state_checks": 18206.5,
+    "tree_nodes": 1412.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.0754,
+   "p90_solve_s": 0.4368,
+   "path_median": 8.967,
+   "success_rate": 1.0,
+   "why_not": [
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 834.0,
+    "iterations": 217.5,
+    "roots": 5.5,
+    "search_roots": 3.5,
+    "set_samples": 26.5,
+    "state_checks": 10008.0,
+    "tree_nodes": 2141.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0755,
+   "p90_solve_s": 0.1457,
+   "path_median": 6.265,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 778.5,
+    "iterations": 43.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 91.5,
+    "state_checks": 24385.0,
+    "tree_nodes": 878.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.076,
+   "p90_solve_s": 0.554,
+   "path_median": 8.242,
+   "success_rate": 1.0,
+   "why_not": [
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 1078.0,
+    "iterations": 365.0,
+    "roots": 8.0,
+    "search_roots": 6.0,
+    "set_samples": 23.5,
+    "state_checks": 9871.5,
+    "tree_nodes": 2147.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0765,
+   "p90_solve_s": 0.2313,
+   "path_median": 6.831,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1689.5,
+    "iterations": 95.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 63.0,
+    "state_checks": 19298.0,
+    "tree_nodes": 1566.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0766,
+   "p90_solve_s": 0.3436,
+   "path_median": 6.682,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 544.0,
+    "iterations": 87.5,
+    "roots": 8.5,
+    "search_roots": 2.5,
+    "set_samples": 72.5,
+    "state_checks": 20350.0,
+    "tree_nodes": 1187.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.0768,
+   "p90_solve_s": 0.478,
+   "path_median": 8.213,
+   "success_rate": 0.95,
+   "why_not": [
+    "not 100% success",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 1059.5,
+    "iterations": 132.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 14.0,
+    "state_checks": 7341.5,
+    "tree_nodes": 1851.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.077,
+   "p90_solve_s": 0.1859,
+   "path_median": 7.432,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1578.5,
+    "iterations": 60.5,
+    "roots": 27.0,
+    "search_roots": 6.0,
+    "set_samples": 78.0,
+    "state_checks": 22353.5,
+    "tree_nodes": 1378.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.077,
+   "p90_solve_s": 0.7627,
+   "path_median": 6.811,
+   "success_rate": 1.0,
+   "why_not": [
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 1744.5,
+    "iterations": 130.5,
+    "roots": 8.5,
+    "search_roots": 2.5,
+    "set_samples": 72.5,
+    "state_checks": 20503.0,
+    "tree_nodes": 1578.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0775,
+   "p90_solve_s": 0.2183,
+   "path_median": 6.718,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 464.0,
+    "iterations": 93.0,
+    "roots": 28.5,
+    "search_roots": 7.5,
+    "set_samples": 81.5,
+    "state_checks": 23704.0,
+    "tree_nodes": 1280.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0784,
+   "p90_solve_s": 0.1368,
+   "path_median": 5.84,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 472.5,
+    "iterations": 68.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 90.5,
+    "state_checks": 24092.0,
+    "tree_nodes": 1281.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0785,
+   "p90_solve_s": 0.1442,
+   "path_median": 6.676,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 481.0,
+    "iterations": 58.5,
+    "roots": 27.0,
+    "search_roots": 6.0,
+    "set_samples": 77.0,
+    "state_checks": 20329.5,
+    "tree_nodes": 1191.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0793,
+   "p90_solve_s": 0.4524,
+   "path_median": 7.841,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 2305.0,
+    "iterations": 260.5,
+    "roots": 12.0,
+    "search_roots": 10.0,
+    "set_samples": 12.5,
+    "state_checks": 8157.0,
+    "tree_nodes": 2686.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0794,
+   "p90_solve_s": 0.1237,
+   "path_median": 6.227,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 681.0,
+    "iterations": 43.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 89.5,
+    "state_checks": 24176.0,
+    "tree_nodes": 1160.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0795,
+   "p90_solve_s": 0.347,
+   "path_median": 7.339,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 801.5,
+    "iterations": 214.0,
+    "roots": 9.0,
+    "search_roots": 7.0,
+    "set_samples": 60.5,
+    "state_checks": 17442.0,
+    "tree_nodes": 1938.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0795,
+   "p90_solve_s": 0.3431,
+   "path_median": 7.807,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 520.0,
+    "iterations": 89.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 64.5,
+    "state_checks": 18837.5,
+    "tree_nodes": 1331.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0817,
+   "p90_solve_s": 0.2177,
+   "path_median": 6.909,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 2035.5,
+    "iterations": 220.5,
+    "roots": 14.0,
+    "search_roots": 12.0,
+    "set_samples": 32.5,
+    "state_checks": 12578.5,
+    "tree_nodes": 2302.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0821,
+   "p90_solve_s": 0.1615,
+   "path_median": 5.43,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1289.5,
+    "iterations": 50.5,
+    "roots": 116.0,
+    "search_roots": 15.0,
+    "set_samples": 110.5,
+    "state_checks": 29549.0,
+    "tree_nodes": 1241.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.0825,
+   "p90_solve_s": 0.231,
+   "path_median": 6.729,
+   "success_rate": 0.95,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 1404.0,
+    "iterations": 52.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 59.5,
+    "state_checks": 17148.0,
+    "tree_nodes": 1379.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0825,
+   "p90_solve_s": 0.1499,
+   "path_median": 6.119,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 403.5,
+    "iterations": 76.5,
+    "roots": 126.0,
+    "search_roots": 25.0,
+    "set_samples": 111.5,
+    "state_checks": 29258.0,
+    "tree_nodes": 1181.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.083,
+   "p90_solve_s": 0.5746,
+   "path_median": 7.155,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 876.0,
+    "iterations": 218.5,
+    "roots": 7.0,
+    "search_roots": 1.0,
+    "set_samples": 58.0,
+    "state_checks": 17517.0,
+    "tree_nodes": 1893.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0842,
+   "p90_solve_s": 0.2104,
+   "path_median": 6.709,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1457.0,
+    "iterations": 93.0,
+    "roots": 27.0,
+    "search_roots": 6.0,
+    "set_samples": 85.5,
+    "state_checks": 24982.0,
+    "tree_nodes": 1438.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0845,
+   "p90_solve_s": 0.167,
+   "path_median": 6.343,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1480.5,
+    "iterations": 73.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 91.0,
+    "state_checks": 24643.0,
+    "tree_nodes": 1729.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0846,
+   "p90_solve_s": 0.771,
+   "path_median": 7.662,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1236.0,
+    "iterations": 241.0,
+    "roots": 7.0,
+    "search_roots": 1.0,
+    "set_samples": 62.0,
+    "state_checks": 19396.0,
+    "tree_nodes": 1959.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.0855,
+   "p90_solve_s": 0.1376,
+   "path_median": 7.803,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 529.0,
+    "iterations": 83.0,
+    "roots": 111.0,
+    "search_roots": 10.0,
+    "set_samples": 101.0,
+    "state_checks": 27079.0,
+    "tree_nodes": 1469.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0907,
+   "p90_solve_s": 0.1569,
+   "path_median": 5.83,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 701.5,
+    "iterations": 56.5,
+    "roots": 126.0,
+    "search_roots": 25.0,
+    "set_samples": 111.0,
+    "state_checks": 29369.0,
+    "tree_nodes": 1138.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.091,
+   "p90_solve_s": 0.1482,
+   "path_median": 7.248,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 949.5,
+    "iterations": 102.0,
+    "roots": 121.0,
+    "search_roots": 20.0,
+    "set_samples": 104.0,
+    "state_checks": 27516.5,
+    "tree_nodes": 1623.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0912,
+   "p90_solve_s": 0.2547,
+   "path_median": 7.045,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1259.5,
+    "iterations": 219.0,
+    "roots": 9.0,
+    "search_roots": 7.0,
+    "set_samples": 61.5,
+    "state_checks": 18154.5,
+    "tree_nodes": 2037.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.0925,
+   "p90_solve_s": 0.2739,
+   "path_median": 6.595,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1043.0,
+    "iterations": 135.5,
+    "roots": 9.5,
+    "search_roots": 3.5,
+    "set_samples": 81.0,
+    "state_checks": 22890.5,
+    "tree_nodes": 1843.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0942,
+   "p90_solve_s": 0.324,
+   "path_median": 6.47,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1723.0,
+    "iterations": 112.5,
+    "roots": 9.5,
+    "search_roots": 3.5,
+    "set_samples": 81.0,
+    "state_checks": 23386.0,
+    "tree_nodes": 1741.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.0985,
+   "p90_solve_s": 10.0,
+   "path_median": 6.47,
+   "success_rate": 0.6,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 1130.0,
+    "iterations": 272.5,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 51.0,
+    "state_checks": 16730.0,
+    "tree_nodes": 2544.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.0994,
+   "p90_solve_s": 0.1454,
+   "path_median": 6.948,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1711.0,
+    "iterations": 89.5,
+    "roots": 121.0,
+    "search_roots": 20.0,
+    "set_samples": 101.0,
+    "state_checks": 27392.0,
+    "tree_nodes": 1778.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.1012,
+   "p90_solve_s": 0.3365,
+   "path_median": 8.074,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1529.5,
+    "iterations": 256.5,
+    "roots": 12.0,
+    "search_roots": 10.0,
+    "set_samples": 12.0,
+    "state_checks": 6988.0,
+    "tree_nodes": 2311.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1028,
+   "p90_solve_s": 0.7652,
+   "path_median": 7.207,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1891.5,
+    "iterations": 170.5,
+    "roots": 7.0,
+    "search_roots": 1.0,
+    "set_samples": 58.5,
+    "state_checks": 19063.0,
+    "tree_nodes": 1866.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.1074,
+   "p90_solve_s": 10.0,
+   "path_median": 6.247,
+   "success_rate": 0.6,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 2940.5,
+    "iterations": 252.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 51.0,
+    "state_checks": 16984.0,
+    "tree_nodes": 3702.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.1087,
+   "p90_solve_s": 0.4231,
+   "path_median": 9.399,
+   "success_rate": 1.0,
+   "why_not": [
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 2545.5,
+    "iterations": 359.5,
+    "roots": 8.5,
+    "search_roots": 6.5,
+    "set_samples": 53.5,
+    "state_checks": 17164.0,
+    "tree_nodes": 2818.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.1093,
+   "p90_solve_s": 0.1551,
+   "path_median": 7.201,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 416.5,
+    "iterations": 52.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 170.0,
+    "state_checks": 44216.0,
+    "tree_nodes": 930.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1095,
+   "p90_solve_s": 0.2771,
+   "path_median": 7.748,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 2361.0,
+    "iterations": 279.0,
+    "roots": 11.5,
+    "search_roots": 9.5,
+    "set_samples": 81.5,
+    "state_checks": 24719.5,
+    "tree_nodes": 2868.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.1119,
+   "p90_solve_s": 0.1564,
+   "path_median": 6.843,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 404.5,
+    "iterations": 38.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 164.0,
+    "state_checks": 42583.5,
+    "tree_nodes": 995.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.1129,
+   "p90_solve_s": 0.1402,
+   "path_median": 7.228,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 712.5,
+    "iterations": 45.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 170.0,
+    "state_checks": 44745.0,
+    "tree_nodes": 849.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.1137,
+   "p90_solve_s": 2.6479,
+   "path_median": 6.778,
+   "success_rate": 0.95,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 1073.5,
+    "iterations": 245.5,
+    "roots": 7.0,
+    "search_roots": 1.0,
+    "set_samples": 58.0,
+    "state_checks": 16762.5,
+    "tree_nodes": 2763.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.1144,
+   "p90_solve_s": 0.1403,
+   "path_median": 6.757,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 394.5,
+    "iterations": 34.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 162.0,
+    "state_checks": 41438.0,
+    "tree_nodes": 822.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1155,
+   "p90_solve_s": 0.202,
+   "path_median": 6.914,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1424.5,
+    "iterations": 64.0,
+    "roots": 21.5,
+    "search_roots": 0.5,
+    "set_samples": 191.0,
+    "state_checks": 48146.5,
+    "tree_nodes": 1239.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.1159,
+   "p90_solve_s": 0.174,
+   "path_median": 6.462,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 343.0,
+    "iterations": 43.5,
+    "roots": 23.0,
+    "search_roots": 2.0,
+    "set_samples": 202.0,
+    "state_checks": 48059.0,
+    "tree_nodes": 916.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1163,
+   "p90_solve_s": 0.1594,
+   "path_median": 7.267,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1358.5,
+    "iterations": 52.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 170.0,
+    "state_checks": 44610.0,
+    "tree_nodes": 1086.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.1171,
+   "p90_solve_s": 0.1807,
+   "path_median": 6.569,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 396.0,
+    "iterations": 46.0,
+    "roots": 21.5,
+    "search_roots": 0.5,
+    "set_samples": 189.5,
+    "state_checks": 46218.0,
+    "tree_nodes": 824.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.1179,
+   "p90_solve_s": 2.0258,
+   "path_median": 7.038,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1738.5,
+    "iterations": 273.5,
+    "roots": 7.0,
+    "search_roots": 1.0,
+    "set_samples": 58.0,
+    "state_checks": 17016.5,
+    "tree_nodes": 3083.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.119,
+   "p90_solve_s": 0.1959,
+   "path_median": 7.029,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1371.0,
+    "iterations": 41.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 164.0,
+    "state_checks": 43369.5,
+    "tree_nodes": 1181.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.12,
+   "p90_solve_s": 0.2701,
+   "path_median": 6.886,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 684.0,
+    "iterations": 32.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 162.0,
+    "state_checks": 41595.5,
+    "tree_nodes": 865.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.121,
+   "p90_solve_s": 0.1819,
+   "path_median": 6.743,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 709.0,
+    "iterations": 36.0,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 164.0,
+    "state_checks": 43056.5,
+    "tree_nodes": 875.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1225,
+   "p90_solve_s": 0.1857,
+   "path_median": 6.907,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1273.5,
+    "iterations": 37.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 162.0,
+    "state_checks": 41844.5,
+    "tree_nodes": 1088.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.127,
+   "p90_solve_s": 0.1849,
+   "path_median": 6.706,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 731.5,
+    "iterations": 48.5,
+    "roots": 21.0,
+    "search_roots": 0.0,
+    "set_samples": 197.5,
+    "state_checks": 49249.5,
+    "tree_nodes": 885.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.1275,
+   "p90_solve_s": 0.1907,
+   "path_median": 6.359,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 605.5,
+    "iterations": 43.5,
+    "roots": 23.0,
+    "search_roots": 2.0,
+    "set_samples": 207.0,
+    "state_checks": 49906.0,
+    "tree_nodes": 977.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 20,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1275,
+   "p90_solve_s": 0.1632,
+   "path_median": 6.469,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1213.5,
+    "iterations": 42.0,
+    "roots": 23.0,
+    "search_roots": 2.0,
+    "set_samples": 205.5,
+    "state_checks": 50282.5,
+    "tree_nodes": 1081.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.1296,
+   "p90_solve_s": 4.9344,
+   "path_median": 8.72,
+   "success_rate": 0.95,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 2958.0,
+    "iterations": 274.0,
+    "roots": 7.5,
+    "search_roots": 1.5,
+    "set_samples": 58.0,
+    "state_checks": 17453.5,
+    "tree_nodes": 3554.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.1474,
+   "p90_solve_s": 0.5454,
+   "path_median": 7.348,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 2266.0,
+    "iterations": 494.5,
+    "roots": 8.0,
+    "search_roots": 6.0,
+    "set_samples": 27.5,
+    "state_checks": 13887.5,
+    "tree_nodes": 4327.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1516,
+   "p90_solve_s": 0.7358,
+   "path_median": 7.099,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 3400.0,
+    "iterations": 508.0,
+    "roots": 9.5,
+    "search_roots": 7.5,
+    "set_samples": 27.5,
+    "state_checks": 14351.5,
+    "tree_nodes": 4450.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.1575,
+   "p90_solve_s": 0.2173,
+   "path_median": 6.683,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 402.0,
+    "iterations": 43.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 267.5,
+    "state_checks": 66281.0,
+    "tree_nodes": 984.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.1597,
+   "p90_solve_s": 0.2146,
+   "path_median": 6.533,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 756.0,
+    "iterations": 43.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 267.0,
+    "state_checks": 66417.5,
+    "tree_nodes": 1020.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.1605,
+   "p90_solve_s": 0.2143,
+   "path_median": 6.551,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 689.0,
+    "iterations": 36.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 272.0,
+    "state_checks": 67288.5,
+    "tree_nodes": 1039.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.1611,
+   "p90_solve_s": 0.2363,
+   "path_median": 6.184,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 413.0,
+    "iterations": 56.0,
+    "roots": 107.0,
+    "search_roots": 6.0,
+    "set_samples": 286.5,
+    "state_checks": 70154.5,
+    "tree_nodes": 1093.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.1635,
+   "p90_solve_s": 0.2077,
+   "path_median": 6.571,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 388.5,
+    "iterations": 36.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 272.0,
+    "state_checks": 67079.5,
+    "tree_nodes": 1019.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.1646,
+   "p90_solve_s": 0.1935,
+   "path_median": 6.665,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 770.5,
+    "iterations": 43.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 267.0,
+    "state_checks": 66293.0,
+    "tree_nodes": 1056.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1655,
+   "p90_solve_s": 0.2346,
+   "path_median": 5.106,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1470.5,
+    "iterations": 57.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 267.0,
+    "state_checks": 66697.0,
+    "tree_nodes": 1487.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.166,
+   "p90_solve_s": 0.1998,
+   "path_median": 6.573,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1328.5,
+    "iterations": 35.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 269.5,
+    "state_checks": 66463.0,
+    "tree_nodes": 1196.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.1665,
+   "p90_solve_s": 0.2168,
+   "path_median": 5.957,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 714.0,
+    "iterations": 58.0,
+    "roots": 107.0,
+    "search_roots": 6.0,
+    "set_samples": 294.0,
+    "state_checks": 72029.0,
+    "tree_nodes": 1053.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.1673,
+   "p90_solve_s": 0.2561,
+   "path_median": 6.01,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 735.5,
+    "iterations": 44.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 266.0,
+    "state_checks": 66459.5,
+    "tree_nodes": 1267.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.1674,
+   "p90_solve_s": 0.2009,
+   "path_median": 6.028,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 434.5,
+    "iterations": 46.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 267.0,
+    "state_checks": 66528.5,
+    "tree_nodes": 1000.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1692,
+   "p90_solve_s": 0.195,
+   "path_median": 5.895,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1330.5,
+    "iterations": 44.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 267.0,
+    "state_checks": 66626.0,
+    "tree_nodes": 1248.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.1721,
+   "p90_solve_s": 0.2182,
+   "path_median": 6.466,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 434.5,
+    "iterations": 47.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 266.0,
+    "state_checks": 66339.0,
+    "tree_nodes": 1286.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1745,
+   "p90_solve_s": 0.1927,
+   "path_median": 5.608,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1234.0,
+    "iterations": 45.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 266.0,
+    "state_checks": 66789.0,
+    "tree_nodes": 1377.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.1799,
+   "p90_solve_s": 0.2414,
+   "path_median": 6.746,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1505.5,
+    "iterations": 75.5,
+    "roots": 107.0,
+    "search_roots": 6.0,
+    "set_samples": 286.0,
+    "state_checks": 71722.0,
+    "tree_nodes": 1376.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.1833,
+   "p90_solve_s": 0.9318,
+   "path_median": 8.971,
+   "success_rate": 1.0,
+   "why_not": [
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 2669.0,
+    "iterations": 639.5,
+    "roots": 6.0,
+    "search_roots": 4.0,
+    "set_samples": 36.5,
+    "state_checks": 16406.0,
+    "tree_nodes": 4680.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.2075,
+   "p90_solve_s": 10.0,
+   "path_median": 6.497,
+   "success_rate": 0.6,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 2533.5,
+    "iterations": 470.5,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 51.0,
+    "state_checks": 16802.5,
+    "tree_nodes": 4354.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.2124,
+   "p90_solve_s": 1.1742,
+   "path_median": 8.202,
+   "success_rate": 1.0,
+   "why_not": [
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 2451.5,
+    "iterations": 876.5,
+    "roots": 9.5,
+    "search_roots": 7.5,
+    "set_samples": 26.0,
+    "state_checks": 15167.0,
+    "tree_nodes": 5328.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.2203,
+   "p90_solve_s": 1.478,
+   "path_median": 7.917,
+   "success_rate": 1.0,
+   "why_not": [
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 2327.5,
+    "iterations": 834.0,
+    "roots": 6.0,
+    "search_roots": 4.0,
+    "set_samples": 39.5,
+    "state_checks": 17331.5,
+    "tree_nodes": 5738.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.2227,
+   "p90_solve_s": 1.3115,
+   "path_median": 8.867,
+   "success_rate": 1.0,
+   "why_not": [
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 3252.5,
+    "iterations": 814.0,
+    "roots": 8.0,
+    "search_roots": 6.0,
+    "set_samples": 26.0,
+    "state_checks": 14783.0,
+    "tree_nodes": 5072.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.2469,
+   "p90_solve_s": 0.5981,
+   "path_median": 9.054,
+   "success_rate": 1.0,
+   "why_not": [
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 5169.5,
+    "iterations": 822.5,
+    "roots": 8.0,
+    "search_roots": 6.0,
+    "set_samples": 24.0,
+    "state_checks": 16702.5,
+    "tree_nodes": 5892.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.2541,
+   "p90_solve_s": 1.3444,
+   "path_median": 7.897,
+   "success_rate": 1.0,
+   "why_not": [
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 4945.5,
+    "iterations": 781.5,
+    "roots": 6.0,
+    "search_roots": 4.0,
+    "set_samples": 40.0,
+    "state_checks": 20020.0,
+    "tree_nodes": 7216.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.2687,
+   "p90_solve_s": 4.8359,
+   "path_median": 8.018,
+   "success_rate": 1.0,
+   "why_not": [
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 3843.5,
+    "iterations": 983.0,
+    "roots": 5.0,
+    "search_roots": 3.0,
+    "set_samples": 28.5,
+    "state_checks": 16653.5,
+    "tree_nodes": 6532.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 0.2817,
+   "p90_solve_s": 7.0851,
+   "path_median": 7.571,
+   "success_rate": 0.95,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 3015.5,
+    "iterations": 1083.0,
+    "roots": 5.0,
+    "search_roots": 3.0,
+    "set_samples": 30.0,
+    "state_checks": 16511.5,
+    "tree_nodes": 6231.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.3024,
+   "p90_solve_s": 10.0,
+   "path_median": 8.089,
+   "success_rate": 0.55,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 5054.5,
+    "iterations": 660.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 13010.0,
+    "tree_nodes": 6421.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 0.3235,
+   "p90_solve_s": 5.0596,
+   "path_median": 8.305,
+   "success_rate": 1.0,
+   "why_not": [
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 5880.5,
+    "iterations": 1095.0,
+    "roots": 5.0,
+    "search_roots": 3.0,
+    "set_samples": 30.0,
+    "state_checks": 17878.0,
+    "tree_nodes": 7065.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.3832,
+   "p90_solve_s": 0.475,
+   "path_median": 6.361,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1127.0,
+    "iterations": 30.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 808.0,
+    "state_checks": 190801.0,
+    "tree_nodes": 1025.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.3852,
+   "p90_solve_s": 0.4698,
+   "path_median": 6.353,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 343.5,
+    "iterations": 24.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 808.0,
+    "state_checks": 190323.5,
+    "tree_nodes": 907.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.396,
+   "p90_solve_s": 0.4567,
+   "path_median": 6.448,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1216.0,
+    "iterations": 32.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 809.5,
+    "state_checks": 191518.0,
+    "tree_nodes": 1225.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.3976,
+   "p90_solve_s": 0.4559,
+   "path_median": 6.613,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 629.5,
+    "iterations": 31.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 810.5,
+    "state_checks": 191022.0,
+    "tree_nodes": 970.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.3976,
+   "p90_solve_s": 0.4564,
+   "path_median": 6.496,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 377.5,
+    "iterations": 34.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 810.5,
+    "state_checks": 190848.0,
+    "tree_nodes": 943.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.1,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.3981,
+   "p90_solve_s": 0.4878,
+   "path_median": 6.612,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1221.5,
+    "iterations": 32.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 810.5,
+    "state_checks": 191354.0,
+    "tree_nodes": 951.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.3983,
+   "p90_solve_s": 0.5162,
+   "path_median": 6.339,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 621.5,
+    "iterations": 24.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 808.0,
+    "state_checks": 190547.5,
+    "tree_nodes": 879.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.4027,
+   "p90_solve_s": 0.4346,
+   "path_median": 5.662,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 679.5,
+    "iterations": 49.5,
+    "roots": 102.0,
+    "search_roots": 1.0,
+    "set_samples": 835.5,
+    "state_checks": 194233.0,
+    "tree_nodes": 939.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.4032,
+   "p90_solve_s": 0.4674,
+   "path_median": 6.391,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1033.0,
+    "iterations": 22.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 813.0,
+    "state_checks": 192247.0,
+    "tree_nodes": 757.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.4045,
+   "p90_solve_s": 0.4801,
+   "path_median": 6.339,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 634.5,
+    "iterations": 28.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 809.0,
+    "state_checks": 191228.5,
+    "tree_nodes": 1024.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.4059,
+   "p90_solve_s": 0.4707,
+   "path_median": 6.048,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 292.0,
+    "iterations": 22.0,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 826.0,
+    "state_checks": 193459.5,
+    "tree_nodes": 652.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.1
+   },
+   "eligible": true,
+   "median_solve_s": 0.4069,
+   "p90_solve_s": 0.4635,
+   "path_median": 6.007,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 1168.0,
+    "iterations": 37.5,
+    "roots": 102.0,
+    "search_roots": 1.0,
+    "set_samples": 838.5,
+    "state_checks": 194480.5,
+    "tree_nodes": 901.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.25,
+    "step_size": 0.2
+   },
+   "eligible": true,
+   "median_solve_s": 0.4133,
+   "p90_solve_s": 0.4955,
+   "path_median": 6.428,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 625.5,
+    "iterations": 25.5,
+    "roots": 101.5,
+    "search_roots": 0.5,
+    "set_samples": 826.0,
+    "state_checks": 193877.0,
+    "tree_nodes": 767.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.05,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.4148,
+   "p90_solve_s": 0.4995,
+   "path_median": 6.353,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 352.0,
+    "iterations": 32.5,
+    "roots": 101.0,
+    "search_roots": 0.0,
+    "set_samples": 809.5,
+    "state_checks": 191059.0,
+    "tree_nodes": 1046.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 100,
+    "sample_probability": 0.5,
+    "step_size": 0.4
+   },
+   "eligible": true,
+   "median_solve_s": 0.4159,
+   "p90_solve_s": 0.4536,
+   "path_median": 6.091,
+   "success_rate": 1.0,
+   "why_not": [],
+   "work_median": {
+    "edge_checks": 365.5,
+    "iterations": 43.5,
+    "roots": 102.0,
+    "search_roots": 1.0,
+    "set_samples": 841.0,
+    "state_checks": 194673.5,
+    "tree_nodes": 826.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 0.9621,
+   "p90_solve_s": 10.0,
+   "path_median": 8.042,
+   "success_rate": 0.65,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 6678.5,
+    "iterations": 1887.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 19874.5,
+    "tree_nodes": 11697.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 5,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 1.0962,
+   "p90_solve_s": 10.0,
+   "path_median": 7.715,
+   "success_rate": 0.6,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 6121.5,
+    "iterations": 2229.0,
+    "roots": 6.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 22723.5,
+    "tree_nodes": 13975.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 1.2365,
+   "p90_solve_s": 10.0,
+   "path_median": 8.157,
+   "success_rate": 0.55,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 11591.0,
+    "iterations": 3123.5,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 5.0,
+    "state_checks": 21721.5,
+    "tree_nodes": 11669.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 1.8261,
+   "p90_solve_s": 10.0,
+   "path_median": 8.085,
+   "success_rate": 0.55,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 8725.0,
+    "iterations": 3654.5,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 5.0,
+    "state_checks": 23165.0,
+    "tree_nodes": 11775.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1000,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 5.1888,
+   "p90_solve_s": 10.0,
+   "path_median": 7.839,
+   "success_rate": 0.5,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline"
+   ],
+   "work_median": {
+    "edge_checks": 15792.0,
+    "iterations": 5720.0,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 5.0,
+    "state_checks": 33887.0,
+    "tree_nodes": 18219.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 10.0,
+   "p90_solve_s": 10.0,
+   "path_median": 9.562,
+   "success_rate": 0.25,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 28414.5,
+    "iterations": 9724.5,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 61606.0,
+    "tree_nodes": 38088.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 10.0,
+   "p90_solve_s": 10.0,
+   "path_median": 9.562,
+   "success_rate": 0.25,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 28836.0,
+    "iterations": 9853.5,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 62364.0,
+    "tree_nodes": 38289.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 10.0,
+   "p90_solve_s": 10.0,
+   "path_median": 9.614,
+   "success_rate": 0.25,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 36873.0,
+    "iterations": 9261.5,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 60812.0,
+    "tree_nodes": 36331.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 10.0,
+   "p90_solve_s": 10.0,
+   "path_median": 9.614,
+   "success_rate": 0.25,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 36453.0,
+    "iterations": 9151.0,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 62034.5,
+    "tree_nodes": 36829.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.2
+   },
+   "eligible": false,
+   "median_solve_s": 10.0,
+   "p90_solve_s": 10.0,
+   "path_median": 9.562,
+   "success_rate": 0.25,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 28435.5,
+    "iterations": 9681.5,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 61812.0,
+    "tree_nodes": 38034.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 3,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 10.0,
+   "p90_solve_s": 10.0,
+   "path_median": 9.317,
+   "success_rate": 0.25,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 24576.5,
+    "iterations": 10228.0,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 59796.5,
+    "tree_nodes": 33664.5
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 1,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 10.0,
+   "p90_solve_s": 10.0,
+   "path_median": 9.317,
+   "success_rate": 0.25,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 24302.0,
+    "iterations": 10078.5,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 59679.0,
+    "tree_nodes": 33533.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.4
+   },
+   "eligible": false,
+   "median_solve_s": 10.0,
+   "p90_solve_s": 10.0,
+   "path_median": 9.317,
+   "success_rate": 0.25,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 24746.5,
+    "iterations": 10306.0,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 60974.0,
+    "tree_nodes": 34266.0
+   }
+  },
+  {
+   "cell": {
+    "max_per_draw": 10,
+    "num_tree_roots": 1,
+    "sample_probability": 0.0,
+    "step_size": 0.1
+   },
+   "eligible": false,
+   "median_solve_s": 10.0,
+   "p90_solve_s": 10.0,
+   "path_median": 9.614,
+   "success_rate": 0.25,
+   "why_not": [
+    "not 100% success",
+    "p90 worse than baseline",
+    "path >10% longer"
+   ],
+   "work_median": {
+    "edge_checks": 36409.5,
+    "iterations": 9188.0,
+    "roots": 2.0,
+    "search_roots": 0.0,
+    "set_samples": 4.0,
+    "state_checks": 61030.5,
+    "tree_nodes": 36625.0
+   }
+  }
+ ],
+ "decision_at_screening": {
+  "max_per_draw": 3,
+  "num_tree_roots": 5,
+  "sample_probability": 0.1,
+  "step_size": 0.2
+ },
+ "effects": {
+  "max_per_draw": {
+   "1": {
+    "mean_success": 0.94,
+    "median_of_medians": 0.12175758325
+   },
+   "10": {
+    "mean_success": 0.9391666666666667,
+    "median_of_medians": 0.06549336475
+   },
+   "1000": {
+    "mean_success": 0.9466666666666668,
+    "median_of_medians": 0.045110177
+   },
+   "3": {
+    "mean_success": 0.95,
+    "median_of_medians": 0.076714625
+   }
+  },
+  "num_tree_roots": {
+   "1": {
+    "mean_success": 0.8633333333333333,
+    "median_of_medians": 0.0776343855
+   },
+   "100": {
+    "mean_success": 1.0,
+    "median_of_medians": 0.12845059325000002
+   },
+   "20": {
+    "mean_success": 0.9816666666666668,
+    "median_of_medians": 0.07027820825
+   },
+   "5": {
+    "mean_success": 0.9308333333333333,
+    "median_of_medians": 0.05712222925
+   }
+  },
+  "sample_probability": {
+   "0.0": {
+    "mean_success": 0.7229166666666668,
+    "median_of_medians": 0.117203146
+   },
+   "0.05": {
+    "mean_success": 0.9968749999999998,
+    "median_of_medians": 0.07255302025
+   },
+   "0.1": {
+    "mean_success": 1.0,
+    "median_of_medians": 0.07040245825
+   },
+   "0.25": {
+    "mean_success": 1.0,
+    "median_of_medians": 0.065722917
+   },
+   "0.5": {
+    "mean_success": 1.0,
+    "median_of_medians": 0.06496842725
+   }
+  },
+  "step_size": {
+   "0.1": {
+    "mean_success": 0.943125,
+    "median_of_medians": 0.075946844
+   },
+   "0.2": {
+    "mean_success": 0.945,
+    "median_of_medians": 0.07340297949999999
+   },
+   "0.4": {
+    "mean_success": 0.94375,
+    "median_of_medians": 0.06991931300000001
+   }
+  }
+ },
+ "header": {
+  "git_sha": "abdbf9002d72a637885ede7bc3e889d99f0981ed",
+  "machine": {
+   "cpus": 10,
+   "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+   "python": "3.14.7"
+  },
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19
+  ],
+  "spec": {
+   "baseline": {
+    "max_per_draw": 3,
+    "num_tree_roots": 20,
+    "sample_probability": 0.1,
+    "step_size": 0.2
+   },
+   "factors": {
+    "max_per_draw": [
+     1,
+     3,
+     10,
+     1000
+    ],
+    "num_tree_roots": [
+     1,
+     5,
+     20,
+     100
+    ],
+    "sample_probability": [
+     0.0,
+     0.05,
+     0.1,
+     0.25,
+     0.5
+    ],
+    "step_size": [
+     0.1,
+     0.2,
+     0.4
+    ]
+   },
+   "fixed": {
+    "edge_resolution": 0.05,
+    "sample_draws": 1000,
+    "timeout": 10
+   },
+   "issue": 186,
+   "stage": "screening: pick, all 240 settings, seeds 0-19 (paired), shuffled order"
+  },
+  "sscbirrt_path": "/Users/siddh/code/robot-code/sscbirrt/src/sscbirrt",
+  "versions": {
+   "mujoco": "3.14.0",
+   "numpy": "2.5.3",
+   "sscbirrt": "3.3.0",
+   "ssik": "7.0.0",
+   "sstsr": "3.3.0"
+  }
+ },
+ "runs": 4800
+}

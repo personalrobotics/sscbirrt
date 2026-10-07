@@ -25,7 +25,7 @@ def test_defaults_construct():
         ("max_iterations", 0, "at least 1"),
         ("sample_draws", 0, "at least 1"),
         ("num_tree_roots", 0, "at least 1"),
-        ("max_per_draw", 0, "at least 1"),
+        ("max_per_draw", 0, "None or at least 1"),
         ("max_projection_iters", 0, "at least 1"),
         ("smoothing_iterations", -1, "nonnegative"),
         ("smoothing_patience", -1, "nonnegative"),

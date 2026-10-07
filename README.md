@@ -23,7 +23,7 @@ does not depend on it, and sets you define yourself take the same roles.
 Six runs of one call, `plan(model, data, arm, goal=grasps)`, where `grasps` is
 every side grasp of every can: 18 regions. Each run lets the planner choose a
 different can, grasp, and route around the red boxes. Over 100 seeds every
-run succeeds, with a median of 0.07 s including root collection
+run succeeds, with a median of 0.05 s including root collection
 (`tools/planning_benchmark.py`). `sscbirrt-demo pick --seed N` renders a run.
 
 <table>
@@ -449,7 +449,7 @@ config = CBiRRTConfig(
     # Set sampling
     sample_draws=100,                    # Pose samples to try from each TSR
     num_tree_roots=100,                 # Root configs to seed each tree before the search
-    max_per_draw=3,                  # IK solutions to take per pose sample
+    max_per_draw=None,                  # Candidates kept per draw; None keeps every one (3 until 3.4)
 
     # Extension behavior (None = connect until blocked)
     extend_steps=None,                  # Steps toward a random sample

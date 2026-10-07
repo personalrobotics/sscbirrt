@@ -43,3 +43,43 @@ def test_benchmark_records_time_work_and_path(tmp_path, capsys):
 
     assert tool.main(["compare", str(out), str(out)]) == 0
     assert "solve median s" in capsys.readouterr().out
+
+
+def test_sweep_resumes_and_analyze_applies_the_decision_rule(tmp_path):
+    """#186: a sweep runs every (setting, seed) pair once, resumes without repeating, and analyze picks a setting."""
+    tool = _tool()
+    spec = tmp_path / "spec.json"
+    spec.write_text(
+        json.dumps(
+            {
+                "fixed": {"timeout": 10, "sample_draws": 1000},
+                "factors": {"num_tree_roots": [5], "sample_probability": [0.1, 0.25]},
+                "baseline": {"num_tree_roots": 20, "sample_probability": 0.1},
+            }
+        )
+    )
+    out = tmp_path / "sweep.jsonl"
+    argv = ["sweep", str(spec), "--problems", "pick", "--seeds", "2", "--output", str(out), "--quiet"]
+    assert tool.main(argv) == 0
+    lines = out.read_text().splitlines()
+    runs = [json.loads(line) for line in lines if '"cell"' in line]
+    assert len(runs) == 3 * 2 and {r["timeout"] for r in runs} == {10.0}
+    out.write_text("\n".join(lines[:4]) + "\n")  # interrupted after two runs
+    assert tool.main(argv) == 0
+    rows = [json.loads(line) for line in out.read_text().splitlines()]
+    pairs = [(json.dumps(r["cell"], sort_keys=True), r["seed"]) for r in rows if "cell" in r]
+    assert len(pairs) == 6 and len(set(pairs)) == 6  # resumed, nothing repeated
+    result = tool.analyze(rows[1:], rows[0]["header"]["spec"], "pick")
+    assert result["baseline"] is not None and result["winner"] is not None
+    assert set(result["effects"]) == {"num_tree_roots", "sample_probability"}
+
+
+def test_run_applies_and_records_overrides(tmp_path):
+    tool = _tool()
+    out = tmp_path / "set.json"
+    argv = ["run", "--problems", "pick", "--seeds", "1", "--quiet", "--output", str(out), "--set", "num_tree_roots=5"]
+    assert tool.main(argv) == 0
+    data = json.loads(out.read_text())
+    assert data["overrides"] == {"num_tree_roots": 5}
+    run = data["problems"]["pick"]["runs"][0]
+    assert run["roots"] - run["search_roots"] == 1 + 5  # HOME, and the 5 goal roots collected before the search

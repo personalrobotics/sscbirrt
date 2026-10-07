@@ -1,0 +1,4 @@
+{"issue": 186, "stage": "generalization: transport demo config vs the same with max_per_draw=all, seeds 100-199",
+ "fixed": {"timeout": 10, "edge_resolution": 0.05},
+ "cells": [{"max_per_draw": 1000}],
+ "baseline": {"max_per_draw": 3}}

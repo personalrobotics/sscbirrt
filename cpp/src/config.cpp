@@ -26,7 +26,7 @@ void PlannerConfig::validate() const {
   check("max_iterations", max_iterations >= 1, "at least 1", max_iterations);
   check("tsr_samples", sample_draws >= 1, "at least 1", sample_draws);
   check("num_tree_roots", num_tree_roots >= 1, "at least 1", num_tree_roots);
-  check("max_ik_per_pose", max_per_draw >= 1, "at least 1", max_per_draw);
+  if (max_per_draw) check("max_per_draw", *max_per_draw >= 1, "None or at least 1", *max_per_draw);
   check("smoothing_iterations", smoothing_iterations >= 0, "nonnegative", smoothing_iterations);
   check("smoothing_patience", smoothing_patience >= 0, "nonnegative", smoothing_patience);
   if (edge_resolution) check("edge_resolution", *edge_resolution > 0, "None or positive", *edge_resolution);

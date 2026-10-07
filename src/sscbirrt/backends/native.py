@@ -276,7 +276,7 @@ def _lower_config(config: CBiRRTConfig):
     c.connect_steps = config.connect_steps
     c.sample_draws = int(config.sample_draws)
     c.num_tree_roots = int(config.num_tree_roots)
-    c.max_per_draw = int(config.max_per_draw)
+    c.max_per_draw = None if config.max_per_draw is None else int(config.max_per_draw)
     c.smooth_path = bool(config.smooth_path)
     c.smoothing_iterations = int(config.smoothing_iterations)
     c.smoothing_patience = int(config.smoothing_patience)
