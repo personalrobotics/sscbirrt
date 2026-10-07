@@ -104,14 +104,15 @@ def problem() -> Problem:
 def run(seed: int) -> Outcome:
     p = problem()
     model, data, arm, config, held = p.model, p.data, p.arm, p.config, p.kwargs["holding"]
-    opened = plan(model, data, arm, config=config, seed=seed, **p.kwargs)
-    if not opened.success:
-        return Outcome(False, [f"open: no path: {opened.failure_reason}"], model, data)
-
-    # Reach the handle from HOME first (the door closed), so the video starts from the arm at rest.
-    reach = plan(model, data, arm, goal=opened.path[0], config=config, seed=seed)
+    # Reach the handle from HOME first (the door closed), to any grasp of it, then open the door from wherever the
+    # reach arrived. The other order planned the opening from any grasp and then had to reach that one IK solution,
+    # which can lie on a joint winding HOME cannot reach within the limits (#198).
+    reach = plan(model, data, arm, goal=p.kwargs["start"], config=config, seed=seed)
     if not reach.success:
         return Outcome(False, [f"reach: no path: {reach.failure_reason}"], model, data)
+    opened = plan(model, data, arm, config=config, seed=seed, **{**p.kwargs, "start": reach.path[-1]})
+    if not opened.success:
+        return Outcome(False, [f"open: no path: {opened.failure_reason}"], model, data)
 
     view = mujoco.MjData(model)
     angles = [opening(model, view, q) for q in opened.path]
