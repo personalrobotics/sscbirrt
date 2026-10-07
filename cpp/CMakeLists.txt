@@ -1,6 +1,6 @@
 # sscbirrt: the native C++20 core of sscbirrt. See docs/native-design.md.
 cmake_minimum_required(VERSION 3.16)
-project(sscbirrt VERSION 3.3.0 LANGUAGES CXX)
+project(sscbirrt VERSION 3.4.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
