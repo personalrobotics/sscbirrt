@@ -259,14 +259,48 @@ The right panel is configuration space; red regions are in collision.
    path constraint is present.
 4. **Connect** the trees when one reaches the other within
    `connection_tolerance` along a validated edge.
-5. **Smooth** by shortcutting; a shortcut is kept only if it is shorter and
-   passes the same validation as a tree edge.
+5. **Shorten** by shortcutting; a shortcut is kept only if it is shorter and
+   passes the same validation as a tree edge. The path stays a polyline; to
+   execute it at speed, see [Smooth paths for execution](#smooth-paths-for-execution).
 
 <p align="center">
   <img src="docs/images/example3_result.png" alt="Constrained planning" width="600">
   <br>
   <em>With a path constraint, the end effector stays within the yellow band throughout the motion.</em>
 </p>
+
+## Smooth paths for execution
+
+A planned path is a valid polyline, and at each corner its direction jumps,
+so a robot following it under finite acceleration has to stop at every
+corner. Ask for a smooth path, and sscbirrt replaces each corner, where it
+safely can, with a quintic blend that has continuous curvature:
+
+```python
+result = plan(model, data, arm, goal=goal, seed=0, smooth=True)   # or CBiRRT.solve(problem, smooth=True)
+sp = result.smooth_path            # result.path is still the planned polyline
+for segment in sp.segments:        # at rest between segments; sp.stops lists where
+    s = np.linspace(*segment.path_interval, 100)
+    q, dq, ddq = segment(s, 0), segment(s, 1), segment(s, 2)   # what a retimer such as TOPP-RA needs
+```
+
+Three operations, kept apart. **Shortening** (above) makes the polyline
+shorter. **Smoothing** blends its corners: each `SmoothSegment` is C2 in its
+parameter, and starts and ends exactly where the plan does. **Time
+parameterization** is not done here: a retimer assigns timing to each segment
+under the robot's limits without moving it, and comes to rest at every stop.
+
+Each blend changes the geometry, so it is checked the way the planner checks
+an edge. Samples along it, at most `edge_resolution` apart, must be valid and
+inside the path constraint, and the problem's motion validator must accept
+every chord between them. That is the planner's own guarantee, no stronger:
+like an edge, a blend can step over an obstacle thinner than the resolution. A
+blend that fails is shrunk and tried again. A corner that cannot be blended,
+for example under a path constraint with no room to round it, stays a
+**stop**. `SmoothingOptions` sets the largest deviation from a corner (default
+0.1 rad), and `sp.report` lists every corner, the blends tried, and why any
+were rejected. On the pick demo, about 98% of corners blend, and most paths
+become a single segment with no stops.
 
 ## Why sets
 

@@ -6,6 +6,7 @@ import logging
 import time
 import warnings
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 
@@ -23,6 +24,7 @@ from sscbirrt.legacy import legacy_index, legacy_problem
 from sscbirrt.motion import DiscreteMotionValidator, MotionValidator
 from sscbirrt.problem import PlanningProblem
 from sscbirrt.sets import Sample, SetProjector, SetSampler, StateSet, explicit_samples, is_finite, supports
+from sscbirrt.smoothing import SmoothingOptions, SmoothPath, smooth_path
 from sscbirrt.space import JointSpace
 from sscbirrt.tree import RRTree
 
@@ -90,6 +92,9 @@ class PlanResult:
         default_factory=dict, repr=False
     )  # versions; scene, MJB and snapshot hashes when native MuJoCo
     stats: dict = field(default_factory=dict, repr=False)  # cost breakdown: counts and seconds per component
+    # With smooth=..., the path with its corners blended where admissible (sscbirrt.smoothing.SmoothPath, #207);
+    # ``path`` stays the planned polyline.
+    smooth_path: Any = field(default=None, repr=False)
 
 
 def as_configurations(value, dof: int, name: str) -> list[np.ndarray]:
@@ -198,6 +203,7 @@ class CBiRRT:
         constraint_tsrs=None,
         seed: int | None = None,
         return_details: bool = False,
+        smooth: "bool | SmoothingOptions | None" = None,
     ) -> list[np.ndarray] | None | PlanResult:
         """Plan a path from start to goal with optional TSR constraints.
 
@@ -225,6 +231,8 @@ class CBiRRT:
                             Every configuration along the path must satisfy ALL of these.
             seed: Random seed for reproducibility
             return_details: If True, return PlanResult with trees; otherwise just path
+            smooth: True or ``SmoothingOptions`` to also blend the path's corners (``result.smooth_path``, see
+                ``smooth``). Needs ``return_details=True``, since the smooth path is on the result.
 
         Returns:
             If return_details=False: List of joint configurations or None
@@ -242,6 +250,8 @@ class CBiRRT:
         """
         if self.ik is None and (start_tsrs or goal_tsrs or constraint_tsrs):
             raise ValueError("TSR starts, goals and constraints need IK: CBiRRT(robot, ik=..., collision_checker=...)")
+        if smooth and not return_details:
+            raise ValueError("smooth=... puts the smooth path on the PlanResult: pass return_details=True")
         start_configs = None if start is None else as_configurations(start, self.space.dof, "start")
         goal_configs = None if goal is None else as_configurations(goal, self.space.dof, "goal")
 
@@ -257,13 +267,44 @@ class CBiRRT:
             goal_tsrs,
             constraint_tsrs,
         )
-        result = self.solve(problem, seed=seed)
+        result = self.solve(problem, seed=seed, smooth=smooth)
         if return_details:
             return result
         return result.path
 
-    def solve(self, problem: PlanningProblem, seed: int | None = None) -> PlanResult:
-        """Solve a planning problem with the configured backend (see ``backend`` on the constructor)."""
+    def solve(
+        self, problem: PlanningProblem, seed: int | None = None, smooth: "bool | SmoothingOptions | None" = None
+    ) -> PlanResult:
+        """Solve a planning problem with the configured backend (see ``backend`` on the constructor).
+
+        ``smooth`` (True or ``SmoothingOptions``) also blends the corners of a found path and attaches the result
+        as ``result.smooth_path`` (see ``smooth``); ``result.path`` stays the planned polyline.
+        """
+        if not (smooth is None or isinstance(smooth, bool) or isinstance(smooth, SmoothingOptions)):
+            raise TypeError(f"smooth must be True, False, None or SmoothingOptions, got {type(smooth).__name__}")
+        result = self._solve(problem, seed)
+        if smooth and result.success:
+            result.smooth_path = self.smooth(problem, result.path, None if smooth is True else smooth)
+        return result
+
+    def smooth(
+        self, problem: PlanningProblem, path: list[np.ndarray], options: SmoothingOptions | None = None
+    ) -> SmoothPath:
+        """Blend the corners of a valid ``path`` for ``problem`` where admissible; keep the others as stops (#207).
+
+        Each blend is validated through the problem's own boundary: samples at most ``edge_resolution`` apart must
+        be admissible (joint space, validator, path constraint) and the problem's motion validator must accept every
+        chord between them. That is the planner's discrete edge guarantee, no stronger. See ``sscbirrt.smoothing``.
+        """
+        return smooth_path(
+            path,
+            motion_validator=self._motion_validator(problem),
+            admissible=lambda q: self._admissible(problem, q),
+            resolution=self.config.edge_resolution or self.config.step_size,
+            options=options,
+        )
+
+    def _solve(self, problem: PlanningProblem, seed: int | None) -> PlanResult:
         reasons: tuple[str, ...] = ()
         if self.backend != "python":
             from sscbirrt.backends import native

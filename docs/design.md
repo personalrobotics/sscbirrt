@@ -249,6 +249,18 @@ sampler or projector.
   space is shorter than the segment it replaces, as in the original CBiRRT;
   fewer waypoints is not the criterion. The first and last waypoints of a
   path are preserved exactly, except as the next rule says.
+- **Smoothing for execution is separate and opt-in (#207).** With
+  `smooth=...`, a found path's corners are replaced by quintic blends with
+  continuous curvature, reported as `PlanResult.smooth_path`; `path` stays
+  the polyline. Each blend is accepted only if samples along it, at most
+  `edge_resolution` apart, are admissible and the problem's motion validator
+  accepts every chord between consecutive samples: the edge guarantee above,
+  no stronger. Failed blends shrink; a corner with no admissible blend stays
+  a stop, between two segments that each start and end at rest. Equality path
+  constraints get no projection of blend samples (it would break
+  smoothness), so their corners generally stay stops. Smoothing is
+  deterministic and changes nothing unless asked; timing is left to a
+  retimer.
 - **Output representation on continuous joints.** A returned path is unwrapped
   forward from its first waypoint, so on a continuous joint each consecutive
   raw difference is the short way around and never exceeds one step. The

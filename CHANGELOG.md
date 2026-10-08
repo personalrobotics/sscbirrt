@@ -6,6 +6,24 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Smooth paths for execution (#207).** `smooth=True` (or a
+  `SmoothingOptions`) on `sscbirrt.mujoco.plan`, `CBiRRT.solve` and
+  `CBiRRT.plan`, or `CBiRRT.smooth(problem, path)`, returns
+  `result.smooth_path`. It is the planned path with each corner replaced,
+  where admissible, by a quintic blend with continuous curvature.
+  - It is made of segments that are C2 in their parameter, separated by
+    stops. Each segment is callable as `segment(s, order)` for orders 0–2,
+    which is what a retimer such as TOPP-RA needs.
+  - Every blend is validated as the planner validates an edge: samples at
+    most `edge_resolution` apart are admissible, and the problem's motion
+    validator accepts every chord between them. That is no stronger a
+    guarantee than planning gives. A failed blend shrinks, and a corner
+    with no admissible blend stays a stop.
+  - `result.path` is unchanged, and nothing is smoothed unless asked.
+  - On the pick and transport demos, 45 of 46 corners blend
+    (`tools/smoothing_artifact.py`, `tests/reference/smoothing_artifact.json`).
+
 ## [3.4.0] - 2026-10-07
 
 Defaults set from measurement. Collision checking is finer by default, and
