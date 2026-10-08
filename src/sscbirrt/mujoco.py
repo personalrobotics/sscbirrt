@@ -36,6 +36,7 @@ from sscbirrt.exceptions import NativeUnsupported
 from sscbirrt.legacy import legacy_problem
 from sscbirrt.planner import CBiRRT, PlanResult, as_configurations
 from sscbirrt.sets import StateSet
+from sscbirrt.smoothing import SmoothingOptions
 
 __all__ = ["Arm", "plan"]
 
@@ -203,6 +204,7 @@ def plan(
     seed: int | None = None,
     backend: str = "auto",
     extra_arm_bodies: Sequence[str] = (),
+    smooth: "bool | SmoothingOptions | None" = None,
 ) -> PlanResult:
     """Plan a collision-free path for ``arm`` in the world ``data`` holds now.
 
@@ -218,6 +220,8 @@ def plan(
         backend: ``"auto"`` (native when possible, otherwise Python), ``"native"`` (raise if not), or
             ``"python"``.
         extra_arm_bodies: Bodies outside the joints' subtrees that move with the arm (see ``NativeScene``).
+        smooth: True or ``SmoothingOptions`` to also blend the path's corners where admissible, for execution:
+            ``result.smooth_path`` (``result.path`` stays the planned polyline). See ``CBiRRT.smooth``.
 
     Returns:
         A ``PlanResult``: ``success``, ``path``, ``failure_reason``, which member of each set was used
@@ -251,4 +255,4 @@ def plan(
     )  # fmt: skip
     overrides = {"start": start_set, "goal": goal_set, "path_constraint": constraint_set}
     problem = dataclasses.replace(problem, **{k: v for k, v in overrides.items() if v is not None})
-    return planner.solve(problem, seed=seed)
+    return planner.solve(problem, seed=seed, smooth=smooth)

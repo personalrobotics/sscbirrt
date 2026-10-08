@@ -35,6 +35,7 @@ from sscbirrt.sets import (
     seeds,
     supports,
 )
+from sscbirrt.smoothing import SmoothingOptions, SmoothingReport, SmoothPath, SmoothSegment
 from sscbirrt.space import JointSpace, SpaceSampler
 from sscbirrt.tsr_set import PoseRegion, TSRConfigurationSet, region_volume, tsr_weights
 
@@ -43,6 +44,10 @@ __all__ = [
     "CBiRRT",
     "CBiRRTConfig",
     "PlanResult",
+    "SmoothPath",
+    "SmoothSegment",
+    "SmoothingOptions",
+    "SmoothingReport",
     "PlanningProblem",
     "MotionValidator",
     "LocalMotion",
