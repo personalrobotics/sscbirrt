@@ -180,6 +180,23 @@ class TestTrajectory:
         ts = np.linspace(0, a.duration, 50)
         assert a.duration == b.duration and np.array_equal(a.evaluate(ts)[0], b.evaluate(ts)[0])
 
+    def test_every_piece_carries_its_validation_record(self):
+        """Validation is a record: planned pieces were checked by the planner, shortcut pieces by the smoother."""
+        planner = _planner()
+        problem = _problem(planner, U_PATH)
+        traj0 = initial_trajectory(coalesce(U_PATH), VMAX, AMAX)
+        assert {p.validated for p in traj0.pieces} == {"planned"}
+        traj = _smooth(planner, problem, traj0)
+        assert {p.validated for p in traj.pieces} <= {"planned", "shortcut"} and "shortcut" in {
+            p.validated for p in traj.pieces
+        }
+
+    def test_sample_never_leaves_a_sliver_of_a_final_interval(self):
+        traj = initial_trajectory(coalesce(U_PATH), VMAX, AMAX)
+        for dt in (2_000_000, 3_000_000, 7_000_000):
+            times, _ = traj.sample(dt)
+            assert times[-1] - times[-2] >= dt // 2
+
     def test_sample_gives_integer_ns_ending_at_the_goal(self):
         traj = initial_trajectory(coalesce(U_PATH), VMAX, AMAX)
         times, q = traj.sample(2_000_000)

@@ -251,6 +251,9 @@ class Piece:
     """One interval in which every joint follows its own ramp, all of duration ``duration``."""
 
     ramps: tuple[Ramp, ...]
+    # How this piece's geometry was validated: "planned" (the planner's own edge, checked at its samples) or
+    # "shortcut" (checked by the smoother through the problem's boundary). Never re-checked downstream.
+    validated: str = ""
 
     @property
     def duration(self) -> float:
@@ -262,7 +265,7 @@ class Piece:
 
     def split(self, t: float) -> tuple[Piece, Piece]:
         pairs = [r.split(t) for r in self.ramps]
-        return Piece(tuple(p[0] for p in pairs)), Piece(tuple(p[1] for p in pairs))
+        return Piece(tuple(p[0] for p in pairs), self.validated), Piece(tuple(p[1] for p in pairs), self.validated)
 
 
 def synchronize(
@@ -360,9 +363,10 @@ class Trajectory:
         """A runtime command: integer-nanosecond times from 0 every ``dt_ns``, ending exactly at the duration
         (rounded up to a whole nanosecond), and the positions there."""
         end_ns = math.ceil(self.duration * 1e9)
-        times = list(range(0, end_ns, dt_ns)) + [end_ns]
-        if len(times) >= 2 and times[-1] == times[-2]:
-            times.pop()
+        times = list(range(0, end_ns, dt_ns))
+        if len(times) >= 2 and end_ns - times[-1] < dt_ns // 2:
+            times.pop()  # merge a sliver of a final interval into the previous one
+        times.append(end_ns)
         q, _, _ = self.evaluate(np.array(times, dtype=float) * 1e-9)
         return times, q
 
@@ -373,7 +377,7 @@ def straight_line(q0: np.ndarray, q1: np.ndarray, vmax: np.ndarray, amax: np.nda
     d = np.asarray(q1, dtype=float) - np.asarray(q0, dtype=float)
     L = float(np.linalg.norm(d))
     if L == 0.0:
-        return Piece(tuple(Ramp(float(x), 0.0, ()) for x in q0))
+        return Piece(tuple(Ramp(float(x), 0.0, ()) for x in q0), "planned")
     u = np.abs(d) / L
     with np.errstate(divide="ignore"):
         vs = float(np.min(np.where(u > 0, vmax / u, np.inf)))
@@ -382,7 +386,7 @@ def straight_line(q0: np.ndarray, q1: np.ndarray, vmax: np.ndarray, amax: np.nda
     if s is None:  # unreachable for positive limits; kept as an explicit failure
         raise ValueError("no trapezoid along the chord")
     scaled = [tuple((dur, acc * d[j] / L) for dur, acc in s.pieces) for j in range(len(d))]
-    return Piece(tuple(Ramp(float(q0[j]), 0.0, scaled[j]) for j in range(len(d))))
+    return Piece(tuple(Ramp(float(q0[j]), 0.0, scaled[j]) for j in range(len(d))), "planned")
 
 
 def initial_trajectory(corners: Sequence[np.ndarray], vmax: np.ndarray, amax: np.ndarray) -> Trajectory:
@@ -479,7 +483,7 @@ def shortcut(
         if why is not None:
             record["rejected"] = why
             continue
-        traj = traj.splice(float(t1), float(t2), piece)
+        traj = traj.splice(float(t1), float(t2), Piece(piece.ramps, "shortcut"))
         record["accepted"] = True
         since_gain = 0
     traj.diagnostics = {

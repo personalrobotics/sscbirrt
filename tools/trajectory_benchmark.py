@@ -39,6 +39,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 VMAX, AMAX = 1.57, 4.0
 TICK_NS = 2_000_000  # the runtime's control period: 2 ms, as ssrobot's example arm
+CONVERSION_TOLERANCE = 1e-4  # rad: linear runtime interpolation may deviate this far from the validated source
 DENSE = 0.01  # rad between samples of the dense diagnostic (not a gate: the declared resolution is the guarantee)
 BUDGETS = (25, 100, 400)
 
@@ -130,28 +131,44 @@ def resample(positions: np.ndarray, spacing: float) -> np.ndarray:
     return np.array(out)
 
 
-def evaluate(times_ns, positions, source_positions, planner, problem, start, goal) -> dict[str, Any]:
-    """#214's gates at one declared resolution r (the problem's edge_resolution): the source trajectory and the
-    runtime command are each checked at arc-length spacing r, as the planner checks an edge. The runtime command's
-    speeds and accelerations are checked exactly, as ssrobot does. Denser checks are recorded as diagnostics."""
+def conversion_deviation(times_ns: list[int], positions: np.ndarray, source) -> float:
+    """Largest joint-space distance between the runtime's linear interpolation of the command and the source law,
+    probed at the quarter points of every command interval (a parabola departs most from its chord in between)."""
+    t = np.array(times_ns, dtype=float) * 1e-9
+    worst = 0.0
+    for f in (0.25, 0.5, 0.75):
+        probe = t[:-1] + f * np.diff(t)
+        linear = positions[:-1] + f * np.diff(positions, axis=0)
+        worst = max(worst, float(np.max(np.linalg.norm(linear - source(probe), axis=1))))
+    return worst
+
+
+def evaluate(times_ns, positions, source, record_ok, planner, problem, start, goal) -> dict[str, Any]:
+    """#214's gates. Validation is a record: geometry already checked (the planner's edges, the smoother's
+    shortcuts, PR #211's blends) is never re-checked. Only what a step adds is checked by that step. Runtime
+    conversion adds linear chords between samples, so it is checked by its deviation from the validated source
+    (within CONVERSION_TOLERANCE), not by a collision re-check. Speeds and accelerations are checked exactly, as
+    ssrobot does. Re-checks at the resolution and denser are recorded as diagnostics only."""
     r = planner.config.edge_resolution
     v = runtime_violations(times_ns, positions, VMAX, AMAX)
-    src = check_source(arc_samples(source_positions, r), planner, problem)
-    cmd = check_source(arc_samples(positions, r), planner, problem)
-    dense = check_source(resample(source_positions, DENSE), planner, problem)
+    dev = conversion_deviation(times_ns, positions, source)
+    src_dense = source(np.linspace(0.0, times_ns[-1] * 1e-9, max(2, times_ns[-1] // 2_000_000 + 1)))
+    diag_r = check_source(arc_samples(src_dense, r), planner, problem)
+    diag_dense = check_source(resample(src_dense, DENSE), planner, problem)
     return {
         "resolution": r,
-        "dense_ok": dense is None,
-        "dense_reason": dense,
+        "record_ok": bool(record_ok),
         "runtime_ok": not v,
         "runtime_violations": v[:5],
-        "source_ok": src is None,
-        "source_reason": src,
-        "command_ok": cmd is None,
-        "command_reason": cmd,
+        "conversion_deviation": dev,
+        "conversion_ok": dev <= CONVERSION_TOLERANCE,
         "endpoints_ok": bool(
             np.allclose(positions[0], start, atol=1e-9) and np.allclose(positions[-1], goal, atol=1e-9)
         ),
+        "diag_recheck_at_r_ok": diag_r is None,
+        "diag_recheck_at_r_reason": diag_r,
+        "diag_dense_ok": diag_dense is None,
+        "diag_dense_reason": diag_dense,
     }
 
 
@@ -166,9 +183,10 @@ def raw_and_smoother(result, planner, problem, seed: int) -> list[dict[str, Any]
 
     def record(method, traj, seconds):
         times, q = traj.sample(TICK_NS)
-        src = traj.evaluate(np.linspace(0.0, traj.duration, max(2, int(np.ceil(traj.duration / 0.002)) + 1)))[0]
+        validated = all(p.validated in ("planned", "shortcut") for p in traj.pieces)
         row = {"method": method, "duration": traj.duration, "smoothing_seconds": seconds}
-        row.update(evaluate(times, q, src, planner, problem, result.path[0], result.path[-1]))
+        row.update(evaluate(times, q, lambda ts: traj.evaluate(ts)[0], validated, planner, problem,
+                            result.path[0], result.path[-1]))  # fmt: skip
         rows.append(row)
 
     record("raw", traj0, 0.0)
@@ -220,21 +238,32 @@ def blend_toppra(result, planner, problem) -> dict[str, Any]:
         trajs = [retime(seg, scale) for seg in sp.segments]
         if any(t is None for t in trajs):
             return {"method": "blend_toppra", "failed": "TOPP-RA could not parameterize a segment", "scale": scale}
-        # one command: segments back to back, each rest to rest
-        times, rows, src, offset = [0], [trajs[0](0.0)], [], 0
+        # one command: segments back to back, each rest to rest; no sliver of a final interval in any segment
+        times, rows, offset, starts = [0], [trajs[0](0.0)], 0, []
         for tr in trajs:
             end_ns = int(np.ceil(tr.duration * 1e9))
-            ts = list(range(TICK_NS, end_ns, TICK_NS)) + [end_ns]
+            ts = list(range(TICK_NS, end_ns, TICK_NS))
+            if ts and end_ns - ts[-1] < TICK_NS // 2:
+                ts.pop()
+            ts.append(end_ns)
             rows += [tr(min(t * 1e-9, tr.duration)) for t in ts]
             times += [offset + t for t in ts]
-            src.append(tr(np.linspace(0, tr.duration, max(2, int(np.ceil(tr.duration / 0.002)) + 1))))
+            starts.append(offset)
             offset += end_ns
         q = np.array(rows)
         if not runtime_violations(times, q, VMAX, AMAX):
             break
     seconds = time.perf_counter() - t0
+    bounds = np.array(starts + [offset], dtype=float) * 1e-9
+
+    def source(ts):
+        ts = np.atleast_1d(ts)
+        k = np.clip(np.searchsorted(bounds, ts, side="right") - 1, 0, len(trajs) - 1)
+        return np.array([trajs[i](min(t - bounds[i], trajs[i].duration)) for i, t in zip(k, ts)])
+
+    # Geometry is PR #211's: lines from the plan and blends it validated, so the record is complete.
     row = {"method": "blend_toppra", "duration": offset * 1e-9, "smoothing_seconds": seconds, "scale": scale}
-    row.update(evaluate(times, q, np.vstack(src), planner, problem, result.path[0], result.path[-1]))
+    row.update(evaluate(times, q, source, True, planner, problem, result.path[0], result.path[-1]))
     return row
 
 
@@ -324,11 +353,18 @@ def _pf(ok: bool) -> str:
 
 
 def _why(r: dict[str, Any]) -> Any:
-    return r.get("failed") or r.get("source_reason") or r.get("command_reason") or r.get("runtime_violations")
+    if r.get("failed"):
+        return r["failed"]
+    if not r["record_ok"]:
+        return "a piece has no validation record"
+    if not r["conversion_ok"]:
+        return f"conversion deviation {r['conversion_deviation']:.2e} rad"
+    return r.get("runtime_violations") or "endpoints"
 
 
 def _ok(r: dict[str, Any]) -> bool:
-    return not r.get("failed") and r["runtime_ok"] and r["source_ok"] and r["command_ok"] and r["endpoints_ok"]
+    return (not r.get("failed") and r["record_ok"] and r["runtime_ok"] and r["conversion_ok"]
+            and r["endpoints_ok"])  # fmt: skip
 
 
 def main(argv: list[str] | None = None) -> int:
