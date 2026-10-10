@@ -9,7 +9,8 @@ kinds of trajectory and records duration, smoothing time, planning time and ever
 - ``raw``: the planned polyline at rest at every corner (exactly the planned geometry; the safe fallback);
 - ``blend_toppra``: PR #211's blended segments retimed rest to rest by TOPP-RA (needs ``toppra``). If its 2 ms
   command fails the runtime checks, it is re-run with limits x0.98, x0.95, x0.9, and the scale used is recorded;
-- ``smoother_N``: time-optimized shortcuts (``sscbirrt._trajectory``) with an N-iteration budget.
+- ``smoother_N``: time-optimized shortcuts (``sscbirrt._trajectory``) with an N-iteration budget;
+- ``native_smoother_N``: the same in the native core (``smooth_native``; only the random stream differs).
 
 Validation, applied to every result:
 
@@ -173,7 +174,7 @@ def evaluate(times_ns, positions, source, record_ok, planner, problem, start, go
 
 
 def raw_and_smoother(result, planner, problem, seed: int) -> list[dict[str, Any]]:
-    from sscbirrt._trajectory import ShortcutOptions, initial_trajectory, shortcut
+    from sscbirrt._trajectory import ShortcutOptions, initial_trajectory, shortcut, smooth_native
     from sscbirrt.smoothing import coalesce
 
     margin = 1 - 1e-6  # float rounding of sampled positions must stay within ssrobot's exact check
@@ -200,6 +201,11 @@ def raw_and_smoother(result, planner, problem, seed: int) -> list[dict[str, Any]
             options=ShortcutOptions(iterations=budget, seed=seed),
         )
         record(f"smoother_{budget}", traj, time.perf_counter() - t)
+        rows[-1]["accepted"] = traj.diagnostics["accepted"]
+    for budget in BUDGETS:  # wall time includes lowering the problem (a fresh native collision checker)
+        t = time.perf_counter()
+        traj = smooth_native(planner, problem, result.path, vmax, amax, ShortcutOptions(iterations=budget, seed=seed))
+        record(f"native_smoother_{budget}", traj, time.perf_counter() - t)
         rows[-1]["accepted"] = traj.diagnostics["accepted"]
     return rows
 
@@ -322,15 +328,15 @@ def _gates(args) -> None:
             valid = [r for r in rows if _ok(r)]
             durs = [r["duration"] for r in valid] or [float("nan")]
             smooth = [r.get("smoothing_seconds", 0.0) for r in valid] or [0.0]
-            print(f"  {method:14s} valid {len(valid)}/{len(rows)}  median {np.median(durs):.2f}s  "
+            print(f"  {method:20s} valid {len(valid)}/{len(rows)}  median {np.median(durs):.2f}s  "
                   f"p90 {np.percentile(durs, 90):.2f}s  smoothing p90 {np.percentile(smooth, 90):.3f}s")  # fmt: skip
             for r in [r for r in rows if not _ok(r)][:3]:
                 print(f"    invalid: {_why(r)}")
         plan_p90 = float(np.percentile([r["planning_seconds"] for r in recs], 90))
         solve_p90 = float(np.percentile([r["solve_seconds"] for r in recs], 90))
         base = by.get("blend_toppra", {})
-        for budget in data["budgets"]:
-            prop = by.get(f"smoother_{budget}", {})
+        for method in [f"{kind}smoother_{b}" for kind in ("", "native_") for b in data["budgets"]]:
+            prop = by.get(method, {})
             pairs = [(prop[s], base[s]) for s in prop if s in base and _ok(prop[s]) and _ok(base[s])]
             if not pairs:
                 continue
@@ -341,7 +347,7 @@ def _gates(args) -> None:
             sp90 = float(np.percentile([p["smoothing_seconds"] for p, _ in pairs], 90))
             hard = all(_ok(r) for r in prop.values())
             speed = hi_d < 0 and hi_r <= 1.0
-            head = f"  smoother_{budget} vs blend_toppra, {len(pairs)} pairs:"
+            head = f"  {method} vs blend_toppra, {len(pairs)} pairs:"
             print(f"{head} median diff CI [{lo_d:+.2f}, {hi_d:+.2f}] s, p90 ratio CI [{lo_r:.2f}, {hi_r:.2f}]")
             print(f"    hard gates {_pf(hard)}, duration gates {_pf(speed)}")
             print(f"    smoothing p90 {sp90:.3f}s vs plan() p90 {plan_p90:.3f}s {_pf(sp90 <= plan_p90)}; "

@@ -17,12 +17,16 @@ from sscbirrt._trajectory import (
     fixed_time,
     initial_trajectory,
     min_time,
+    piece_from_native,
+    ramp_from_native,
     shortcut,
+    smooth_native,
     synchronize,
     verify,
 )
+from sscbirrt.backends import native
 from sscbirrt.smoothing import coalesce
-from sscbirrt.testing import NoCollision, PlanarArm, PlanarIK
+from sscbirrt.testing import NoCollision, PlanarArm, PlanarIK, Wall
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -243,3 +247,104 @@ class TestRuntimeCommand:
             except validation.ValidationError:
                 theirs = True
             assert ours == theirs
+
+
+needs_native = pytest.mark.skipif(not native.available(), reason="sscbirrt._native is not built")
+
+
+def _same_ramp(a, b):
+    if a is None or b is None:
+        return a is None and b is None
+    pairs = list(zip((a.x0, a.v0, *(x for p in a.pieces for x in p)), (b.x0, b.v0, *(x for p in b.pieces for x in p))))
+    return len(a.pieces) == len(b.pieces) and all(abs(x - y) <= 1e-12 for x, y in pairs)
+
+
+@needs_native
+class TestNativeParity:
+    """One contract, two implementations: the native ramps, synchronization and corners equal Python's."""
+
+    def test_ramps_match(self):
+        n = native._native
+        for x0, v0, x1, v1, vmax, amax in _cases(2000, 5):
+            py = min_time(x0, v0, x1, v1, vmax, amax)
+            nat = n.ramp_min_time(x0, v0, x1, v1, vmax, amax)
+            assert _same_ramp(py, None if nat is None else ramp_from_native(nat))
+            for f in (0.95, 1.0, 1.03, 1.5, 3.0):  # below the minimum (None), at it, and above
+                T = f * py.duration
+                nat = n.ramp_fixed_time(x0, v0, x1, v1, T, vmax, amax)
+                assert _same_ramp(
+                    fixed_time(x0, v0, x1, v1, T, vmax, amax), None if nat is None else ramp_from_native(nat)
+                )
+
+    def test_synchronization_and_corners_match(self):
+        rng = np.random.default_rng(6)
+        vmax, amax = np.array([1.0, 2.0, 0.5]), np.array([3.0, 1.0, 2.0])
+        for _ in range(500):
+            q0, q1 = rng.uniform(-2, 2, 3), rng.uniform(-2, 2, 3)
+            v0, v1 = rng.uniform(-1, 1, 3) * vmax, rng.uniform(-1, 1, 3) * vmax
+            py = synchronize(q0, v0, q1, v1, vmax, amax)
+            nat = native._native.synchronize(*(list(map(float, x)) for x in (q0, v0, q1, v1, vmax, amax)))
+            assert (py is None) == (nat is None)
+            if py is not None:
+                assert all(_same_ramp(a, b) for a, b in zip(py.ramps, piece_from_native(nat).ramps))
+        path = U_PATH + [U_PATH[-1]]  # a repeated waypoint is dropped
+        assert np.array_equal(np.array(native._native.coalesce([list(q) for q in path])), np.array(coalesce(path)))
+
+
+SHIFTED_U = [q + np.array([0.0, -0.5]) for q in U_PATH]  # around the block Wall(0, 0.1, 0.9, extent=0.4)
+
+
+def _native_smooth(planner, problem, path=U_PATH, iterations=200, seed=0):
+    return smooth_native(planner, problem, path, VMAX, AMAX, ShortcutOptions(iterations=iterations, seed=seed))
+
+
+@needs_native
+class TestNativeSmoother:
+    def test_faster_valid_recorded_and_at_rest(self):
+        tool = _tool()
+        planner = _planner()
+        traj = _native_smooth(planner, _problem(planner, U_PATH))
+        assert traj.duration < initial_trajectory(coalesce(U_PATH), VMAX, AMAX).duration
+        assert traj.diagnostics["accepted"] > 0 and len(traj.diagnostics["attempts"]) == 200
+        records = {p.validated for p in traj.pieces}
+        assert records <= {"planned", "shortcut"} and "shortcut" in records
+        (q0, v0, _), (q1, v1, _) = traj.state(0.0), traj.state(traj.duration)
+        assert np.allclose(q0, U_PATH[0], atol=1e-12) and np.allclose(q1, U_PATH[-1], atol=1e-9)
+        assert np.abs(v0).max() < 1e-9 and np.abs(v1).max() < 1e-9
+        times, q = traj.sample(2_000_000)
+        assert tool.runtime_violations(times, q, 1.0, 2.0) == []
+
+    def test_deterministic_for_a_seed(self):
+        planner = _planner()
+        problem = _problem(planner, U_PATH)
+        a, b = _native_smooth(planner, problem, seed=4), _native_smooth(planner, problem, seed=4)
+        ts = np.linspace(0, a.duration, 50)
+        assert a.duration == b.duration and np.array_equal(a.evaluate(ts)[0], b.evaluate(ts)[0])
+
+    def test_never_deeper_into_an_obstacle_than_the_resolution(self):
+        planner = _planner()
+        res = planner.config.edge_resolution
+        problem = _problem(planner, SHIFTED_U, validator=Wall(0, 0.1, 0.9, extent=0.4))
+        traj = _native_smooth(planner, problem, path=SHIFTED_U, iterations=300)
+        q, _, _ = traj.evaluate(np.linspace(0, traj.duration, 4000))
+        assert not [x for x in q if 0.1 + res < x[0] < 0.9 - res and abs(x[1]) < 0.4 - res]
+        assert any("in collision" in str(a.get("rejected")) for a in traj.diagnostics["attempts"])
+
+    def test_durations_match_the_reference_in_distribution(self):
+        """Only the random stream differs, so over seeds the two smoothers reach similar durations."""
+        planner = _planner()
+        problem = _problem(planner, SHIFTED_U, validator=Wall(0, 0.1, 0.9, extent=0.4))
+        traj0 = initial_trajectory(coalesce(SHIFTED_U), VMAX, AMAX)
+        py = [_smooth(planner, problem, traj0, iterations=100, seed=s).duration for s in range(20)]
+        nat = [_native_smooth(planner, problem, path=SHIFTED_U, iterations=100, seed=s).duration for s in range(20)]
+        assert abs(np.median(py) - np.median(nat)) < 0.1 * np.median(py)
+
+    def test_python_objects_have_no_native_form(self):
+        planner = _planner()
+
+        class Block:
+            def is_valid(self, q):
+                return True
+
+        with pytest.raises(native.NativeUnsupported):
+            _native_smooth(planner, _problem(planner, U_PATH, validator=Block()))

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "sscbirrt/sscbirrt.hpp"
+#include "sscbirrt/trajectory.hpp"
 #if SSCBIRRT_HAS_SSIK
 #include "sscbirrt/ssik/ssik_arm.hpp"
 #include "sscbirrt/tsr/tsr.hpp"
@@ -45,6 +46,26 @@ std::vector<JointBoxObstacles::Box> to_boxes(const std::vector<std::pair<std::ve
   out.reserve(in.size());
   for (const auto& [lo, hi] : in) out.push_back({lo, hi});
   return out;
+}
+
+// Trajectory data crosses as plain tuples (#214): a ramp is (x0, v0, [(duration, acceleration), ...]), a piece is
+// (validated, [ramp, ...]). sscbirrt._trajectory.from_native rebuilds the Python objects.
+using RampData = std::tuple<double, double, std::vector<std::pair<double, double>>>;
+using PieceData = std::pair<std::string, std::vector<RampData>>;
+using AttemptData = std::tuple<int, double, double, std::optional<double>, std::string, bool>;
+
+RampData ramp_data(const trajectory::Ramp& r) {
+  std::vector<std::pair<double, double>> segs;
+  segs.reserve(r.segments.size());
+  for (const auto& s : r.segments) segs.emplace_back(s.duration, s.acceleration);
+  return {r.x0, r.v0, std::move(segs)};
+}
+
+PieceData piece_data(const trajectory::Piece& p) {
+  std::vector<RampData> ramps;
+  ramps.reserve(p.ramps.size());
+  for (const auto& r : p.ramps) ramps.push_back(ramp_data(r));
+  return {p.validated, std::move(ramps)};
 }
 
 }  // namespace
@@ -250,6 +271,47 @@ PYBIND11_MODULE(_native, m) {
           "Solve with the GIL released. No Python object is touched after entry.");
 
   m.def("why_inadmissible", [](const PlanningProblem& p, const Config& q) { return Planner::why_inadmissible(p, q); });
+
+  // ----- trajectory smoothing (#214, not yet public API) ---------------------------------------
+  m.def("ramp_min_time", [](double x0, double v0, double x1, double v1, double vmax, double amax) {
+    auto r = trajectory::min_time(x0, v0, x1, v1, vmax, amax);
+    return r ? std::optional<RampData>(ramp_data(*r)) : std::nullopt;
+  });
+  m.def("ramp_fixed_time", [](double x0, double v0, double x1, double v1, double T, double vmax, double amax) {
+    auto r = trajectory::fixed_time(x0, v0, x1, v1, T, vmax, amax);
+    return r ? std::optional<RampData>(ramp_data(*r)) : std::nullopt;
+  });
+  m.def("synchronize", [](const Config& q0, const Config& v0, const Config& q1, const Config& v1,
+                          const std::vector<double>& vmax, const std::vector<double>& amax) {
+    auto p = trajectory::synchronize(q0, v0, q1, v1, vmax, amax);
+    return p ? std::optional<PieceData>(piece_data(*p)) : std::nullopt;
+  });
+  m.def("coalesce", &trajectory::coalesce, py::arg("path"), py::arg("tolerance") = 1e-9);
+  m.def(
+      "smooth_trajectory",
+      [](const Planner& planner, const PlanningProblem& problem, const std::vector<Config>& path,
+         const std::vector<double>& vmax, const std::vector<double>& amax, int iterations, std::uint64_t seed,
+         std::optional<int> patience, std::optional<double> time_budget, double min_interval) {
+        trajectory::ShortcutOptions o;
+        o.iterations = iterations;
+        o.seed = seed;
+        o.patience = patience;
+        o.time_budget = time_budget;
+        o.min_interval = min_interval;
+        trajectory::ShortcutReport rep;
+        const trajectory::Trajectory traj = trajectory::smooth_path_in_time(planner, problem, path, vmax, amax, o, &rep);
+        std::vector<PieceData> pieces;
+        pieces.reserve(traj.pieces.size());
+        for (const auto& p : traj.pieces) pieces.push_back(piece_data(p));
+        std::vector<AttemptData> attempts;
+        attempts.reserve(rep.attempts.size());
+        for (const auto& a : rep.attempts) attempts.emplace_back(a.iteration, a.t1, a.t2, a.gain, a.rejected, a.accepted);
+        return std::make_tuple(std::move(pieces), std::move(attempts), rep.accepted, rep.seconds);
+      },
+      py::arg("planner"), py::arg("problem"), py::arg("path"), py::arg("vmax"), py::arg("amax"), py::arg("iterations"),
+      py::arg("seed"), py::arg("patience") = std::nullopt, py::arg("time_budget") = std::nullopt,
+      py::arg("min_interval") = 1e-3, py::call_guard<py::gil_scoped_release>(),
+      "Time-optimized shortcuts on a planned path, with the GIL released: (pieces, attempts, accepted, seconds).");
 
   // ----- pose regions (v1.6.0) ------------------------------------------------------------------
   py::class_<tsr::TSR>(m, "TSR", "sstsr's own C++ TSR (sstsr >= 3.3); frames as 4x4 nested lists, Bw as 6x2.")

@@ -392,8 +392,10 @@ def straight_line(q0: np.ndarray, q1: np.ndarray, vmax: np.ndarray, amax: np.nda
 def initial_trajectory(corners: Sequence[np.ndarray], vmax: np.ndarray, amax: np.ndarray) -> Trajectory:
     """The planned polyline (its true corners), at rest at every corner: the safe fallback, exactly the planned
     geometry."""
-    pieces = [straight_line(a, b, vmax, amax) for a, b in zip(corners, corners[1:])]
-    return Trajectory([p for p in pieces if p.duration > _EPS_T] or pieces[:1], np.asarray(vmax), np.asarray(amax))
+    pieces = [p for p in (straight_line(a, b, vmax, amax) for a, b in zip(corners, corners[1:])) if p.duration > _EPS_T]
+    if not pieces:  # the start is the goal: one piece at rest there
+        pieces = [straight_line(corners[0], corners[0], vmax, amax)]
+    return Trajectory(pieces, np.asarray(vmax), np.asarray(amax))
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -492,4 +494,61 @@ def shortcut(
         "seconds": time.perf_counter() - started,
         "options": options,
     }
+    return traj
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# Native (cpp/src/trajectory.cpp): the same contract; only the random stream differs
+# --------------------------------------------------------------------------------------------------------------------
+
+
+def ramp_from_native(data: Any) -> Ramp:
+    x0, v0, segments = data
+    return Ramp(float(x0), float(v0), tuple((float(d), float(a)) for d, a in segments))
+
+
+def piece_from_native(data: Any) -> Piece:
+    validated, ramps = data
+    return Piece(tuple(ramp_from_native(r) for r in ramps), validated)
+
+
+def smooth_native(
+    planner: Any,
+    problem: Any,
+    path: Sequence[np.ndarray],
+    vmax: np.ndarray,
+    amax: np.ndarray,
+    options: ShortcutOptions | None = None,
+) -> Trajectory:
+    """``shortcut(initial_trajectory(coalesce(path)))`` in the native core, with the GIL released. Raises
+    ``NativeUnsupported`` when the problem has no native form (a Python validator or motion validator, say)."""
+    from sscbirrt.backends import native
+
+    options = options or ShortcutOptions()
+    lowered = native.lower(problem, planner.config)
+    pieces, attempts, accepted, seconds = native._native.smooth_trajectory(
+        native._native.Planner(lowered.config),
+        lowered.problem,
+        np.asarray(path, dtype=float).tolist(),
+        [float(v) for v in vmax],
+        [float(a) for a in amax],
+        int(options.iterations),
+        int(options.seed),
+        options.patience,
+        options.time_budget,
+        float(options.min_interval),
+    )
+    records = []
+    for it, t1, t2, gain, rejected, ok in attempts:
+        record: dict[str, Any] = {"iteration": it, "t1": t1, "t2": t2}
+        if gain is not None:
+            record["gain"] = gain
+        if ok:
+            record["accepted"] = True
+        else:
+            record["rejected"] = rejected
+        records.append(record)
+    diagnostics = {"attempts": records, "accepted": accepted, "seconds": seconds, "options": options, "native": True}
+    traj = Trajectory([piece_from_native(p) for p in pieces], np.asarray(vmax), np.asarray(amax))
+    traj.diagnostics = diagnostics
     return traj
