@@ -113,6 +113,7 @@ struct Attempt {
   std::optional<double> gain;
   std::string rejected;  // empty when accepted
   bool accepted = false;
+  double elapsed = 0.0;  // seconds from the start of the loop to the end of this attempt (a diagnostic)
 };
 
 struct ShortcutReport {

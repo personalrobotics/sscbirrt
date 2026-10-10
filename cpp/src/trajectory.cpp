@@ -471,6 +471,7 @@ Trajectory shortcut(Trajectory traj, const MotionValidator& motion, const WhyIna
   int since_gain = 0;
   Config qa, va, qb, vb;
   for (int it = 0; it < options.iterations; ++it) {
+    if (!rep.attempts.empty()) rep.attempts.back().elapsed = elapsed();
     if (options.time_budget && elapsed() > *options.time_budget) break;
     if (options.patience && since_gain >= *options.patience) break;
     const double T = traj.duration();
@@ -508,6 +509,7 @@ Trajectory shortcut(Trajectory traj, const MotionValidator& motion, const WhyIna
     since_gain = 0;
   }
   rep.seconds = elapsed();
+  if (!rep.attempts.empty()) rep.attempts.back().elapsed = rep.seconds;
   return traj;
 }
 

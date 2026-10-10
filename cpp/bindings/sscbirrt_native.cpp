@@ -52,7 +52,7 @@ std::vector<JointBoxObstacles::Box> to_boxes(const std::vector<std::pair<std::ve
 // (validated, [ramp, ...]). sscbirrt._trajectory.from_native rebuilds the Python objects.
 using RampData = std::tuple<double, double, std::vector<std::pair<double, double>>>;
 using PieceData = std::pair<std::string, std::vector<RampData>>;
-using AttemptData = std::tuple<int, double, double, std::optional<double>, std::string, bool>;
+using AttemptData = std::tuple<int, double, double, std::optional<double>, std::string, bool, double>;
 
 RampData ramp_data(const trajectory::Ramp& r) {
   std::vector<std::pair<double, double>> segs;
@@ -305,7 +305,7 @@ PYBIND11_MODULE(_native, m) {
         for (const auto& p : traj.pieces) pieces.push_back(piece_data(p));
         std::vector<AttemptData> attempts;
         attempts.reserve(rep.attempts.size());
-        for (const auto& a : rep.attempts) attempts.emplace_back(a.iteration, a.t1, a.t2, a.gain, a.rejected, a.accepted);
+        for (const auto& a : rep.attempts) attempts.emplace_back(a.iteration, a.t1, a.t2, a.gain, a.rejected, a.accepted, a.elapsed);
         return std::make_tuple(std::move(pieces), std::move(attempts), rep.accepted, rep.seconds);
       },
       py::arg("planner"), py::arg("problem"), py::arg("path"), py::arg("vmax"), py::arg("amax"), py::arg("iterations"),

@@ -23,6 +23,13 @@ Validation, applied to every result:
 
     uv run python tools/trajectory_benchmark.py run --seeds 100 --output benchmarks/trajectory/run.json
     uv run python tools/trajectory_benchmark.py gates benchmarks/trajectory/run.json
+
+Stopping rules are studied offline. Shortcutting is sequential, so stopping after k attempts gives exactly the
+trajectory a k-iteration run gives: ``trace`` records one long native run per seed (every attempt's gain and elapsed
+time), and ``stopping`` replays its prefixes under each candidate rule, against a ``run`` file's baselines:
+
+    uv run python tools/trajectory_benchmark.py trace --seeds 100 --output benchmarks/trajectory/trace.json
+    uv run python tools/trajectory_benchmark.py stopping trace.json run.json
 """
 
 from __future__ import annotations
@@ -373,6 +380,139 @@ def _ok(r: dict[str, Any]) -> bool:
             and r["endpoints_ok"])  # fmt: skip
 
 
+# --------------------------------------------------------------------------------------------------------------------
+# Stopping rules (#214): one long trace per seed, replayed offline
+# --------------------------------------------------------------------------------------------------------------------
+
+TRACE_ITERATIONS = 400
+
+
+def lower_bound(start, goal, vmax, amax) -> float:
+    """Obstacle-free lower bound on any trajectory's duration: the slowest joint's rest-to-rest minimum time."""
+    from sscbirrt._trajectory import min_time
+
+    return max(min_time(float(a), 0.0, float(b), 0.0, float(v), float(c)).duration
+               for a, b, v, c in zip(start, goal, vmax, amax))  # fmt: skip
+
+
+def _trace(args) -> None:
+    from sscbirrt._trajectory import ShortcutOptions, initial_trajectory, smooth_native
+    from sscbirrt.smoothing import coalesce
+
+    out = {"issue": 214, "limits": {"velocity": VMAX, "acceleration": AMAX}, "iterations": args.iterations,
+           "seeds": args.seeds, "records": []}  # fmt: skip
+    for name in args.problems:
+        solve = load(name)
+        for seed in range(args.seeds):
+            result, wall, planner, problem = solve(seed)
+            if not result.success:
+                continue
+            margin = 1 - 1e-6
+            vmax, amax = np.full(len(result.path[0]), VMAX * margin), np.full(len(result.path[0]), AMAX * margin)
+            t = time.perf_counter()
+            traj = smooth_native(planner, problem, result.path, vmax, amax,
+                                 ShortcutOptions(iterations=args.iterations, seed=seed))  # fmt: skip
+            total = time.perf_counter() - t
+            d = traj.diagnostics
+            out["records"].append({
+                "problem": name, "seed": seed, "planning_seconds": wall,
+                "initial": initial_trajectory(coalesce(result.path), vmax, amax).duration,
+                "lower_bound": lower_bound(result.path[0], result.path[-1], vmax, amax),
+                "final": traj.duration, "overhead_seconds": total - d["seconds"],
+                # per attempt: accepted, gain (None if no interpolant), elapsed seconds
+                "attempts": [[bool(a.get("accepted")), a.get("gain"), a["elapsed"]] for a in d["attempts"]],
+            })  # fmt: skip
+            if not args.quiet:
+                print(f"{name} s{seed}: {out['records'][-1]['final']:.2f}s", flush=True)
+    Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.output).write_text(json.dumps(out) + "\n")
+    print(f"wrote {args.output}")
+
+
+def durations(rec: dict[str, Any]) -> np.ndarray:
+    """Duration after each number of attempts, 0..n: an accepted shortcut shortens the trajectory by its gain."""
+    gains = [g if ok else 0.0 for ok, g, _ in rec["attempts"]]
+    return rec["initial"] - np.concatenate([[0.0], np.cumsum(gains)])
+
+
+def _rules(cap: int) -> dict[str, Any]:
+    """Candidate rules: each maps a trace record to the number of attempts made before stopping (at most cap)."""
+
+    def fixed(k):
+        return lambda rec: min(k, cap, len(rec["attempts"]))
+
+    def patience(p):
+        def rule(rec):
+            since = 0
+            for k, (ok, _, _) in enumerate(rec["attempts"][:cap], start=1):
+                since = 0 if ok else since + 1
+                if since >= p:
+                    return k
+            return min(cap, len(rec["attempts"]))
+
+        return rule
+
+    def rate(window, eps):  # the last `window` attempts improved the duration by less than eps of it
+        def rule(rec):
+            D = durations(rec)
+            for k in range(window, min(cap, len(rec["attempts"])) + 1):
+                if D[k - window] - D[k] < eps * D[k]:
+                    return k
+            return min(cap, len(rec["attempts"]))
+
+        return rule
+
+    def gap(delta, then):  # within delta of the obstacle-free lower bound, or `then`
+        def rule(rec):
+            D = durations(rec)
+            k_then = then(rec)
+            hit = np.nonzero(D[: k_then + 1] <= (1 + delta) * rec["lower_bound"])[0]
+            return int(hit[0]) if len(hit) else k_then
+
+        return rule
+
+    rules: dict[str, Any] = {f"fixed {k}": fixed(k) for k in (25, 50, 100, 200, 400) if k <= cap}
+    rules.update({f"patience {p}": patience(p) for p in (10, 20, 30, 50)})
+    rules.update({f"rate {w}/{e:.1%}": rate(w, e) for w in (20, 40) for e in (0.005, 0.01, 0.02)})
+    rules.update({f"gap 5% | patience {p}": gap(0.05, patience(p)) for p in (20, 30)})
+    return rules
+
+
+def _stopping(args) -> None:
+    trace = json.loads(Path(args.trace).read_text())
+    run = json.loads(Path(args.run).read_text())
+    base = {
+        (r["problem"], r["seed"]): row for r in run["records"] for row in r["rows"] if row["method"] == "blend_toppra"
+    }
+    check = {(r["problem"], r["seed"]): row["duration"] for r in run["records"] for row in r["rows"]
+             if row["method"] == "native_smoother_100"}  # fmt: skip
+    for name in dict.fromkeys(r["problem"] for r in trace["records"]):
+        recs = [r for r in trace["records"] if r["problem"] == name]
+        drift = max((abs(durations(r)[100] - check[(name, r["seed"])]) for r in recs if (name, r["seed"]) in check),
+                    default=float("nan"))  # fmt: skip
+        plan_p90 = float(np.percentile([r["planning_seconds"] for r in recs], 90))
+        print(f"\n== {name}: {len(recs)} seeds; replay at 100 vs the run's native_smoother_100: max |diff| "
+              f"{drift:.1e} s; plan() p90 {plan_p90:.3f}s")  # fmt: skip
+        print(f"  {'rule':24s} {'cap':>4s} {'attempts med/p90':>17s} {'smoothing p90':>14s} {'median':>7s} "
+              f"{'loss vs 400 med/p90':>20s}  median diff CI       p90 ratio CI")  # fmt: skip
+        for cap in (100, 400):
+            for label, rule in _rules(cap).items():
+                ks = [rule(r) for r in recs]
+                D = [float(durations(r)[k]) for r, k in zip(recs, ks)]
+                secs = [r["overhead_seconds"] + (r["attempts"][k - 1][2] if k else 0.0) for r, k in zip(recs, ks)]
+                loss = [d / float(durations(r)[-1]) - 1 for r, d in zip(recs, D)]
+                pairs = [(d, base[(name, r["seed"])]["duration"]) for r, d in zip(recs, D)
+                         if (name, r["seed"]) in base and _ok(base[(name, r["seed"])])]  # fmt: skip
+                a, b = np.array([p for p, _ in pairs]), np.array([q for _, q in pairs])
+                lo_d, hi_d = _boot(lambda x, y: np.median(x - y), a, b)
+                lo_r, hi_r = _boot(lambda x, y: np.percentile(x, 90) / np.percentile(y, 90), a, b)
+                ok = hi_d < 0 and hi_r <= 1.0 and np.percentile(secs, 90) <= plan_p90
+                print(f"  {label:24s} {cap:4d} {np.median(ks):8.0f}/{np.percentile(ks, 90):<8.0f} "
+                      f"{np.percentile(secs, 90):13.3f}s {np.median(D):6.2f}s "
+                      f"{np.median(loss):9.1%}/{np.percentile(loss, 90):<9.1%} "
+                      f"[{lo_d:+.2f}, {hi_d:+.2f}]  [{lo_r:.2f}, {hi_r:.2f}]  {_pf(ok)}")  # fmt: skip
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -384,8 +524,17 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--quiet", action="store_true")
     g = sub.add_parser("gates")
     g.add_argument("run")
+    t = sub.add_parser("trace")
+    t.add_argument("--problems", nargs="+", default=["pick", "transport"])
+    t.add_argument("--seeds", type=int, default=100)
+    t.add_argument("--iterations", type=int, default=TRACE_ITERATIONS)
+    t.add_argument("--output", default="trajectory_trace.json")
+    t.add_argument("--quiet", action="store_true")
+    st = sub.add_parser("stopping")
+    st.add_argument("trace")
+    st.add_argument("run", help="a run file with blend_toppra and native_smoother_100 rows for the same seeds")
     args = ap.parse_args(argv)
-    {"run": _run, "gates": _gates}[args.cmd](args)
+    {"run": _run, "gates": _gates, "trace": _trace, "stopping": _stopping}[args.cmd](args)
     return 0
 
 

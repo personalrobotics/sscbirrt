@@ -458,6 +458,8 @@ def shortcut(
     attempts: list[dict[str, Any]] = []
     started, since_gain = time.perf_counter(), 0
     for it in range(options.iterations):
+        if attempts:
+            attempts[-1]["elapsed"] = time.perf_counter() - started
         if options.time_budget is not None and time.perf_counter() - started > options.time_budget:
             break
         if options.patience is not None and since_gain >= options.patience:
@@ -488,10 +490,13 @@ def shortcut(
         traj = traj.splice(float(t1), float(t2), Piece(piece.ramps, "shortcut"))
         record["accepted"] = True
         since_gain = 0
+    seconds = time.perf_counter() - started
+    if attempts:
+        attempts[-1]["elapsed"] = seconds
     traj.diagnostics = {
         "attempts": attempts,
         "accepted": sum(bool(a.get("accepted")) for a in attempts),
-        "seconds": time.perf_counter() - started,
+        "seconds": seconds,
         "options": options,
     }
     return traj
@@ -539,8 +544,8 @@ def smooth_native(
         float(options.min_interval),
     )
     records = []
-    for it, t1, t2, gain, rejected, ok in attempts:
-        record: dict[str, Any] = {"iteration": it, "t1": t1, "t2": t2}
+    for it, t1, t2, gain, rejected, ok, elapsed in attempts:
+        record: dict[str, Any] = {"iteration": it, "t1": t1, "t2": t2, "elapsed": elapsed}
         if gain is not None:
             record["gain"] = gain
         if ok:
