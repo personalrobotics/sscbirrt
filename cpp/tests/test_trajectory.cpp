@@ -160,6 +160,7 @@ TEST(shortcuts_are_faster_at_rest_at_the_ends_and_deterministic) {
   const PlanningProblem p = problem(std::make_shared<AcceptAll>());
   ShortcutOptions o;
   o.iterations = 200;
+  o.convergence_window = std::nullopt;  // a fixed budget
   o.seed = 3;
   ShortcutReport rep;
   const Trajectory a = smooth_path_in_time(planner(), p, dense_u(), kV, kA, o, &rep);
@@ -201,6 +202,22 @@ TEST(a_shortcut_never_gets_deeper_into_an_obstacle_than_the_resolution) {
   bool collided = false;
   for (const Attempt& at : rep.attempts) collided = collided || at.rejected.find("in collision") != std::string::npos;
   CHECK(collided);
+}
+
+TEST(defaults_stop_once_the_last_window_barely_improved) {
+  const PlanningProblem p = problem(std::make_shared<JointBoxObstacles>(
+      std::vector<JointBoxObstacles::Box>{{{0.1, 0.1}, {0.9, 0.9}}}));
+  const ShortcutOptions o;  // the defaults
+  ShortcutReport rep;
+  const Trajectory traj = smooth_path_in_time(planner(), p, dense_u(), kV, kA, o, &rep);
+  const auto n = static_cast<int>(rep.attempts.size());
+  CHECK(rep.stopped == "converged");
+  CHECK(*o.convergence_window <= n && n < o.iterations);
+  double recent = 0.0;  // what the last window of attempts saved
+  for (int i = n - *o.convergence_window; i < n; ++i) {
+    if (rep.attempts[static_cast<std::size_t>(i)].accepted) recent += *rep.attempts[static_cast<std::size_t>(i)].gain;
+  }
+  CHECK(recent < o.convergence_tolerance * traj.duration() * (1 + 1e-9));
 }
 
 HARNESS_MAIN()

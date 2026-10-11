@@ -291,10 +291,13 @@ PYBIND11_MODULE(_native, m) {
       "smooth_trajectory",
       [](const Planner& planner, const PlanningProblem& problem, const std::vector<Config>& path,
          const std::vector<double>& vmax, const std::vector<double>& amax, int iterations, std::uint64_t seed,
-         std::optional<int> patience, std::optional<double> time_budget, double min_interval) {
+         std::optional<int> convergence_window, double convergence_tolerance, std::optional<int> patience,
+         std::optional<double> time_budget, double min_interval) {
         trajectory::ShortcutOptions o;
         o.iterations = iterations;
         o.seed = seed;
+        o.convergence_window = convergence_window;
+        o.convergence_tolerance = convergence_tolerance;
         o.patience = patience;
         o.time_budget = time_budget;
         o.min_interval = min_interval;
@@ -306,12 +309,20 @@ PYBIND11_MODULE(_native, m) {
         std::vector<AttemptData> attempts;
         attempts.reserve(rep.attempts.size());
         for (const auto& a : rep.attempts) attempts.emplace_back(a.iteration, a.t1, a.t2, a.gain, a.rejected, a.accepted, a.elapsed);
-        return std::make_tuple(std::move(pieces), std::move(attempts), rep.accepted, rep.seconds);
+        return std::make_tuple(std::move(pieces), std::move(attempts), rep.accepted, rep.seconds, rep.stopped);
       },
       py::arg("planner"), py::arg("problem"), py::arg("path"), py::arg("vmax"), py::arg("amax"), py::arg("iterations"),
-      py::arg("seed"), py::arg("patience") = std::nullopt, py::arg("time_budget") = std::nullopt,
-      py::arg("min_interval") = 1e-3, py::call_guard<py::gil_scoped_release>(),
-      "Time-optimized shortcuts on a planned path, with the GIL released: (pieces, attempts, accepted, seconds).");
+      py::arg("seed"), py::arg("convergence_window"), py::arg("convergence_tolerance"), py::arg("patience"),
+      py::arg("time_budget"), py::arg("min_interval"), py::call_guard<py::gil_scoped_release>(),
+      "Time-optimized shortcuts on a planned path, with the GIL released: "
+      "(pieces, attempts, accepted, seconds, stopped).");
+  m.def("shortcut_defaults", [] {
+    const trajectory::ShortcutOptions o;
+    return py::dict(py::arg("iterations") = o.iterations, py::arg("convergence_window") = o.convergence_window,
+                    py::arg("convergence_tolerance") = o.convergence_tolerance, py::arg("patience") = o.patience,
+                    py::arg("time_budget") = o.time_budget, py::arg("seed") = o.seed,
+                    py::arg("min_interval") = o.min_interval);
+  }, "The native ShortcutOptions defaults, for the test that holds them equal to Python's.");
 
   // ----- pose regions (v1.6.0) ------------------------------------------------------------------
   py::class_<tsr::TSR>(m, "TSR", "sstsr's own C++ TSR (sstsr >= 3.3); frames as 4x4 nested lists, Bw as 6x2.")

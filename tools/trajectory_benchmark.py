@@ -205,15 +205,27 @@ def raw_and_smoother(result, planner, problem, seed: int) -> list[dict[str, Any]
             motion_validator=planner._motion_validator(problem),
             admissible=lambda q: planner._admissible(problem, q),
             resolution=planner.config.edge_resolution,
-            options=ShortcutOptions(iterations=budget, seed=seed),
+            options=ShortcutOptions(iterations=budget, convergence_window=None, seed=seed),
         )
         record(f"smoother_{budget}", traj, time.perf_counter() - t)
         rows[-1]["accepted"] = traj.diagnostics["accepted"]
     for budget in BUDGETS:  # wall time includes lowering the problem (a fresh native collision checker)
         t = time.perf_counter()
-        traj = smooth_native(planner, problem, result.path, vmax, amax, ShortcutOptions(iterations=budget, seed=seed))
+        options = ShortcutOptions(iterations=budget, convergence_window=None, seed=seed)
+        traj = smooth_native(planner, problem, result.path, vmax, amax, options)
         record(f"native_smoother_{budget}", traj, time.perf_counter() - t)
         rows[-1]["accepted"] = traj.diagnostics["accepted"]
+    for method, smooth in (("smoother_default", None), ("native_smoother_default", smooth_native)):  # the defaults
+        t = time.perf_counter()
+        if smooth is None:
+            traj = shortcut(traj0, motion_validator=planner._motion_validator(problem),
+                            admissible=lambda q: planner._admissible(problem, q),
+                            resolution=planner.config.edge_resolution, options=ShortcutOptions(seed=seed))  # fmt: skip
+        else:
+            traj = smooth(planner, problem, result.path, vmax, amax, ShortcutOptions(seed=seed))
+        record(method, traj, time.perf_counter() - t)
+        rows[-1].update(accepted=traj.diagnostics["accepted"], attempts=len(traj.diagnostics["attempts"]),
+                        stopped=traj.diagnostics["stopped"])  # fmt: skip
     return rows
 
 
@@ -335,14 +347,14 @@ def _gates(args) -> None:
             valid = [r for r in rows if _ok(r)]
             durs = [r["duration"] for r in valid] or [float("nan")]
             smooth = [r.get("smoothing_seconds", 0.0) for r in valid] or [0.0]
-            print(f"  {method:20s} valid {len(valid)}/{len(rows)}  median {np.median(durs):.2f}s  "
+            print(f"  {method:24s} valid {len(valid)}/{len(rows)}  median {np.median(durs):.2f}s  "
                   f"p90 {np.percentile(durs, 90):.2f}s  smoothing p90 {np.percentile(smooth, 90):.3f}s")  # fmt: skip
             for r in [r for r in rows if not _ok(r)][:3]:
                 print(f"    invalid: {_why(r)}")
         plan_p90 = float(np.percentile([r["planning_seconds"] for r in recs], 90))
         solve_p90 = float(np.percentile([r["solve_seconds"] for r in recs], 90))
         base = by.get("blend_toppra", {})
-        for method in [f"{kind}smoother_{b}" for kind in ("", "native_") for b in data["budgets"]]:
+        for method in [f"{kind}smoother_{b}" for kind in ("", "native_") for b in [*data["budgets"], "default"]]:
             prop = by.get(method, {})
             pairs = [(prop[s], base[s]) for s in prop if s in base and _ok(prop[s]) and _ok(base[s])]
             if not pairs:
@@ -357,6 +369,10 @@ def _gates(args) -> None:
             head = f"  {method} vs blend_toppra, {len(pairs)} pairs:"
             print(f"{head} median diff CI [{lo_d:+.2f}, {hi_d:+.2f}] s, p90 ratio CI [{lo_r:.2f}, {hi_r:.2f}]")
             print(f"    hard gates {_pf(hard)}, duration gates {_pf(speed)}")
+            if "attempts" in next(iter(prop.values())):
+                n = [r["attempts"] for r in prop.values()]
+                stops = {k: sum(r["stopped"] == k for r in prop.values()) for k in ("converged", "iterations")}
+                print(f"    attempts median {np.median(n):.0f} p90 {np.percentile(n, 90):.0f}; stopped {stops}")
             print(f"    smoothing p90 {sp90:.3f}s vs plan() p90 {plan_p90:.3f}s {_pf(sp90 <= plan_p90)}; "
                   f"vs solver-only p90 {solve_p90:.3f}s {_pf(sp90 <= solve_p90)}")  # fmt: skip
 
@@ -410,8 +426,8 @@ def _trace(args) -> None:
             margin = 1 - 1e-6
             vmax, amax = np.full(len(result.path[0]), VMAX * margin), np.full(len(result.path[0]), AMAX * margin)
             t = time.perf_counter()
-            traj = smooth_native(planner, problem, result.path, vmax, amax,
-                                 ShortcutOptions(iterations=args.iterations, seed=seed))  # fmt: skip
+            options = ShortcutOptions(iterations=args.iterations, convergence_window=None, seed=seed)  # a full trace
+            traj = smooth_native(planner, problem, result.path, vmax, amax, options)
             total = time.perf_counter() - t
             d = traj.diagnostics
             out["records"].append({

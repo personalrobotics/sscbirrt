@@ -1687,6 +1687,17 @@ after Hauser and Ng-Thow-Hing (2010).
   validator, or the planner's default. The configurations a custom validator
   returns are re-checked, as the planner's edge rule does. The default
   validator's were checked by the same predicate, so they are not re-checked.
+- **Stopping.** `ShortcutOptions` holds the same named defaults in both
+  implementations, and a test keeps them equal. The defaults:
+  - stop once the last 40 attempts shortened the trajectory by less than 0.5%
+    of its duration;
+  - stop after at most 400 attempts;
+  - set no time budget.
+
+  These come from the #214 stopping-rule study
+  (`benchmarks/trajectory/20261010-165450-trace.*`). Every rule except
+  `time_budget` depends only on the trajectory, so a seed gives the same
+  result on any machine. The report says which rule stopped the run.
 - **A validation record.** Each piece carries `validated`: `"planned"`
   (the planner's own edge) or `"shortcut"` (checked by the smoother).
 - **Binding.** `_native.smooth_trajectory(planner, problem, path, vmax, amax,

@@ -99,12 +99,18 @@ Trajectory initial_trajectory(const std::vector<Config>& corners, const std::vec
 // Positions along a piece no farther apart than `resolution` in joint space.
 std::vector<Config> piece_samples(const Piece& piece, double resolution, const std::vector<double>& vmax);
 
+// When shortcutting stops, and how it draws. The defaults equal sscbirrt._trajectory.ShortcutOptions' (a test holds
+// them equal). Every rule but time_budget depends only on the trajectory, so a seed gives the same result anywhere.
 struct ShortcutOptions {
-  int iterations = 100;
-  std::optional<int> patience;          // stop after this many attempts without improvement
-  std::optional<double> time_budget;    // seconds
+  int iterations = 400;  // attempts at most: a deterministic backstop
+  // Converged: stop once the last convergence_window attempts shortened the trajectory by less than
+  // convergence_tolerance of its duration. nullopt disables the rule.
+  std::optional<int> convergence_window = 40;
+  double convergence_tolerance = 0.005;
+  std::optional<int> patience;        // stop after this many attempts without improvement
+  std::optional<double> time_budget;  // seconds; the one machine-dependent rule
   std::uint64_t seed = 0;
-  double min_interval = 1e-3;           // seconds; shorter windows are not worth an attempt
+  double min_interval = 1e-3;  // seconds; shorter windows are not worth an attempt
 };
 
 struct Attempt {
@@ -120,6 +126,7 @@ struct ShortcutReport {
   std::vector<Attempt> attempts;
   int accepted = 0;
   double seconds = 0.0;
+  std::string stopped;  // "iterations", "converged", "patience" or "time_budget"
 };
 
 // Why q is inadmissible, or nullopt.

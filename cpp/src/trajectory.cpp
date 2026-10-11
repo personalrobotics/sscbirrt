@@ -469,11 +469,29 @@ Trajectory shortcut(Trajectory traj, const MotionValidator& motion, const WhyIna
   const auto started = Clock::now();
   const auto elapsed = [&] { return std::chrono::duration<double>(Clock::now() - started).count(); };
   int since_gain = 0;
+  rep.stopped = "iterations";
+  std::vector<double> history{traj.duration()};  // duration after each number of attempts
+  const int window = options.convergence_window.value_or(0);
   Config qa, va, qb, vb;
   for (int it = 0; it < options.iterations; ++it) {
-    if (!rep.attempts.empty()) rep.attempts.back().elapsed = elapsed();
-    if (options.time_budget && elapsed() > *options.time_budget) break;
-    if (options.patience && since_gain >= *options.patience) break;
+    if (!rep.attempts.empty()) {
+      rep.attempts.back().elapsed = elapsed();
+      history.push_back(traj.duration());
+    }
+    if (options.time_budget && elapsed() > *options.time_budget) {
+      rep.stopped = "time_budget";
+      break;
+    }
+    if (options.patience && since_gain >= *options.patience) {
+      rep.stopped = "patience";
+      break;
+    }
+    const auto k = static_cast<std::size_t>(it);
+    if (window > 0 && it >= window &&
+        history[k - static_cast<std::size_t>(window)] - history[k] < options.convergence_tolerance * history[k]) {
+      rep.stopped = "converged";
+      break;
+    }
     const double T = traj.duration();
     const double u1 = unit(rng) * T, u2 = unit(rng) * T;
     Attempt& rec = rep.attempts.emplace_back();

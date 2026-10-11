@@ -124,7 +124,7 @@ def _smooth(planner, problem, traj, iterations=200, seed=0):
         motion_validator=planner._motion_validator(problem),
         admissible=lambda q: planner._admissible(problem, q),
         resolution=planner.config.edge_resolution,
-        options=ShortcutOptions(iterations=iterations, seed=seed),
+        options=ShortcutOptions(iterations=iterations, convergence_window=None, seed=seed),
     )
 
 
@@ -295,7 +295,8 @@ SHIFTED_U = [q + np.array([0.0, -0.5]) for q in U_PATH]  # around the block Wall
 
 
 def _native_smooth(planner, problem, path=U_PATH, iterations=200, seed=0):
-    return smooth_native(planner, problem, path, VMAX, AMAX, ShortcutOptions(iterations=iterations, seed=seed))
+    options = ShortcutOptions(iterations=iterations, convergence_window=None, seed=seed)
+    return smooth_native(planner, problem, path, VMAX, AMAX, options)
 
 
 @needs_native
@@ -348,3 +349,42 @@ class TestNativeSmoother:
 
         with pytest.raises(native.NativeUnsupported):
             _native_smooth(planner, _problem(planner, U_PATH, validator=Block()))
+
+
+class TestStopping:
+    """The defaults stop on convergence, a rule that depends only on the trajectory, never on the machine."""
+
+    def _check(self, traj):
+        d, o = traj.diagnostics, traj.diagnostics["options"]
+        n = len(d["attempts"])
+        assert d["stopped"] == "converged" and o.convergence_window <= n < o.iterations
+        gains = [a.get("gain", 0.0) if a.get("accepted") else 0.0 for a in d["attempts"]]
+        recent = sum(gains[n - o.convergence_window :])  # what the last window of attempts saved
+        assert recent < o.convergence_tolerance * traj.duration * (1 + 1e-9)
+
+    def test_defaults_stop_once_converged_in_both_backends(self):
+        planner = _planner()
+        problem = _problem(planner, SHIFTED_U, validator=Wall(0, 0.1, 0.9, extent=0.4))
+        traj0 = initial_trajectory(coalesce(SHIFTED_U), VMAX, AMAX)
+        py = shortcut(traj0, motion_validator=planner._motion_validator(problem),
+                      admissible=lambda q: planner._admissible(problem, q),
+                      resolution=planner.config.edge_resolution, options=ShortcutOptions())  # fmt: skip
+        self._check(py)
+        if native.available():
+            nat = smooth_native(planner, problem, SHIFTED_U, VMAX, AMAX)
+            self._check(nat)
+            again = smooth_native(planner, problem, SHIFTED_U, VMAX, AMAX)
+            assert again.duration == nat.duration and len(again.diagnostics["attempts"]) == len(
+                nat.diagnostics["attempts"]
+            )
+
+    def test_disabled_runs_every_iteration(self):
+        planner = _planner()
+        traj = _smooth(planner, _problem(planner, U_PATH), initial_trajectory(coalesce(U_PATH), VMAX, AMAX), 150)
+        assert len(traj.diagnostics["attempts"]) == 150 and traj.diagnostics["stopped"] == "iterations"
+
+    @needs_native
+    def test_native_defaults_equal_the_reference(self):
+        from dataclasses import asdict
+
+        assert native._native.shortcut_defaults() == asdict(ShortcutOptions())

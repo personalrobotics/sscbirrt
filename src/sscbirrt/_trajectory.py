@@ -434,9 +434,19 @@ def piece_samples(piece: Piece, resolution: float, vmax: np.ndarray) -> np.ndarr
 
 @dataclass(frozen=True)
 class ShortcutOptions:
-    iterations: int = 100
+    """When shortcutting stops, and how it draws. The defaults are the native core's too (a test holds them equal);
+    the stopping defaults come from the #214 stopping-rule study (``tools/trajectory_benchmark.py stopping``).
+
+    Every rule but ``time_budget`` depends only on the trajectory, so a seed gives the same result on any machine.
+    """
+
+    iterations: int = 400  # attempts at most: a deterministic backstop
+    # Converged: stop once the last ``convergence_window`` attempts shortened the trajectory by less than
+    # ``convergence_tolerance`` of its duration. ``None`` disables the rule.
+    convergence_window: int | None = 40
+    convergence_tolerance: float = 0.005
     patience: int | None = None  # stop after this many attempts without improvement
-    time_budget: float | None = None  # seconds
+    time_budget: float | None = None  # seconds; the one machine-dependent rule
     seed: int = 0
     min_interval: float = 1e-3  # seconds; shorter windows are not worth an attempt
 
@@ -451,18 +461,26 @@ def shortcut(
 ) -> Trajectory:
     """Randomized time-optimized shortcuts: replace ``[t1, t2]`` by the synchronized time-optimal interpolant between
     the states there when it is faster and admissible under the planning problem's boundary. Deterministic for a
-    seed (and an iteration budget; a wall-time budget is not)."""
+    seed unless a ``time_budget`` stops it."""
     options = options or ShortcutOptions()
     rng = np.random.default_rng(options.seed)
     vmax, amax = traj.velocity_limits, traj.acceleration_limits
     attempts: list[dict[str, Any]] = []
-    started, since_gain = time.perf_counter(), 0
+    history = [traj.duration]  # duration after each number of attempts
+    started, since_gain, stopped = time.perf_counter(), 0, "iterations"
+    window = options.convergence_window
     for it in range(options.iterations):
         if attempts:
             attempts[-1]["elapsed"] = time.perf_counter() - started
+            history.append(traj.duration)
         if options.time_budget is not None and time.perf_counter() - started > options.time_budget:
+            stopped = "time_budget"
             break
         if options.patience is not None and since_gain >= options.patience:
+            stopped = "patience"
+            break
+        if window and it >= window and history[it - window] - history[it] < options.convergence_tolerance * history[it]:
+            stopped = "converged"
             break
         T = traj.duration
         t1, t2 = np.sort(rng.uniform(0.0, T, 2))
@@ -497,6 +515,7 @@ def shortcut(
         "attempts": attempts,
         "accepted": sum(bool(a.get("accepted")) for a in attempts),
         "seconds": seconds,
+        "stopped": stopped,
         "options": options,
     }
     return traj
@@ -531,7 +550,7 @@ def smooth_native(
 
     options = options or ShortcutOptions()
     lowered = native.lower(problem, planner.config)
-    pieces, attempts, accepted, seconds = native._native.smooth_trajectory(
+    pieces, attempts, accepted, seconds, stopped = native._native.smooth_trajectory(
         native._native.Planner(lowered.config),
         lowered.problem,
         np.asarray(path, dtype=float).tolist(),
@@ -539,6 +558,8 @@ def smooth_native(
         [float(a) for a in amax],
         int(options.iterations),
         int(options.seed),
+        options.convergence_window,
+        float(options.convergence_tolerance),
         options.patience,
         options.time_budget,
         float(options.min_interval),
@@ -553,7 +574,8 @@ def smooth_native(
         else:
             record["rejected"] = rejected
         records.append(record)
-    diagnostics = {"attempts": records, "accepted": accepted, "seconds": seconds, "options": options, "native": True}
+    diagnostics = {"attempts": records, "accepted": accepted, "seconds": seconds, "stopped": stopped,
+                   "options": options, "native": True}  # fmt: skip
     traj = Trajectory([piece_from_native(p) for p in pieces], np.asarray(vmax), np.asarray(amax))
     traj.diagnostics = diagnostics
     return traj
