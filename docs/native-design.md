@@ -1664,3 +1664,59 @@ validator's invariance is declared. Candidates, their order and their
 verdicts are unchanged, so results are identical apart from cost.
 `state_checks` still counts every candidate; `reused_verdicts` counts the
 validator calls saved.
+
+# v3.5.0 addendum: trajectory smoothing (#214)
+
+`cpp/include/sscbirrt/trajectory.hpp` (namespace `sscbirrt::trajectory`, in
+`sscbirrt::core`, standard library only) is the native form of
+`sscbirrt.trajectory`: bounded-acceleration shortcuts in time, after Hauser
+and Ng-Thow-Hing (2010). It sits behind `CBiRRT.smooth_trajectory` and
+`trajectory=TrajectoryOptions(...)` (see design.md, "Timed trajectories").
+The C++ header is not yet a stable public interface.
+
+- **One contract.** Python is the reference. Ramps (`min_time`, `fixed_time`,
+  `verify`), `synchronize`, `coalesce`, `straight_line`, `initial_trajectory`,
+  `piece_samples` and the shortcut loop's accept/reject rules mirror it
+  operation by operation. `trajectory.cpp` is built with
+  `-ffp-contract=off`, so both round the same way on every platform. The
+  parity tests require equal verdicts and values within 1e-12.
+- **The one difference is the random stream**, as for the planner: `unit()`
+  over `mt19937_64` against numpy. A seed is repeatable within each backend.
+  Across backends the durations agree in distribution, not per seed.
+- **Validation.** Every shortcut is sampled no farther apart than the
+  planner's resolution (`PlannerConfig::resolution()`). Each sample must pass
+  `Planner::why_inadmissible`, and each chord must pass the problem's motion
+  validator, or the planner's default. The configurations a custom validator
+  returns are re-checked, as the planner's edge rule does. The default
+  validator's were checked by the same predicate, so they are not re-checked.
+- **Stopping.** The C++ `ShortcutOptions` and Python's `TrajectoryOptions`
+  hold the same named defaults, and a test keeps them equal. The limits are
+  passed separately, and the seed is resolved at the call. The defaults:
+  - stop once the last 40 attempts shortened the trajectory by less than 0.5%
+    of its duration;
+  - stop after at most 400 attempts;
+  - set no time budget.
+
+  These come from the #214 stopping-rule study
+  (`benchmarks/trajectory/20261010-165450-trace.*`). Every rule except
+  `time_budget` depends only on the trajectory, so a seed gives the same
+  result on any machine. The report says which rule stopped the run.
+- **Cancellation.** `ShortcutOptions::cancel` is polled before each attempt,
+  as the solver polls its token. An aborted run returns the valid trajectory
+  so far, with `stopped == "aborted"`. In Python, `abort_fn` drives the token
+  through the same poller `native.solve` uses.
+- **A validation record.** Each piece carries `validated`: `"planned"`
+  (the planner's own edge) or `"shortcut"` (checked by the smoother).
+- **Binding.** `_native.smooth_trajectory(planner, problem, path, vmax, amax,
+  iterations, seed, convergence_window, convergence_tolerance, patience,
+  time_budget, min_interval, cancel)` runs with the GIL released. It returns
+  pieces as plain tuples, which `backends.native.smooth_trajectory` rebuilds
+  as the Python `Trajectory`. When `solve` ran natively, `CBiRRT` reuses that
+  solve's lowered problem rather than lowering again.
+  Evaluation and sampling are therefore shared. `ramp_min_time`,
+  `ramp_fixed_time`, `synchronize` and `coalesce` are exposed for the parity
+  tests.
+- **Coverage.** As for `solve`: with `backend="auto"`, a problem that does
+  not lower (a Python validator or motion validator, say) is smoothed by the
+  Python reference, with the reasons on `Trajectory.backend_reasons`.
+  `backend="native"` raises `NativeUnsupported`.

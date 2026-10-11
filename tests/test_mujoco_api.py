@@ -59,6 +59,20 @@ class TestPlan:
         model, data, arm = world
         assert plan(model, data, arm, goal=[2.5, -1.2], backend="python", seed=0).backend == "python"
 
+    @pytest.mark.parametrize("backend", ["native", "python"])
+    def test_trajectory_is_timed_named_and_leaves_the_path(self, world, backend):
+        from sscbirrt import TrajectoryOptions
+
+        model, data, arm = world
+        plain = plan(model, data, arm, goal=[2.5, -1.2], seed=0, backend=backend)
+        r = plan(model, data, arm, goal=[2.5, -1.2], seed=0, backend=backend,
+                 trajectory=TrajectoryOptions(1.57, 4.0))  # fmt: skip
+        assert plain.trajectory is None and all(np.array_equal(a, b) for a, b in zip(plain.path, r.path))
+        traj = r.trajectory
+        assert traj.joint_names == ("j0", "j1") and traj.backend == backend and traj.seed == 0
+        assert np.allclose(traj.start[0], r.path[0]) and np.allclose(traj.goal[0], r.path[-1])
+        assert all(p.validated in ("planned", "shortcut") for p in traj.pieces)
+
     def test_holding_takes_the_grasp_from_the_current_poses(self, world):
         model, data, arm = world
         assert plan(model, data, arm, goal=[2.5, -1.2], holding="block", seed=0).success

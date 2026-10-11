@@ -201,6 +201,7 @@ returns the path, or the `PlanResult` with `return_details=True`:
 | `backend`, `backend_reasons` | `"native"` or `"python"`, and why not native when `"auto"` chose Python |
 | `provenance` | dependency versions, and for MuJoCo the scene and snapshot hashes and the SSIK family |
 | `stats` | the cost of the solve by component (counts and seconds) |
+| `trajectory` | with `trajectory=TrajectoryOptions(...)`, the timed trajectory along `path` ([Timed trajectories](#timed-trajectories-for-execution)); otherwise `None` |
 
 ### When planning fails
 
@@ -235,6 +236,92 @@ leaves room to move between the start and the goal.
 `backend="native"` raises `NativeUnsupported`, listing every component without
 a native form, instead of planning; the default `backend="auto"` plans in
 Python with that list in `result.backend_reasons`.
+
+## Timed trajectories for execution
+
+A planned path is a polyline. A robot executing it under finite acceleration
+has to stop at every corner. Given the joints' velocity and acceleration
+limits, sscbirrt also returns a timed trajectory that carries velocity
+through corners and cuts them where it is safe. It is usually much faster.
+
+```python
+from sscbirrt import TrajectoryOptions
+
+limits = TrajectoryOptions(velocity_limits=1.57, acceleration_limits=4.0)   # rad/s, rad/s^2: one, or one per joint
+result = plan(model, data, arm, goal=goal, seed=0, trajectory=limits)
+
+traj = result.trajectory                   # result.path is unchanged
+q, qd, qdd = traj.evaluate([0.0, 0.5, traj.duration])
+times_ns, positions = traj.sample(2_000_000)   # a command every 2 ms, for your runtime
+```
+
+The same `trajectory=` works on `CBiRRT.solve` and `CBiRRT.plan`
+(`return_details=True`). `CBiRRT.smooth_trajectory(problem, path, options)`
+times a path you already have.
+
+**Three things, kept apart.**
+- **The path** (`result.path`): the planner's validated waypoints, never
+  changed.
+- **The trajectory** (`result.trajectory`): the exact source law. Each joint
+  follows piecewise-constant acceleration (`law="piecewise-parabolic"`), and
+  `evaluate` gives `q`, `qdot` and `qddot` exactly. It records:
+  - `joint_names`, `start` and `goal`;
+  - the limits it used;
+  - the `resolution` it was validated at;
+  - `seed`, `backend` and why it `stopped`;
+  - a per-attempt log in `diagnostics`.
+- **A command** (`traj.sample(dt_ns)`): positions every `dt_ns` nanoseconds.
+  It is a discretization for one command period, not the source law. A
+  runtime that interpolates between samples deviates from the trajectory, so
+  validate the command under your runtime's own interpolation and limits.
+
+**How it works.** It starts from the path at rest at every corner, which is
+exactly the planned geometry. It then repeatedly picks two times `t1 < t2`.
+It replaces the motion between them with the fastest motion between the two
+states that respects every joint's limits, with all joints finishing
+together. A replacement is kept only if it is faster and passes the planning
+problem's own checks: samples at most `edge_resolution` apart, each in the
+joint limits, collision-free and inside the path constraint, with the motion
+validator accepting every chord between them. That is the planner's own
+guarantee for an edge, no stronger. Every piece records how it was checked:
+`"planned"` (the planner's edge) or `"shortcut"`. Smoothing never fails: at
+worst you get the path with a stop at every corner. After Hauser and
+Ng-Thow-Hing (ICRA 2010).
+
+**When it stops.** These are `TrajectoryOptions` defaults, each easy to
+change:
+
+| Option | Default | Why |
+|---|---|---|
+| `convergence_window`, `convergence_tolerance` | 40, 0.005 | stop once the last 40 attempts shortened the trajectory by less than 0.5% |
+| `iterations` | 400 | a hard cap on attempts |
+| `time_budget` | `None` | a wall-clock limit (seconds) for slow computers; the only machine-dependent rule |
+| `patience` | `None` | stop after this many attempts in a row without improvement |
+| `seed` | `None` | the solve's seed, or 0 |
+
+Apart from `time_budget`, every rule depends only on the trajectory, so a
+seed gives the same trajectory on any machine. `abort_fn` (in
+`CBiRRTConfig`) also stops smoothing, keeping the trajectory so far.
+
+**What it claims.** Each shortcut is the fastest motion between its two
+states under the limits. The whole trajectory is not globally time-optimal.
+It models joint position, velocity and acceleration limits only: no jerk,
+torque, contact or tracking-error limits. Acceleration jumps at piece
+boundaries. With an equality path constraint (zero width), most shortcuts
+leave the constraint and are rejected, so most stops remain.
+
+**Measured** on the pick and transport demos, 100 seeds each, at 1.57 rad/s
+and 4 rad/s² ([#214](https://github.com/personalrobotics/sscbirrt/issues/214),
+`tools/trajectory_benchmark.py`):
+
+| | Path with stops | Blends + TOPP-RA | Timed trajectory | Smoothing time (p90) |
+|---|---|---|---|---|
+| pick, median duration | 6.23 s | 4.47 s | **3.61 s** | 0.04 s |
+| transport, median duration | 3.97 s | 2.78 s | **2.42 s** | 0.015 s |
+
+Every timed trajectory passed validation. The blends + TOPP-RA baseline
+failed it on 8–9% of seeds. On these demos, smoothing took less time than
+the solve that found the path (p90 0.076 s and 0.070 s).
 
 ## How it works
 
