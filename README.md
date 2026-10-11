@@ -4,14 +4,27 @@
 [![Python](https://img.shields.io/pypi/pyversions/sscbirrt.svg?v=1)](https://pypi.org/project/sscbirrt/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A planner over sets of configurations. A planning problem names a start set,
-a goal set, a set the whole path must stay inside, and a validity predicate;
-a solution is a path that begins in the start set, ends in the goal set, and
-stays inside the path set with every configuration valid. A set is anything
-that answers `contains(q)`. The algorithm is CBiRRT (Berenson et al., 2009),
-a bidirectional RRT that grows trees from many roots and projects onto
-constraints. Task Space Regions are one representation of a set; the planner
-does not depend on it, and sets you define yourself take the same roles.
+A motion planner over sets of configurations that also times its paths for
+execution. One call plans a path and, given the joints' velocity and
+acceleration limits, returns a timed trajectory along it, ready for a robot to
+follow.
+
+- **Planning.** A planning problem names a start set, a goal set, a set the
+  whole path must stay inside, and a validity predicate. A solution is a path
+  that begins in the start set, ends in the goal set, and stays inside the
+  path set with every configuration valid. A set is anything that answers
+  `contains(q)`. The algorithm is CBiRRT (Berenson et al., 2009), a
+  bidirectional RRT that grows trees from many roots and projects onto
+  constraints. Task Space Regions are one representation of a set; the
+  planner does not depend on it, and sets you define yourself take the same
+  roles.
+- **Trajectory smoothing.** The path's corners become motion: the trajectory
+  carries velocity through them and cuts them short, under the limits. Every
+  cut is checked against the same problem, so the trajectory keeps the path's
+  guarantees: collision-free, inside the path set, at the planner's
+  resolution. On the pick and transport demos the median trajectory takes
+  about 60% of the time of stopping at every corner
+  ([Timed trajectories](#timed-trajectories-for-execution)).
 
 <table>
 <tr><td><img src="docs/images/pick_yellow_seed5.gif" alt="UR5e reaching the yellow can in a wide arc over the boxes" width="100%"></td><td><img src="docs/images/pick_green_seed9.gif" alt="UR5e reaching the green can, straight in" width="100%"></td><td><img src="docs/images/pick_blue_seed54.gif" alt="UR5e reaching the blue can, over the boxes" width="100%"></td></tr>
@@ -42,7 +55,7 @@ renders both.
 ## Install
 
 ```bash
-pip install sscbirrt                                  # the planner, its C++ core, and Task Space Regions
+pip install sscbirrt                                  # the planner and trajectory smoother, their C++ core, and TSRs
 pip install "sscbirrt[mujoco,ssik]" sscbirrt-assets   # plus MuJoCo, analytical IK, and the UR5e model below
 pip install "sscbirrt[demo]" && sscbirrt-demo         # everything above, and the rendered demos (MP4s in ./sscbirrt-demo)
 ```
@@ -71,6 +84,7 @@ import numpy as np
 import sscbirrt_assets
 from tsr import TSR
 
+from sscbirrt import TrajectoryOptions
 from sscbirrt.mujoco import Arm, plan
 
 xml = sscbirrt_assets.ur5e_xml()                       # the Menagerie UR5e, packaged
@@ -88,8 +102,10 @@ T[:3, :3] = np.diag([1.0, -1.0, -1.0])
 T[:3, 3] = [0.5, 0.2, 0.3]
 goal = TSR(T0_w=T, Bw=[[-0.02, 0.02], [-0.02, 0.02], [0, 0.05], [0, 0], [0, 0], [-np.pi, np.pi]])
 
-result = plan(model, data, arm, goal=goal, seed=0)
+limits = TrajectoryOptions(velocity_limits=1.57, acceleration_limits=4.0)   # rad/s and rad/s^2, every joint
+result = plan(model, data, arm, goal=goal, seed=0, trajectory=limits)
 print(result.success, result.backend, len(result.path), f"{result.planning_time:.3f} s")
+print(f"{result.trajectory.duration:.2f} s to execute")   # result.trajectory.sample(2_000_000): a 2 ms command
 ```
 
 `plan(model, data, arm, goal=..., start=..., constraint=..., holding=...)`
