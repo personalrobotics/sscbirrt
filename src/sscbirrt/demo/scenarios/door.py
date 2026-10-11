@@ -12,7 +12,7 @@ from tsr import TSR, Robotiq2F85, TSRChain
 from sscbirrt import CBiRRTConfig
 from sscbirrt.backends.mujoco import site_offset_in_body
 from sscbirrt.demo.render import Camera, Clip
-from sscbirrt.demo.scenarios import Outcome, Problem, Scenario
+from sscbirrt.demo.scenarios import TIMING, Outcome, Problem, Scenario, timing_report
 from sscbirrt.demo.scene import (
     DOOR_BODY,
     DOOR_HINGE,
@@ -107,10 +107,12 @@ def run(seed: int) -> Outcome:
     # Reach the handle from HOME first (the door closed), to any grasp of it, then open the door from wherever the
     # reach arrived. The other order planned the opening from any grasp and then had to reach that one IK solution,
     # which can lie on a joint winding HOME cannot reach within the limits (#198).
-    reach = plan(model, data, arm, goal=p.kwargs["start"], config=config, seed=seed)
+    reach = plan(model, data, arm, goal=p.kwargs["start"], config=config, seed=seed, trajectory=TIMING)
     if not reach.success:
         return Outcome(False, [f"reach: no path: {reach.failure_reason}"], model, data)
-    opened = plan(model, data, arm, config=config, seed=seed, **{**p.kwargs, "start": reach.path[-1]})
+    opened = plan(
+        model, data, arm, config=config, seed=seed, trajectory=TIMING, **{**p.kwargs, "start": reach.path[-1]}
+    )
     if not opened.success:
         return Outcome(False, [f"open: no path: {opened.failure_reason}"], model, data)
 
@@ -122,15 +124,17 @@ def run(seed: int) -> Outcome:
         f"as a TSR chain: {opened.backend}, {opened.planning_time:.2f} s, {len(opened.path)} waypoints",
     ]
     report += [f"  not native because: {r}" for r in dict.fromkeys(opened.backend_reasons)]
+    report += [f"reach {timing_report(reach)}", f"open {timing_report(opened)}"]
 
     clips = [
-        Clip(path=reach.path, title="Reach the handle", lines=["The door is closed"]),
+        Clip(path=reach.path, title="Reach the handle", lines=["The door is closed"], trajectory=reach.trajectory),
         Clip(
             path=opened.path,
             title="Open the door: a TSR chain",
             lines=["The gripper follows the handle's arc about the hinge"],
             held=(DOOR_BODY, held[DOOR_BODY][1]),
             grip=2 * HANDLE_RADIUS,
+            trajectory=opened.trajectory,
         ),
     ]
     return Outcome(True, report, model, data, clips, Camera(lookat=(0.35, -0.3, 0.5), distance=2.0, azimuth=-120.0))

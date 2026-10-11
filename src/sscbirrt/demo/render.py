@@ -15,6 +15,7 @@ import mujoco
 import numpy as np
 
 from sscbirrt.demo.scene import EE_SITE, UR5E_JOINTS, close_gripper, set_arm
+from sscbirrt.trajectory import Trajectory
 
 
 class RenderUnavailable(RuntimeError):
@@ -45,16 +46,23 @@ class Clip:
     grip: float | None = None  # close the gripper's fingers on an object this wide (visual only)
     trail_rgba: tuple[float, float, float, float] = (0.1, 0.4, 0.9, 0.9)
     joints: Sequence[str] = field(default_factory=lambda: list(UR5E_JOINTS))
+    trajectory: Trajectory | None = None  # when set, the clip plays this timed motion in real time, not ``path``
 
 
 def _clip_configurations(clip: Clip, fps: int, joint_speed: float, hold_start: float, hold_end: float):
-    """Frame-by-frame configurations: a hold, the path at a bounded joint speed, a hold."""
+    """Frame-by-frame configurations: a hold, the motion, a hold. A timed clip plays its trajectory in real time;
+    otherwise the path plays at a bounded joint speed."""
     path = [np.asarray(q, dtype=float) for q in clip.path]
-    per_frame = joint_speed / fps
     qs = [path[0]] * int(hold_start * fps)
-    for a, b in zip(path, path[1:]):
-        n = max(1, math.ceil(np.max(np.abs(b - a)) / per_frame))
-        qs.extend(a + (b - a) * t for t in np.arange(n) / n)
+    if clip.trajectory is not None:
+        traj = clip.trajectory
+        q, _, _ = traj.evaluate(np.arange(math.ceil(traj.duration * fps) + 1) / fps)  # clamped at the end
+        qs.extend(q)
+    else:
+        per_frame = joint_speed / fps
+        for a, b in zip(path, path[1:]):
+            n = max(1, math.ceil(np.max(np.abs(b - a)) / per_frame))
+            qs.extend(a + (b - a) * t for t in np.arange(n) / n)
     qs.extend([path[-1]] * max(1, int(hold_end * fps)))
     return qs
 
@@ -139,6 +147,7 @@ def render_video(
 ) -> int:
     """Render ``clips`` one after another into ``out_path`` (H.264 MP4). Returns the number of frames written.
 
+    A clip with a ``trajectory`` plays it in real time; ``joint_speed`` (rad/s) paces the others along their paths.
     ``max_frames`` subsamples evenly (for smoke tests); the video then plays faster, not shorter. ``overlay=False``
     leaves out the text boxes (for small renders, where the caption goes alongside instead).
     """

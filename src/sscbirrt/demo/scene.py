@@ -28,6 +28,11 @@ HOME = np.array([0.0, -np.pi / 2, np.pi / 2, -np.pi / 2, -np.pi / 2, 0.0])
 # The tsr package's canonical grasp frame for the 2F-85 (tsr.Robotiq2F85): the forward edge of the gripper
 # housing, z = approach, y = finger opening. The same site mj_manipulator attaches.
 EE_SITE = "gripper_grasp_site"
+
+# Joint speed and acceleration limits the demos time their motions under (rad/s, rad/s^2): conservative for a UR5e
+# (rated 3.14 rad/s), and the limits of #214's benchmark, so the README's numbers and its videos agree.
+VELOCITY_LIMIT = 1.57
+ACCELERATION_LIMIT = 4.0
 GRIPPER_BODY = "gripper_base_mount"
 
 TABLE_CENTER = np.array([0.5, 0.0, 0.40])

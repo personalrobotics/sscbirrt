@@ -10,7 +10,7 @@ import mujoco
 from sscbirrt import CBiRRTConfig
 from sscbirrt.demo.grasps import side_grasps
 from sscbirrt.demo.render import Camera, Clip
-from sscbirrt.demo.scenarios import Outcome, Problem, Scenario
+from sscbirrt.demo.scenarios import TIMING, Outcome, Problem, Scenario, timing_report
 from sscbirrt.demo.scene import EE_SITE, HOME, TABLE_TOP_Z, UR5E_JOINTS, build_scene, can_position, set_arm, ur5e_xml
 from sscbirrt.mujoco import Arm, plan
 
@@ -50,7 +50,7 @@ def problem() -> Problem:
 def run(seed: int) -> Outcome:
     p = problem()
     model, data, goals, owner = p.model, p.data, p.kwargs["goal"], owners()
-    result = plan(model, data, p.arm, config=p.config, seed=seed, **p.kwargs)
+    result = plan(model, data, p.arm, config=p.config, seed=seed, trajectory=TIMING, **p.kwargs)
 
     report = [f"goal set: {len(goals)} side-grasp regions of 3 cans (tsr.Robotiq2F85 cylinder primitive)"]
     if not result.success:
@@ -59,6 +59,7 @@ def run(seed: int) -> Outcome:
     report += [
         f"reached: the {reached} (goal_index {result.goal_index})",
         f"backend: {result.backend}, {result.planning_time:.2f} s, {len(result.path)} waypoints, seed {seed}",
+        timing_report(result),
     ]
     report += [f"  not native because: {r}" for r in result.backend_reasons]
     if result.backend == "native":
@@ -74,7 +75,9 @@ def run(seed: int) -> Outcome:
             f"Goal: any side grasp of any can ({len(goals)} regions)",
             f"Planner chose: the {reached}",
             f"{result.backend} backend, planned in {result.planning_time:.2f} s",
+            "Moves at the arm's speed and acceleration limits",
         ],
+        trajectory=result.trajectory,
     )
     return Outcome(True, report, model, data, [clip], Camera())
 
