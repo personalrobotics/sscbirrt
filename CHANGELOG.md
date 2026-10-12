@@ -6,6 +6,8 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-10-11
+
 Timed trajectories for execution (#214). Given joint velocity and
 acceleration limits, sscbirrt now also returns a trajectory along the planned
 path. It carries velocity through corners and cuts them where the planning

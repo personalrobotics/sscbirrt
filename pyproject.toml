@@ -1,6 +1,6 @@
 [project]
 name = "sscbirrt"
-version = "3.4.0"
+version = "3.5.0"
 description = "CBiRRT: a motion planner over sets of starts, goals, and path constraints that also times its paths, with a C++ core and Task Space Regions"
 readme = "README.md"
 requires-python = ">=3.10"
