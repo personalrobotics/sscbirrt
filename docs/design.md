@@ -262,12 +262,13 @@ sampler or projector.
   member; nothing is inferred or declared.
 
   A candidate is used only if it is admissible and a validated route reaches
-  it that makes the path shorter. Two kinds of route are tried, every edge
-  re-validated:
-  - unwinding the path, which keeps its route and makes the turn over its
-    first quarter, half, or whole length, so its end is physically
-    unchanged;
-  - a shortcut from one of its waypoints.
+  it that makes the path shorter. The route unwinds the path: it keeps the
+  path's route and makes the turn over its first quarter, half, or whole
+  length, so its end is physically unchanged. Each new edge is validated.
+  An edge past the turn is the path's own validated edge moved by whole
+  turns. Such an edge is not re-checked when the validator declares
+  `full_turn_invariant` (#200) and there is neither a path constraint nor a
+  custom motion validator.
 
   If an endpoint moved, the path is smoothed again. A finite set is never
   moved: its members are explicit, and `goal_index` names them.

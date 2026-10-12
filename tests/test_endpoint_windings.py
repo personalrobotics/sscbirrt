@@ -94,6 +94,20 @@ class TestGoal:
         assert r.success and np.array_equal(r.path[-1], FAR)
         assert all(planner._admissible(problem, q)[0] for q in r.path)
 
+    def test_a_declared_invariant_validator_skips_rechecks_but_not_results(self):
+        class Invariant:
+            full_turn_invariant = True
+
+            def is_valid(self, q):
+                return True
+
+        plain, inv = _planner(), _planner(validator=Invariant())
+        a, _ = _solve(plain, _fixed(plain, [0.0, 0.3]), FarWinding(NEAR, FAR), seed=3)
+        b, _ = _solve(inv, _fixed(inv, [0.0, 0.3]), FarWinding(NEAR, FAR), seed=3)
+        assert np.allclose(a.path[-1], NEAR) and np.allclose(b.path[-1], NEAR)
+        assert len(a.path) == len(b.path) and all(np.allclose(x, y) for x, y in zip(a.path, b.path))
+        assert b.stats["edge_checks"] <= a.stats["edge_checks"]
+
     def test_without_smoothing_nothing_moves(self):
         planner = _planner(smooth_path=False)
         r, _ = _solve(planner, _fixed(planner, [0.0, 0.3]), FarWinding(NEAR, FAR))

@@ -961,10 +961,10 @@ class CBiRRT:
         pose. The planner proposes the reached endpoint's windings, ``q + 2*pi*k`` on joints whose limits admit a
         full turn (never on continuous joints, whose distance already wraps), and the role's set decides by
         ``contains``, as for every member. A finite set is skipped: its members are explicit and ``goal_index``
-        names them. Candidates are tried in order of their straight-line bound on the path length; for each, the
-        path's waypoints are tried as anchors in order of the same bound, through the shortcut boundary every
-        shortcut uses (``_try_shortcut``). The first shortcut that makes the path shorter is kept: at most one move
-        per endpoint, at most ``smoothing_iterations`` attempts each. Deterministic: no random draws.
+        names them. Candidates are tried in order of their straight-line bound on the path length. Each is reached by
+        unwinding the path (``_unwind``), which keeps its route; every new edge passes the shortcut boundary every
+        shortcut uses (``_try_shortcut``). The first that makes the path shorter is kept: at most one move per
+        endpoint, at most ``smoothing_iterations`` attempts each. Deterministic: no random draws.
         """
         for role in ("goal", "start"):
             if self._aborted():
@@ -1008,20 +1008,6 @@ class CBiRRT:
                 length = sum(dist(a, b) for a, b in zip(unwound[:-1], unwound[1:]))
                 if length < total - 1e-9:
                     return unwound
-            # Or leave the path at a waypoint and go straight there, waypoints in order of the same bound.
-            anchors = sorted(range(len(path) - 1), key=lambda i: (prefix[i] + dist(path[i], target), i))
-            for i in anchors:
-                if prefix[i] + dist(path[i], target) >= total - 1e-9:
-                    break
-                if attempts >= self.config.smoothing_iterations or self._aborted():
-                    return None
-                attempts += 1
-                shortcut = self._try_shortcut(problem, path[i], target)
-                if shortcut is None:
-                    continue
-                length = prefix[i] + sum(dist(a, b) for a, b in zip(shortcut[:-1], shortcut[1:]))
-                if length < total - 1e-9:
-                    return path[:i] + shortcut
         return None
 
     def _unwind(
@@ -1041,8 +1027,20 @@ class CBiRRT:
         delta = target - path[-1]
         moved = [q + min(1.0, prefix[i] / reach) * delta for i, q in enumerate(path)]
         moved[0], moved[-1] = path[0], target  # the start exactly; the end is the checked candidate
+        if not all(self._admissible(problem, q)[0] for q in moved[1:-1]):
+            return None  # every edge below would end at an inadmissible waypoint; states are cheaper than edges
+        # Past the turn, an edge is the path's own validated edge moved by whole turns. When the validator declares
+        # its verdict unchanged by full turns (#200) and nothing else judges motion, that edge needs no new check.
+        same = (
+            bool(getattr(problem.validator, "full_turn_invariant", False))
+            and problem.path_constraint is None
+            and problem.motion_validator is None
+        )
         out = [moved[0]]
-        for a, b in zip(moved[:-1], moved[1:]):
+        for i, (a, b) in enumerate(zip(moved[:-1], moved[1:])):
+            if same and prefix[i] >= reach:
+                out.append(b)
+                continue
             edge = self._try_shortcut(problem, a, b)
             if edge is None:
                 return None

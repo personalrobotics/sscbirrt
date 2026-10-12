@@ -429,24 +429,6 @@ std::optional<std::vector<Config>> Solve::shorten_end(const std::vector<Config>&
         if (length(*unwound) < total - 1e-9) return unwound;
       }
     }
-    // Or leave the path at a waypoint and go straight there, waypoints in order of the same bound.
-    std::vector<double> via(path.size() - 1);
-    for (std::size_t i = 0; i + 1 < path.size(); ++i) via[i] = prefix[i] + space.distance(path[i], target);
-    std::vector<std::size_t> anchors(via.size());
-    for (std::size_t i = 0; i < anchors.size(); ++i) anchors[i] = i;
-    std::stable_sort(anchors.begin(), anchors.end(), [&via](std::size_t a, std::size_t b) { return via[a] < via[b]; });
-    for (const std::size_t i : anchors) {
-      if (via[i] >= total - 1e-9) break;
-      if (attempts >= cfg_.smoothing_iterations || aborted()) return std::nullopt;
-      ++attempts;
-      if (auto shortcut = try_shortcut(path[i], target)) {
-        if (prefix[i] + length(*shortcut) < total - 1e-9) {
-          std::vector<Config> next(path.begin(), path.begin() + static_cast<std::ptrdiff_t>(i));
-          next.insert(next.end(), shortcut->begin(), shortcut->end());
-          return next;
-        }
-      }
-    }
   }
   return std::nullopt;
 }
@@ -464,8 +446,18 @@ std::optional<std::vector<Config>> Solve::unwind(const std::vector<Config>& path
   }
   moved.front() = path.front();
   moved.back() = target;
+  for (std::size_t i = 1; i + 1 < moved.size(); ++i) {
+    if (!admissible(moved[i])) return std::nullopt;  // an edge would end there; states are cheaper than edges
+  }
+  // Past the turn, an edge is the path's own validated edge moved by whole turns. When the validator declares its
+  // verdict unchanged by full turns (#200) and nothing else judges motion, that edge needs no new check.
+  const bool same = p_.validator->full_turn_invariant() && !p_.path_constraint && !p_.motion_validator;
   std::vector<Config> out{moved.front()};
   for (std::size_t i = 0; i + 1 < moved.size(); ++i) {
+    if (same && prefix[i] >= reach) {
+      out.push_back(moved[i + 1]);
+      continue;
+    }
     auto edge = try_shortcut(moved[i], moved[i + 1]);
     if (!edge) return std::nullopt;
     out.insert(out.end(), edge->begin() + 1, edge->end());

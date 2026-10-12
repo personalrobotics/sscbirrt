@@ -623,8 +623,11 @@ contract; `planner.py` is the reference for anything it leaves open.
       length by `1e-9`.
    3. Each candidate must be in the role's set (`contains`) and admissible.
    4. Each candidate is tried as an unwound path, which makes the turn by
-      0.25, 0.5 and 1.0 of the path length, every edge regrown. It is then
-      tried as a straight shortcut from waypoints, in order of their bound.
+      0.25, 0.5 and 1.0 of the path length. Its waypoints are checked first,
+      then its edges are regrown. An edge past the turn is the path's own
+      edge moved by whole turns. It is not regrown when
+      `validator->full_turn_invariant()` holds and there is neither a path
+      constraint nor a custom motion validator.
    5. The first route that makes the path shorter by more than `1e-9` is
       kept.
 

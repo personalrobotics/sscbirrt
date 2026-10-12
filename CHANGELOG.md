@@ -15,9 +15,9 @@ follows [Semantic Versioning](https://semver.org/).
 
   After smoothing, the planner proposes the endpoint's windings, and the
   set's `contains` decides membership. A candidate is used if a validated
-  route makes the path shorter: either unwinding the path while keeping its
-  route, or a shortcut from a waypoint. The pass is deterministic and is in
-  both backends.
+  route makes the path shorter. The route unwinds the path: it keeps the
+  path's route and makes the turn early, so the end of the path is
+  physically unchanged. The pass is deterministic and is in both backends.
 
   `CBiRRTConfig.shorten_endpoints` (default `True`; C++
   `PlannerConfig::shorten_endpoints`) turns it off. `goal_index` and the
