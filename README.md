@@ -366,6 +366,11 @@ The right panel is configuration space; red regions are in collision.
    `connection_tolerance` along a validated edge.
 5. **Smooth** by shortcutting; a shortcut is kept only if it is shorter and
    passes the same validation as a tree edge.
+6. **End on the nearest winding.** When the goal (or start) is a set, the
+   member the trees reached can be a full turn of a ±2π joint away from the
+   same pose: a wrist spun once around for nothing. The planner tries the
+   endpoint's other windings that the set contains and keeps one if a
+   validated route there makes the path shorter (#212; `shorten_endpoints`).
 
 <p align="center">
   <img src="docs/images/example3_result.png" alt="Constrained planning" width="600">
@@ -564,6 +569,7 @@ config = CBiRRTConfig(
     smooth_path=True,
     smoothing_iterations=50,
     smoothing_patience=15,              # Stop early after this many attempts without improvement
+    shorten_endpoints=True,             # End on the nearest winding of a reached start/goal set member (#212)
 
     # Joints with no limits (see below); None = every joint is bounded
     continuous_joints=None,

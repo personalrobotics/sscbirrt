@@ -64,6 +64,10 @@ class CBiRRTConfig:
     smooth_path: bool = True
     smoothing_iterations: int = 50
     smoothing_patience: int = 15  # Stop early if no improvement in this many attempts
+    # Before smoothing, end the path on the nearest winding of the reached start or goal when that role is a set
+    # (not finite): another member a full turn away on bounded joints, reached by a validated shortcut that makes
+    # the path shorter (#212). False keeps the endpoints the search reached (3.5's paths). Needs smooth_path.
+    shorten_endpoints: bool = True
 
     # Continuous joints: True marks a joint with no limits (a turntable, the UR3e's
     # wrist 3), whose distance wraps at 2*pi and whose limit check is skipped.

@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Siddhartha Srinivasa
 
 import functools
+import itertools
 import logging
 import time
 import warnings
@@ -28,6 +29,9 @@ from sscbirrt.trajectory import Trajectory, TrajectoryOptions, coalesce, initial
 from sscbirrt.tree import RRTree
 
 logger = logging.getLogger(__name__)
+
+# Endpoint windings (#212): unwind a full turn over the first quarter, half, or all of the path's length, in that order.
+UNWIND_BY = (0.25, 0.5, 1.0)
 
 
 @functools.lru_cache(maxsize=1)
@@ -492,6 +496,10 @@ class CBiRRT:
                 path = self._extract_path(tree_start, tree_goal, tree_a, tree_b, grow_idx, connect_idx)
                 if self.config.smooth_path:
                     path = self._smooth_path(problem, path)
+                    if self.config.shorten_endpoints:
+                        shortened = self._shorten_endpoints(problem, path)
+                        if shortened is not path:  # an endpoint moved: shortcut the unwound path too
+                            path = self._smooth_path(problem, shortened)
                 # Angular joints: same physical path, continuous in raw joint values for executors (#77)
                 path = problem.space.unwrap_path(path)
 
@@ -945,6 +953,128 @@ class CBiRRT:
             if not np.array_equal(q, deduped[-1]):
                 deduped.append(q)
         return deduped
+
+    def _shorten_endpoints(self, problem: PlanningProblem, path: list[np.ndarray]) -> list[np.ndarray]:
+        """End the path on the nearest winding of its goal, then its start, when that role is a set (#212).
+
+        The member the trees reached can be a full turn of a bounded joint away from another member that is the same
+        pose. The planner proposes the reached endpoint's windings, ``q + 2*pi*k`` on joints whose limits admit a
+        full turn (never on continuous joints, whose distance already wraps), and the role's set decides by
+        ``contains``, as for every member. A finite set is skipped: its members are explicit and ``goal_index``
+        names them. Candidates are tried in order of their straight-line bound on the path length. Each is reached by
+        unwinding the path (``_unwind``), which keeps its route; every new edge passes the shortcut boundary every
+        shortcut uses (``_try_shortcut``). The first that makes the path shorter is kept: at most one move per
+        endpoint, at most ``smoothing_iterations`` attempts each. Deterministic: no random draws.
+        """
+        for role in ("goal", "start"):
+            if self._aborted():
+                break
+            role_set = problem.goal if role == "goal" else problem.start
+            if is_finite(role_set):
+                continue
+            moved = self._shorten_end(problem, path[::-1] if role == "start" else path, role_set)
+            if moved is not None:
+                path = moved[::-1] if role == "start" else moved
+        return path
+
+    def _shorten_end(
+        self, problem: PlanningProblem, path: list[np.ndarray], role_set: StateSet
+    ) -> list[np.ndarray] | None:
+        """``_shorten_endpoints`` for the last waypoint of ``path``: the shorter path, or None."""
+        space = problem.space
+        if len(path) < 2:
+            return None
+        dist = space.distance
+        prefix = [0.0]  # path length up to each waypoint
+        for a, b in zip(path[:-1], path[1:]):
+            prefix.append(prefix[-1] + dist(a, b))
+        total = prefix[-1]
+        attempts = 0
+        candidates = sorted(self._windings(space, path[-1], path[0]), key=lambda c: dist(path[0], c))  # stable
+        for target in candidates:
+            if attempts >= self.config.smoothing_iterations:
+                break
+            if dist(path[0], target) >= total - 1e-9:
+                break  # sorted by this bound: no later candidate can be shorter either
+            if not role_set.contains(target) or not self._admissible(problem, target)[0]:
+                continue
+            for done in UNWIND_BY:
+                if attempts >= self.config.smoothing_iterations or self._aborted():
+                    return None
+                attempts += 1
+                unwound = self._unwind(problem, path, prefix, target, done)
+                if unwound is None:
+                    continue
+                length = sum(dist(a, b) for a, b in zip(unwound[:-1], unwound[1:]))
+                if length < total - 1e-9:
+                    return unwound
+        return None
+
+    def _unwind(
+        self,
+        problem: PlanningProblem,
+        path: list[np.ndarray],
+        prefix: list[float],
+        target: np.ndarray,
+        done: float,
+    ) -> list[np.ndarray] | None:
+        """The path ending at ``target``, another winding of its end. The change ``delta = target - path[-1]`` (whole
+        turns) is made along the first ``done`` of the path's length, in proportion to length; every waypoint after
+        that is moved by all of ``delta``, which is the same pose. So the route is kept, and the end of the path, where
+        the motion is usually tightest, is physically unchanged. Every edge is re-validated through the shortcut
+        boundary; None if any fails."""
+        reach = done * prefix[-1]
+        delta = target - path[-1]
+        moved = [q + min(1.0, prefix[i] / reach) * delta for i, q in enumerate(path)]
+        moved[0], moved[-1] = path[0], target  # the start exactly; the end is the checked candidate
+        if not all(self._admissible(problem, q)[0] for q in moved[1:-1]):
+            return None  # every edge below would end at an inadmissible waypoint; states are cheaper than edges
+        # Past the turn, an edge is the path's own validated edge moved by whole turns. When the validator declares
+        # its verdict unchanged by full turns (#200) and nothing else judges motion, that edge needs no new check.
+        same = (
+            bool(getattr(problem.validator, "full_turn_invariant", False))
+            and problem.path_constraint is None
+            and problem.motion_validator is None
+        )
+        out = [moved[0]]
+        for i, (a, b) in enumerate(zip(moved[:-1], moved[1:])):
+            if same and prefix[i] >= reach:
+                out.append(b)
+                continue
+            edge = self._try_shortcut(problem, a, b)
+            if edge is None:
+                return None
+            out.extend(edge[1:])
+        return out
+
+    @staticmethod
+    def _windings(space: JointSpace, q: np.ndarray, ref: np.ndarray) -> list[np.ndarray]:
+        """Other windings of ``q`` that unwind a full turn: ``q + 2*pi*k``, lexicographic over joints. Joint ``j`` is
+        offset by ``+-2*pi`` only where that brings it nearer ``ref`` (the path's other end), which is when
+        ``|q_j - ref_j| > pi``, and only within its limits; never on a continuous joint. A path with no such joint
+        proposes nothing. With more than 10 such joints none are proposed (up to 2^10 candidates)."""
+        two_pi = 2.0 * np.pi
+        continuous = space.continuous_joints if space.continuous_joints is not None else np.zeros(len(q), dtype=bool)
+        choices = []
+        for j in range(len(q)):
+            options = [0.0]
+            if not continuous[j]:
+                options += [
+                    o
+                    for o in (-two_pi, two_pi)
+                    if space.lower[j] <= q[j] + o <= space.upper[j]
+                    and abs(q[j] + o - ref[j]) < abs(q[j] - ref[j]) - 1e-9
+                ]
+            choices.append(options)
+        if sum(len(c) > 1 for c in choices) > 10:
+            return []
+        out = []
+        for offsets in itertools.product(*choices):
+            if any(o != 0.0 for o in offsets):
+                candidate = q + np.array(offsets)
+                if space.contains(candidate):
+                    out.append(candidate)
+        return out
 
     def _smooth_path(self, problem: PlanningProblem, path: list[np.ndarray]) -> list[np.ndarray]:
         """Smooth path by shortcutting with the grow function.

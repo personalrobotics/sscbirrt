@@ -6,6 +6,28 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **A path ends on the nearest winding of the start or goal member it
+  reached (#212).** When a role is a set (not finite), the member the trees
+  reached can be a full turn of a bounded joint away from another member
+  with the same pose. On the pick demo that spun the wrist an extra turn on
+  most seeds.
+
+  After smoothing, the planner proposes the endpoint's windings that unwind
+  a turn (a joint more than π from the path's other end), and the set's
+  `contains` decides membership. A candidate is used if a validated
+  route makes the path shorter. The route unwinds the path: it keeps the
+  path's route and makes the turn early, so the end of the path is
+  physically unchanged. The pass is deterministic and is in both backends.
+
+  `CBiRRTConfig.shorten_endpoints` (default `True`; C++
+  `PlannerConfig::shorten_endpoints`) turns it off. `goal_index` and the
+  sources are unchanged.
+
+Migrating from 3.5.0: paths to and from sets can end on a different winding
+of the same member, so seeded paths change. `shorten_endpoints=False`
+restores 3.5.0's paths.
+
 ## [3.5.0] - 2026-10-11
 
 Timed trajectories for execution (#214). Given joint velocity and
