@@ -1,0 +1,146 @@
+rev 815166f2a7f4bb1d82f7a750a9589af0baa8d00e branch main dirty=0
+host siddh nproc 64 load 1.48 0.44 0.14
+{'sscbirrt': '3.5.0', 'sstsr': '3.3.0', 'ssik': '7.0.0', 'mujoco': '3.14.0', 'numpy': '2.5.3', 'toppra': '0.6.10'}
+#212 on siddh: planning off vs on, then trajectories (3.6.0 README numbers)
+wrote /home/siddh/code/sscbirrt/runs/20261011-211645-plan-off.json
+wrote /home/siddh/code/sscbirrt/runs/20261011-211645-plan-on.json
+A = off (3.5.0, 815166f2)   B = on (3.5.0, 815166f2)
+
+door  (calibration A 244.5 ms, B 249.5 ms)
+  success                        100%           100%  
+  solve median s                0.183          0.184  x1.01 [0.94, 1.09]
+  solve p90 s                   0.242          0.247  
+  solve max s                    0.32           0.32  
+  iterations median                 1              1  x1.00
+  state_checks median            1866           1866  x1.00
+  edge_checks median              484            484  x1.00
+  set_samples median                4              4  x1.00
+  tree_nodes median               860            860  x1.00
+  roots median                    784            784  x1.00
+  search_roots median               0              0  
+  path length median             2.97           2.97  
+
+pick  (calibration A 244.1 ms, B 250.7 ms)
+  success                        100%           100%  
+  solve median s                0.035          0.047  x1.33 [1.07, 1.58]
+  solve p90 s                   0.076          0.092  
+  solve max s                    0.18           0.21  
+  iterations median              76.5           76.5  x1.00
+  state_checks median          6064.5         7477.5  x1.23
+  edge_checks median              846         1172.5  x1.39
+  set_samples median               11             11  x1.00
+  tree_nodes median            1224.5         1224.5  x1.00
+  roots median                     21             21  x1.00
+  search_roots median               0              0  
+  path length median             7.21           5.48  
+  goals                {'blue can': 3, 'green can': 42, 'yellow can': 55} {'blue can': 3, 'green can': 42, 'yellow can': 55}  
+
+transport  (calibration A 244.0 ms, B 247.8 ms)
+  success                        100%           100%  
+  solve median s                0.034          0.034  x1.01 [0.81, 1.28]
+  solve p90 s                   0.070          0.070  
+  solve max s                    0.16           0.15  
+  iterations median                25             25  x1.00
+  state_checks median            3380         3389.5  x1.00
+  edge_checks median            415.5          418.5  x1.01
+  set_samples median                7              7  x1.00
+  tree_nodes median               817            817  x1.00
+  roots median                    104            104  x1.00
+  search_roots median              64             64  x1.00
+  path length median             4.60           4.58  
+wrote /home/siddh/code/sscbirrt/runs/20261011-211645-traj.json
+
+== pick: 100 planned seeds
+  raw                      valid 100/100  median 5.07s  p90 6.77s  smoothing p90 0.000s
+  smoother_25              valid 100/100  median 3.36s  p90 4.55s  smoothing p90 0.051s
+  smoother_100             valid 100/100  median 2.93s  p90 3.95s  smoothing p90 0.140s
+  smoother_400             valid 100/100  median 2.79s  p90 3.80s  smoothing p90 0.406s
+  smoother_default         valid 100/100  median 2.90s  p90 3.95s  smoothing p90 0.178s
+  native_smoother_25       valid 100/100  median 3.31s  p90 4.18s  smoothing p90 0.013s
+  native_smoother_100      valid 100/100  median 2.92s  p90 3.96s  smoothing p90 0.032s
+  native_smoother_400      valid 100/100  median 2.81s  p90 3.79s  smoothing p90 0.091s
+  native_smoother_default  valid 100/100  median 2.91s  p90 3.97s  smoothing p90 0.037s
+  blend_toppra             valid 92/100  median 3.54s  p90 4.80s  smoothing p90 0.524s
+    invalid: conversion deviation 1.13e-04 rad
+    invalid: conversion deviation 1.62e-04 rad
+    invalid: conversion deviation 2.05e-04 rad
+  smoother_25 vs blend_toppra, 92 pairs: median diff CI [-0.41, -0.22] s, p90 ratio CI [0.87, 1.01]
+    hard gates PASS, duration gates FAIL
+    attempts median 25 p90 25; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.052s vs plan() p90 0.148s PASS; vs solver-only p90 0.090s PASS
+  smoother_100 vs blend_toppra, 92 pairs: median diff CI [-0.71, -0.55] s, p90 ratio CI [0.78, 0.88]
+    hard gates PASS, duration gates PASS
+    attempts median 100 p90 100; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.139s vs plan() p90 0.148s PASS; vs solver-only p90 0.090s FAIL
+  smoother_400 vs blend_toppra, 92 pairs: median diff CI [-0.76, -0.62] s, p90 ratio CI [0.75, 0.85]
+    hard gates PASS, duration gates PASS
+    attempts median 400 p90 400; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.394s vs plan() p90 0.148s FAIL; vs solver-only p90 0.090s FAIL
+  smoother_default vs blend_toppra, 92 pairs: median diff CI [-0.71, -0.54] s, p90 ratio CI [0.78, 0.88]
+    hard gates PASS, duration gates PASS
+    attempts median 93 p90 158; stopped {'converged': 100, 'iterations': 0}
+    smoothing p90 0.177s vs plan() p90 0.148s FAIL; vs solver-only p90 0.090s FAIL
+  native_smoother_25 vs blend_toppra, 92 pairs: median diff CI [-0.43, -0.33] s, p90 ratio CI [0.84, 0.98]
+    hard gates PASS, duration gates PASS
+    attempts median 25 p90 25; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.013s vs plan() p90 0.148s PASS; vs solver-only p90 0.090s PASS
+  native_smoother_100 vs blend_toppra, 92 pairs: median diff CI [-0.69, -0.53] s, p90 ratio CI [0.79, 0.88]
+    hard gates PASS, duration gates PASS
+    attempts median 100 p90 100; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.032s vs plan() p90 0.148s PASS; vs solver-only p90 0.090s PASS
+  native_smoother_400 vs blend_toppra, 92 pairs: median diff CI [-0.77, -0.60] s, p90 ratio CI [0.76, 0.84]
+    hard gates PASS, duration gates PASS
+    attempts median 400 p90 400; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.088s vs plan() p90 0.148s PASS; vs solver-only p90 0.090s PASS
+  native_smoother_default vs blend_toppra, 92 pairs: median diff CI [-0.72, -0.54] s, p90 ratio CI [0.77, 0.89]
+    hard gates PASS, duration gates PASS
+    attempts median 88 p90 146; stopped {'converged': 100, 'iterations': 0}
+    smoothing p90 0.035s vs plan() p90 0.148s PASS; vs solver-only p90 0.090s PASS
+
+== transport: 100 planned seeds
+  raw                      valid 100/100  median 3.93s  p90 4.97s  smoothing p90 0.000s
+  smoother_25              valid 100/100  median 2.47s  p90 3.59s  smoothing p90 0.148s
+  smoother_100             valid 100/100  median 2.42s  p90 3.13s  smoothing p90 0.332s
+  smoother_400             valid 100/100  median 2.39s  p90 3.00s  smoothing p90 0.743s
+  smoother_default         valid 100/100  median 2.41s  p90 3.23s  smoothing p90 0.358s
+  native_smoother_25       valid 100/100  median 2.48s  p90 3.39s  smoothing p90 0.007s
+  native_smoother_100      valid 100/100  median 2.41s  p90 3.09s  smoothing p90 0.015s
+  native_smoother_400      valid 100/100  median 2.40s  p90 3.07s  smoothing p90 0.029s
+  native_smoother_default  valid 100/100  median 2.41s  p90 3.23s  smoothing p90 0.015s
+  blend_toppra             valid 91/100  median 2.75s  p90 3.68s  smoothing p90 0.367s
+    invalid: conversion deviation 1.37e-04 rad
+    invalid: conversion deviation 2.34e-04 rad
+    invalid: ['joint 0 acceleration 36.6296 at waypoint 1339', 'joint 1 acceleration 16.6348 at waypoint 1339', 'joint 2 acceleration 7.95214 at waypoint 1339', 'joint 3 acceleration 20.2235 at waypoint 1339', 'joint 4 acceleration 100.245 at waypoint 1339']
+  smoother_25 vs blend_toppra, 91 pairs: median diff CI [-0.28, -0.13] s, p90 ratio CI [0.88, 1.06]
+    hard gates PASS, duration gates FAIL
+    attempts median 25 p90 25; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.148s vs plan() p90 0.123s FAIL; vs solver-only p90 0.070s FAIL
+  smoother_100 vs blend_toppra, 91 pairs: median diff CI [-0.47, -0.28] s, p90 ratio CI [0.78, 0.97]
+    hard gates PASS, duration gates PASS
+    attempts median 100 p90 100; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.343s vs plan() p90 0.123s FAIL; vs solver-only p90 0.070s FAIL
+  smoother_400 vs blend_toppra, 91 pairs: median diff CI [-0.49, -0.31] s, p90 ratio CI [0.76, 0.97]
+    hard gates PASS, duration gates PASS
+    attempts median 400 p90 400; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.743s vs plan() p90 0.123s FAIL; vs solver-only p90 0.070s FAIL
+  smoother_default vs blend_toppra, 91 pairs: median diff CI [-0.47, -0.29] s, p90 ratio CI [0.79, 0.97]
+    hard gates PASS, duration gates PASS
+    attempts median 73 p90 133; stopped {'converged': 100, 'iterations': 0}
+    smoothing p90 0.365s vs plan() p90 0.123s FAIL; vs solver-only p90 0.070s FAIL
+  native_smoother_25 vs blend_toppra, 91 pairs: median diff CI [-0.29, -0.16] s, p90 ratio CI [0.87, 1.07]
+    hard gates PASS, duration gates FAIL
+    attempts median 25 p90 25; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.007s vs plan() p90 0.123s PASS; vs solver-only p90 0.070s PASS
+  native_smoother_100 vs blend_toppra, 91 pairs: median diff CI [-0.46, -0.28] s, p90 ratio CI [0.77, 0.97]
+    hard gates PASS, duration gates PASS
+    attempts median 100 p90 100; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.015s vs plan() p90 0.123s PASS; vs solver-only p90 0.070s PASS
+  native_smoother_400 vs blend_toppra, 91 pairs: median diff CI [-0.49, -0.31] s, p90 ratio CI [0.76, 0.97]
+    hard gates PASS, duration gates PASS
+    attempts median 400 p90 400; stopped {'converged': 0, 'iterations': 100}
+    smoothing p90 0.030s vs plan() p90 0.123s PASS; vs solver-only p90 0.070s PASS
+  native_smoother_default vs blend_toppra, 91 pairs: median diff CI [-0.47, -0.28] s, p90 ratio CI [0.79, 0.97]
+    hard gates PASS, duration gates PASS
+    attempts median 69 p90 123; stopped {'converged': 100, 'iterations': 0}
+    smoothing p90 0.015s vs plan() p90 0.123s PASS; vs solver-only p90 0.070s PASS
+EXIT=0

@@ -6,6 +6,15 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.6.0] - 2026-10-11
+
+Paths end on the nearest winding of the start or goal member they reached
+(#212). On the pick demo the wrist no longer spins an extra turn on almost
+half the seeds. The median path falls from 7.21 to 5.48 rad, and the median
+timed trajectory (#214) from 3.61 to 2.91 s. Pick's median solve rises from
+0.035 to 0.047 s; transport and door are unchanged (100 seeds each,
+`benchmarks/endpoint_windings/`).
+
 ### Changed
 - **A path ends on the nearest winding of the start or goal member it
   reached (#212).** When a role is a set (not finite), the member the trees
