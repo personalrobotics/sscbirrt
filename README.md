@@ -334,12 +334,13 @@ and 4 rad/s² ([#214](https://github.com/personalrobotics/sscbirrt/issues/214),
 
 | | Path with stops | Blends + TOPP-RA | Timed trajectory | Smoothing time (p90) |
 |---|---|---|---|---|
-| pick, median duration | 6.23 s | 4.47 s | **3.61 s** | 0.04 s |
-| transport, median duration | 3.97 s | 2.78 s | **2.42 s** | 0.015 s |
+| pick, median duration | 5.07 s | 3.54 s | **2.91 s** | 0.035 s |
+| transport, median duration | 3.93 s | 2.75 s | **2.41 s** | 0.015 s |
 
 Every timed trajectory passed validation. The blends + TOPP-RA baseline
 failed it on 8–9% of seeds. On these demos, smoothing took less time than
-the solve that found the path (p90 0.076 s and 0.070 s).
+the solve that found the path (p90 0.090 s and 0.070 s). Measured with
+3.6.0 on a quiet Linux host (`benchmarks/trajectory/20261011-211645-*`).
 
 ## How it works
 
