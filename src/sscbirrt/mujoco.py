@@ -36,6 +36,7 @@ from sscbirrt.exceptions import NativeUnsupported
 from sscbirrt.legacy import legacy_problem
 from sscbirrt.planner import CBiRRT, PlanResult, as_configurations
 from sscbirrt.sets import StateSet
+from sscbirrt.trajectory import TrajectoryOptions
 
 __all__ = ["Arm", "plan"]
 
@@ -203,6 +204,7 @@ def plan(
     seed: int | None = None,
     backend: str = "auto",
     extra_arm_bodies: Sequence[str] = (),
+    trajectory: TrajectoryOptions | None = None,
 ) -> PlanResult:
     """Plan a collision-free path for ``arm`` in the world ``data`` holds now.
 
@@ -218,6 +220,9 @@ def plan(
         backend: ``"auto"`` (native when possible, otherwise Python), ``"native"`` (raise if not), or
             ``"python"``.
         extra_arm_bodies: Bodies outside the joints' subtrees that move with the arm (see ``NativeScene``).
+        trajectory: ``TrajectoryOptions`` to also time the path under velocity and acceleration limits:
+            ``result.trajectory``, with the arm's joint names (``result.path`` stays the planned path). See
+            ``CBiRRT.smooth_trajectory``.
 
     Returns:
         A ``PlanResult``: ``success``, ``path``, ``failure_reason``, which member of each set was used
@@ -251,4 +256,7 @@ def plan(
     )  # fmt: skip
     overrides = {"start": start_set, "goal": goal_set, "path_constraint": constraint_set}
     problem = dataclasses.replace(problem, **{k: v for k, v in overrides.items() if v is not None})
-    return planner.solve(problem, seed=seed)
+    result = planner.solve(problem, seed=seed, trajectory=trajectory)
+    if result.trajectory is not None:
+        result.trajectory.joint_names = tuple(arm.joints)
+    return result

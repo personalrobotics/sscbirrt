@@ -10,8 +10,8 @@ pick: one GIF per seed (docs/images/pick_<can>_seed<N>.gif). transport: the upri
 reach and the opening (door.gif).
 
 Each GIF is rendered without the text overlay (the README captions each one), at 1024x576 scaled to 400 wide,
-12 fps, the motion at 1.5x the demo's speed, through a two-pass palette with the ffmpeg that imageio-ffmpeg
-ships. Needs ``sscbirrt[demo]``.
+12 fps, through a two-pass palette with the ffmpeg that imageio-ffmpeg ships. The motion plays in real time: each
+scenario's timed trajectory under the demo limits (#214). Needs ``sscbirrt[demo]``.
 """
 
 from __future__ import annotations
@@ -30,8 +30,9 @@ import imageio_ffmpeg  # noqa: E402
 from sscbirrt.demo.render import render_video  # noqa: E402
 from sscbirrt.demo.scenarios import door, pick, transport  # noqa: E402
 
-# Seeds chosen from a sweep of 0-59 (after #169) for variety: every can, different grasp regions, all planned fast.
-SEEDS = [5, 22, 12, 15, 57, 54]
+# Seeds chosen from a sweep of 0-59 (sscbirrt 3.4 defaults, timed under #214) for variety: every can, different
+# grasps and routes, all planned fast. Seed 54 is the sweep's only blue can.
+SEEDS = [5, 9, 54, 20, 58, 37]
 OUT = Path(__file__).resolve().parent.parent / "docs" / "images"
 FILTER = (
     "fps=12,scale=400:-1:flags=lanczos,split[a][b];"
@@ -51,7 +52,6 @@ def write_gif(outcome, clips, target: Path) -> None:
             camera=outcome.camera,
             width=1024,
             height=576,
-            joint_speed=1.8,
             overlay=False,
         )
         subprocess.run(

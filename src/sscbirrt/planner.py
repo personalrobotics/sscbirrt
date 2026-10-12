@@ -24,6 +24,7 @@ from sscbirrt.motion import DiscreteMotionValidator, MotionValidator
 from sscbirrt.problem import PlanningProblem
 from sscbirrt.sets import Sample, SetProjector, SetSampler, StateSet, explicit_samples, is_finite, supports
 from sscbirrt.space import JointSpace
+from sscbirrt.trajectory import Trajectory, TrajectoryOptions, coalesce, initial_trajectory, limits, shortcut
 from sscbirrt.tree import RRTree
 
 logger = logging.getLogger(__name__)
@@ -70,6 +71,8 @@ class PlanResult:
             and visualization. Shares memory with the planner's run; do not
             mutate.
         tree_goal: The search tree rooted at the goal set.
+        trajectory: With ``trajectory=TrajectoryOptions(...)``, the timed trajectory along the path
+            (``sscbirrt.trajectory.Trajectory``, #214); ``path`` is unchanged. None otherwise, or if planning failed.
     """
 
     path: list[np.ndarray] | None
@@ -90,6 +93,7 @@ class PlanResult:
         default_factory=dict, repr=False
     )  # versions; scene, MJB and snapshot hashes when native MuJoCo
     stats: dict = field(default_factory=dict, repr=False)  # cost breakdown: counts and seconds per component
+    trajectory: Trajectory | None = field(default=None, repr=False)
 
 
 def as_configurations(value, dof: int, name: str) -> list[np.ndarray]:
@@ -198,6 +202,7 @@ class CBiRRT:
         constraint_tsrs=None,
         seed: int | None = None,
         return_details: bool = False,
+        trajectory: TrajectoryOptions | None = None,
     ) -> list[np.ndarray] | None | PlanResult:
         """Plan a path from start to goal with optional TSR constraints.
 
@@ -225,6 +230,8 @@ class CBiRRT:
                             Every configuration along the path must satisfy ALL of these.
             seed: Random seed for reproducibility
             return_details: If True, return PlanResult with trees; otherwise just path
+            trajectory: ``TrajectoryOptions`` to also time the path under velocity and acceleration limits
+                (``result.trajectory``; see ``smooth_trajectory``). Needs ``return_details=True``.
 
         Returns:
             If return_details=False: List of joint configurations or None
@@ -240,6 +247,8 @@ class CBiRRT:
             # Mix configs and TSRs
             path = planner.plan(start=[q1], goal_tsrs=[tsr1, tsr2])
         """
+        if trajectory is not None and not return_details:
+            raise ValueError("trajectory=... puts the trajectory on the PlanResult: pass return_details=True")
         if self.ik is None and (start_tsrs or goal_tsrs or constraint_tsrs):
             raise ValueError("TSR starts, goals and constraints need IK: CBiRRT(robot, ik=..., collision_checker=...)")
         start_configs = None if start is None else as_configurations(start, self.space.dof, "start")
@@ -257,13 +266,91 @@ class CBiRRT:
             goal_tsrs,
             constraint_tsrs,
         )
-        result = self.solve(problem, seed=seed)
+        result = self.solve(problem, seed=seed, trajectory=trajectory)
         if return_details:
             return result
         return result.path
 
-    def solve(self, problem: PlanningProblem, seed: int | None = None) -> PlanResult:
-        """Solve a planning problem with the configured backend (see ``backend`` on the constructor)."""
+    def solve(
+        self, problem: PlanningProblem, seed: int | None = None, trajectory: TrajectoryOptions | None = None
+    ) -> PlanResult:
+        """Solve a planning problem with the configured backend (see ``backend`` on the constructor).
+
+        With ``trajectory=TrajectoryOptions(...)``, a found path is also timed under the given limits and attached
+        as ``result.trajectory`` (see ``smooth_trajectory``). ``result.path`` stays the planned path. Unless the
+        options set a seed, the smoother uses ``seed`` (or 0).
+        """
+        if trajectory is not None:
+            if not isinstance(trajectory, TrajectoryOptions):
+                raise TypeError(f"trajectory must be TrajectoryOptions or None, got {type(trajectory).__name__}")
+            limits(trajectory, problem.space.dof)  # bad limits fail before planning, not after
+        result, lowered = self._solve(problem, seed)
+        if trajectory is not None and result.success:
+            smooth_seed = trajectory.seed if trajectory.seed is not None else (seed if seed is not None else 0)
+            result.trajectory = self._smooth_trajectory(
+                problem, result.path, trajectory, smooth_seed, lowered, result.backend_reasons
+            )
+        return result
+
+    def smooth_trajectory(
+        self, problem: PlanningProblem, path: list[np.ndarray], options: TrajectoryOptions
+    ) -> Trajectory:
+        """A timed trajectory along a valid ``path`` for ``problem``, under ``options``' velocity and acceleration
+        limits (#214).
+
+        It starts from the path at rest at every corner, then replaces random windows ``[t1, t2]`` with the
+        synchronized time-optimal motion between the states there whenever that is faster and admissible. Each
+        shortcut is validated through the problem's boundary: samples at most ``edge_resolution`` apart, each
+        admissible (joint space, validator, path constraint), every chord accepted by the problem's motion
+        validator. That is the planner's discrete edge guarantee, no stronger. Each piece of the result records how
+        it was validated. Never fails on a valid path: at worst the result is the path with a stop at every corner.
+
+        Uses the backend selection of ``solve``: native when the problem lowers (with ``backend="auto"``), else the
+        Python reference with the reasons on ``Trajectory.backend_reasons``.
+        """
+        seed = options.seed if options.seed is not None else 0
+        return self._smooth_trajectory(problem, path, options, seed, None)
+
+    def _smooth_trajectory(
+        self, problem, path, options: TrajectoryOptions, seed: int, lowered, reasons: tuple[str, ...] = ()
+    ) -> Trajectory:
+        """``lowered`` from a native solve is reused; ``reasons`` from a solve that could not lower skip lowering."""
+        if not isinstance(options, TrajectoryOptions):
+            raise TypeError(f"options must be TrajectoryOptions, got {type(options).__name__}")
+        vmax, amax = limits(options, problem.space.dof)
+        if self.backend != "python" and not reasons:
+            from sscbirrt.backends import native
+
+            if lowered is None:
+                try:
+                    lowered = native.lower(problem, self.config)
+                except native.NativeUnsupported as e:
+                    if self.backend == "native":
+                        raise
+                    reasons = tuple(e.reasons)
+                    logger.info("native backend not used; smoothing in Python: %s", "; ".join(reasons))
+            if lowered is not None:
+                traj = native.smooth_trajectory(lowered, path, vmax, amax, options, seed, self.config.abort_fn)
+                traj.joint_names = self._joint_names()
+                return traj
+        traj = shortcut(
+            initial_trajectory(coalesce(path), vmax, amax),
+            motion_validator=self._motion_validator(problem),
+            admissible=lambda q: self._admissible(problem, q),
+            resolution=self.config.edge_resolution or self.config.step_size,
+            options=options,
+            seed=seed,
+            abort_fn=self.config.abort_fn,
+        )
+        traj.joint_names, traj.backend, traj.backend_reasons = self._joint_names(), "python", reasons
+        return traj
+
+    def _joint_names(self) -> tuple[str, ...] | None:
+        names = getattr(self.robot, "joint_names", None)
+        return None if names is None else tuple(str(n) for n in names)
+
+    def _solve(self, problem: PlanningProblem, seed: int | None):
+        """The result, and the lowered problem when the native backend solved it (reused for smoothing)."""
         reasons: tuple[str, ...] = ()
         if self.backend != "python":
             from sscbirrt.backends import native
@@ -276,14 +363,14 @@ class CBiRRT:
                 reasons = tuple(e.reasons)
                 logger.info("native backend not used; planning in Python: %s", "; ".join(reasons))
             else:
-                return native.solve(lowered, seed, self.config.abort_fn)
+                return native.solve(lowered, seed, self.config.abort_fn), lowered
         self._counts = {"state_checks": 0, "edge_checks": 0, "search_roots": 0, "reused_verdicts": 0}
         result = self._solve_python(problem, seed)
         result.backend = "python"
         result.backend_reasons = reasons
         result.provenance = {**versions(), "backend": "python"}
         result.stats = dict(self._counts)
-        return result
+        return result, None
 
     def _solve_python(self, problem: PlanningProblem, seed: int | None = None) -> PlanResult:
         """The reference implementation of ``solve``.

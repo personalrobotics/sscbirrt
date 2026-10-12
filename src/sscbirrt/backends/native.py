@@ -12,6 +12,7 @@ See docs/native-design.md, "Python binding".
 
 from __future__ import annotations
 
+import contextlib
 import threading
 import time
 from collections.abc import Callable
@@ -342,8 +343,9 @@ def _raise_no_roots(e) -> None:
     raise cls(report.candidates(), details) from None
 
 
-def solve(lowered: Lowered, seed: int | None, abort_fn: Callable[[], bool] | None):
-    """Run the native solve and return a Python ``PlanResult``. Exceptions map to their Python namesakes."""
+@contextlib.contextmanager
+def _cancellation(abort_fn: Callable[[], bool] | None):
+    """A native ``CancellationToken`` cancelled when ``abort_fn`` returns true, polled every millisecond."""
     token = _native.CancellationToken()
     stop = threading.Event()
     poller = None
@@ -361,21 +363,65 @@ def solve(lowered: Lowered, seed: int | None, abort_fn: Callable[[], bool] | Non
 
             poller = threading.Thread(target=poll, daemon=True)
             poller.start()
-
-    planner = _native.Planner(lowered.config)
     try:
-        r = planner.solve(lowered.problem, None if seed is None else int(seed), token, True)
-    except _native.NoRoots as e:
-        _raise_no_roots(e)
-    except _native.UnsupportedCapability as e:
-        raise UnsupportedCapability(str(e)) from None
-    except _native.ContractError as e:
-        raise MotionContractError(str(e)) from None
+        yield token
     finally:
         stop.set()
         if poller is not None:
             poller.join()
+
+
+def solve(lowered: Lowered, seed: int | None, abort_fn: Callable[[], bool] | None):
+    """Run the native solve and return a Python ``PlanResult``. Exceptions map to their Python namesakes."""
+    planner = _native.Planner(lowered.config)
+    with _cancellation(abort_fn) as token:
+        try:
+            r = planner.solve(lowered.problem, None if seed is None else int(seed), token, True)
+        except _native.NoRoots as e:
+            _raise_no_roots(e)
+        except _native.UnsupportedCapability as e:
+            raise UnsupportedCapability(str(e)) from None
+        except _native.ContractError as e:
+            raise MotionContractError(str(e)) from None
     return convert(r, lowered.provenance)
+
+
+def smooth_trajectory(lowered: Lowered, path, vmax, amax, options, seed: int, abort_fn: Callable[[], bool] | None):
+    """The native trajectory smoother (#214) on a planned path, with the GIL released: a ``Trajectory`` built from
+    its pieces, so evaluation and sampling are shared with the Python reference."""
+    from sscbirrt.trajectory import Trajectory, piece_from_native
+
+    with _cancellation(abort_fn) as token:
+        pieces, attempts, accepted, seconds, stopped = _native.smooth_trajectory(
+            _native.Planner(lowered.config),
+            lowered.problem,
+            np.asarray(path, dtype=float).tolist(),
+            [float(v) for v in vmax],
+            [float(a) for a in amax],
+            int(options.iterations),
+            int(seed),
+            options.convergence_window,
+            float(options.convergence_tolerance),
+            options.patience,
+            options.time_budget,
+            float(options.min_interval),
+            token,
+        )
+    records = []
+    for it, t1, t2, gain, rejected, ok, elapsed in attempts:
+        record: dict[str, Any] = {"iteration": it, "t1": t1, "t2": t2, "elapsed": elapsed}
+        if gain is not None:
+            record["gain"] = gain
+        if ok:
+            record["accepted"] = True
+        else:
+            record["rejected"] = rejected
+        records.append(record)
+    traj = Trajectory([piece_from_native(p) for p in pieces], np.asarray(vmax), np.asarray(amax))
+    traj.diagnostics = {"attempts": records, "accepted": accepted, "seconds": seconds}
+    traj.stopped, traj.seed, traj.options, traj.backend = stopped, int(seed), options, "native"
+    traj.resolution = float(lowered.config.edge_resolution or lowered.config.step_size)
+    return traj
 
 
 def convert(r, provenance: dict | None = None):

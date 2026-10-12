@@ -11,7 +11,7 @@ from tsr import TSR, Robotiq2F85
 
 from sscbirrt import CBiRRTConfig
 from sscbirrt.demo.render import Camera, Clip
-from sscbirrt.demo.scenarios import Outcome, Problem, Scenario
+from sscbirrt.demo.scenarios import TIMING, Outcome, Problem, Scenario, timing_report
 from sscbirrt.demo.scene import (
     CAN_HALF_HEIGHT,
     CAN_RADIUS,
@@ -115,7 +115,7 @@ def run(seed: int) -> Outcome:
     def length(path) -> float:
         return float(sum(np.linalg.norm(b - a) for a, b in zip(path, path[1:])))
 
-    carried = plan(model, data, p.arm, config=p.config, seed=seed, **p.kwargs)
+    carried = plan(model, data, p.arm, config=p.config, seed=seed, trajectory=TIMING, **p.kwargs)
     if not carried.success:
         return Outcome(False, [f"upright: no path: {carried.failure_reason}"], model, data)
 
@@ -126,15 +126,17 @@ def run(seed: int) -> Outcome:
         f"constraint: the can's roll and pitch each within {np.degrees(TILT_LIMIT):.2f} deg "
         f"(so its tilt within {np.degrees(np.hypot(TILT_LIMIT, TILT_LIMIT)):.2f} deg)",
         "start: chosen from every grasp of the can, so that an upright carry exists",
+        timing_report(carried),
     ]
     clips = [
         Clip(
             path=carried.path,
             title="Carried upright: a path constraint",
-            lines=["Constraint: keep the can upright"],
+            lines=["Constraint: keep the can upright", "Moves at the arm's speed and acceleration limits"],
             caption=lambda q: f"tilt {np.degrees(tilt(model, view, q)):5.1f} deg",
             held=(CAN, held[CAN][1]),
             grip=2 * CAN_RADIUS,
+            trajectory=carried.trajectory,
         )
     ]
     set_arm(model, data, carried.path[0])

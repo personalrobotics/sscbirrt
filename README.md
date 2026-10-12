@@ -4,27 +4,42 @@
 [![Python](https://img.shields.io/pypi/pyversions/sscbirrt.svg?v=1)](https://pypi.org/project/sscbirrt/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A planner over sets of configurations. A planning problem names a start set,
-a goal set, a set the whole path must stay inside, and a validity predicate;
-a solution is a path that begins in the start set, ends in the goal set, and
-stays inside the path set with every configuration valid. A set is anything
-that answers `contains(q)`. The algorithm is CBiRRT (Berenson et al., 2009),
-a bidirectional RRT that grows trees from many roots and projects onto
-constraints. Task Space Regions are one representation of a set; the planner
-does not depend on it, and sets you define yourself take the same roles.
+A motion planner over sets of configurations that also times its paths for
+execution. One call plans a path and, given the joints' velocity and
+acceleration limits, returns a timed trajectory along it, ready for a robot to
+follow.
+
+- **Planning.** A planning problem names a start set, a goal set, a set the
+  whole path must stay inside, and a validity predicate. A solution is a path
+  that begins in the start set, ends in the goal set, and stays inside the
+  path set with every configuration valid. A set is anything that answers
+  `contains(q)`. The algorithm is CBiRRT (Berenson et al., 2009), a
+  bidirectional RRT that grows trees from many roots and projects onto
+  constraints. Task Space Regions are one representation of a set; the
+  planner does not depend on it, and sets you define yourself take the same
+  roles.
+- **Trajectory smoothing.** The path's corners become motion: the trajectory
+  carries velocity through them and cuts them short, under the limits. Every
+  cut is checked against the same problem, so the trajectory keeps the path's
+  guarantees: collision-free, inside the path set, at the planner's
+  resolution. On the pick and transport demos the median trajectory takes
+  about 60% of the time of stopping at every corner
+  ([Timed trajectories](#timed-trajectories-for-execution)).
 
 <table>
-<tr><td><img src="docs/images/pick_yellow_seed5.gif" alt="UR5e reaching the yellow can, from the near side" width="100%"></td><td><img src="docs/images/pick_green_seed22.gif" alt="UR5e reaching the green can, straight in" width="100%"></td><td><img src="docs/images/pick_blue_seed12.gif" alt="UR5e reaching the blue can, over the boxes" width="100%"></td></tr>
-<tr><td align="center"><sub>yellow can, from the near side</sub></td><td align="center"><sub>green can, straight in</sub></td><td align="center"><sub>blue can, over the boxes</sub></td></tr>
-<tr><td><img src="docs/images/pick_yellow_seed15.gif" alt="UR5e reaching the yellow can, over the boxes" width="100%"></td><td><img src="docs/images/pick_green_seed57.gif" alt="UR5e reaching the green can, another grasp" width="100%"></td><td><img src="docs/images/pick_yellow_seed54.gif" alt="UR5e reaching the yellow can, a wide arc" width="100%"></td></tr>
-<tr><td align="center"><sub>yellow can, over the boxes</sub></td><td align="center"><sub>green can, another grasp</sub></td><td align="center"><sub>yellow can, a wide arc</sub></td></tr>
+<tr><td><img src="docs/images/pick_yellow_seed5.gif" alt="UR5e reaching the yellow can in a wide arc over the boxes" width="100%"></td><td><img src="docs/images/pick_green_seed9.gif" alt="UR5e reaching the green can, straight in" width="100%"></td><td><img src="docs/images/pick_blue_seed54.gif" alt="UR5e reaching the blue can, over the boxes" width="100%"></td></tr>
+<tr><td align="center"><sub>yellow can, a wide arc</sub></td><td align="center"><sub>green can, straight in</sub></td><td align="center"><sub>blue can, over the boxes</sub></td></tr>
+<tr><td><img src="docs/images/pick_yellow_seed20.gif" alt="UR5e reaching the yellow can from the far side" width="100%"></td><td><img src="docs/images/pick_green_seed58.gif" alt="UR5e reaching the green can from above" width="100%"></td><td><img src="docs/images/pick_green_seed37.gif" alt="UR5e reaching the green can, elbow down" width="100%"></td></tr>
+<tr><td align="center"><sub>yellow can, from the far side</sub></td><td align="center"><sub>green can, from above</sub></td><td align="center"><sub>green can, elbow down</sub></td></tr>
 </table>
 
 Six runs of one call, `plan(model, data, arm, goal=grasps)`, where `grasps` is
 every side grasp of every can: 18 regions. Each run lets the planner choose a
 different can, grasp, and route around the red boxes. Over 100 seeds every
 run succeeds, with a median of 0.05 s including root collection
-(`tools/planning_benchmark.py`). `sscbirrt-demo pick --seed N` renders a run.
+(`tools/planning_benchmark.py`). Every video plays in real time: the arm
+follows the planned path's [timed trajectory](#timed-trajectories-for-execution)
+at 1.57 rad/s and 4 rad/s². `sscbirrt-demo pick --seed N` renders a run.
 
 <table>
 <tr><td><img src="docs/images/transport.gif" alt="UR5e carrying a can upright over a box" width="100%"></td><td><img src="docs/images/door.gif" alt="UR5e opening a door: a TSR chain" width="100%"></td></tr>
@@ -40,7 +55,7 @@ renders both.
 ## Install
 
 ```bash
-pip install sscbirrt                                  # the planner, its C++ core, and Task Space Regions
+pip install sscbirrt                                  # the planner and trajectory smoother, their C++ core, and TSRs
 pip install "sscbirrt[mujoco,ssik]" sscbirrt-assets   # plus MuJoCo, analytical IK, and the UR5e model below
 pip install "sscbirrt[demo]" && sscbirrt-demo         # everything above, and the rendered demos (MP4s in ./sscbirrt-demo)
 ```
@@ -69,6 +84,7 @@ import numpy as np
 import sscbirrt_assets
 from tsr import TSR
 
+from sscbirrt import TrajectoryOptions
 from sscbirrt.mujoco import Arm, plan
 
 xml = sscbirrt_assets.ur5e_xml()                       # the Menagerie UR5e, packaged
@@ -86,8 +102,10 @@ T[:3, :3] = np.diag([1.0, -1.0, -1.0])
 T[:3, 3] = [0.5, 0.2, 0.3]
 goal = TSR(T0_w=T, Bw=[[-0.02, 0.02], [-0.02, 0.02], [0, 0.05], [0, 0], [0, 0], [-np.pi, np.pi]])
 
-result = plan(model, data, arm, goal=goal, seed=0)
+limits = TrajectoryOptions(velocity_limits=1.57, acceleration_limits=4.0)   # rad/s and rad/s^2, every joint
+result = plan(model, data, arm, goal=goal, seed=0, trajectory=limits)
 print(result.success, result.backend, len(result.path), f"{result.planning_time:.3f} s")
+print(f"{result.trajectory.duration:.2f} s to execute")   # result.trajectory.sample(2_000_000): a 2 ms command
 ```
 
 `plan(model, data, arm, goal=..., start=..., constraint=..., holding=...)`
@@ -201,6 +219,7 @@ returns the path, or the `PlanResult` with `return_details=True`:
 | `backend`, `backend_reasons` | `"native"` or `"python"`, and why not native when `"auto"` chose Python |
 | `provenance` | dependency versions, and for MuJoCo the scene and snapshot hashes and the SSIK family |
 | `stats` | the cost of the solve by component (counts and seconds) |
+| `trajectory` | with `trajectory=TrajectoryOptions(...)`, the timed trajectory along `path` ([Timed trajectories](#timed-trajectories-for-execution)); otherwise `None` |
 
 ### When planning fails
 
@@ -235,6 +254,92 @@ leaves room to move between the start and the goal.
 `backend="native"` raises `NativeUnsupported`, listing every component without
 a native form, instead of planning; the default `backend="auto"` plans in
 Python with that list in `result.backend_reasons`.
+
+## Timed trajectories for execution
+
+A planned path is a polyline. A robot executing it under finite acceleration
+has to stop at every corner. Given the joints' velocity and acceleration
+limits, sscbirrt also returns a timed trajectory that carries velocity
+through corners and cuts them where it is safe. It is usually much faster.
+
+```python
+from sscbirrt import TrajectoryOptions
+
+limits = TrajectoryOptions(velocity_limits=1.57, acceleration_limits=4.0)   # rad/s, rad/s^2: one, or one per joint
+result = plan(model, data, arm, goal=goal, seed=0, trajectory=limits)
+
+traj = result.trajectory                   # result.path is unchanged
+q, qd, qdd = traj.evaluate([0.0, 0.5, traj.duration])
+times_ns, positions = traj.sample(2_000_000)   # a command every 2 ms, for your runtime
+```
+
+The same `trajectory=` works on `CBiRRT.solve` and `CBiRRT.plan`
+(`return_details=True`). `CBiRRT.smooth_trajectory(problem, path, options)`
+times a path you already have.
+
+**Three things, kept apart.**
+- **The path** (`result.path`): the planner's validated waypoints, never
+  changed.
+- **The trajectory** (`result.trajectory`): the exact source law. Each joint
+  follows piecewise-constant acceleration (`law="piecewise-parabolic"`), and
+  `evaluate` gives `q`, `qdot` and `qddot` exactly. It records:
+  - `joint_names`, `start` and `goal`;
+  - the limits it used;
+  - the `resolution` it was validated at;
+  - `seed`, `backend` and why it `stopped`;
+  - a per-attempt log in `diagnostics`.
+- **A command** (`traj.sample(dt_ns)`): positions every `dt_ns` nanoseconds.
+  It is a discretization for one command period, not the source law. A
+  runtime that interpolates between samples deviates from the trajectory, so
+  validate the command under your runtime's own interpolation and limits.
+
+**How it works.** It starts from the path at rest at every corner, which is
+exactly the planned geometry. It then repeatedly picks two times `t1 < t2`.
+It replaces the motion between them with the fastest motion between the two
+states that respects every joint's limits, with all joints finishing
+together. A replacement is kept only if it is faster and passes the planning
+problem's own checks: samples at most `edge_resolution` apart, each in the
+joint limits, collision-free and inside the path constraint, with the motion
+validator accepting every chord between them. That is the planner's own
+guarantee for an edge, no stronger. Every piece records how it was checked:
+`"planned"` (the planner's edge) or `"shortcut"`. Smoothing never fails: at
+worst you get the path with a stop at every corner. After Hauser and
+Ng-Thow-Hing (ICRA 2010).
+
+**When it stops.** These are `TrajectoryOptions` defaults, each easy to
+change:
+
+| Option | Default | Why |
+|---|---|---|
+| `convergence_window`, `convergence_tolerance` | 40, 0.005 | stop once the last 40 attempts shortened the trajectory by less than 0.5% |
+| `iterations` | 400 | a hard cap on attempts |
+| `time_budget` | `None` | a wall-clock limit (seconds) for slow computers; the only machine-dependent rule |
+| `patience` | `None` | stop after this many attempts in a row without improvement |
+| `seed` | `None` | the solve's seed, or 0 |
+
+Apart from `time_budget`, every rule depends only on the trajectory, so a
+seed gives the same trajectory on any machine. `abort_fn` (in
+`CBiRRTConfig`) also stops smoothing, keeping the trajectory so far.
+
+**What it claims.** Each shortcut is the fastest motion between its two
+states under the limits. The whole trajectory is not globally time-optimal.
+It models joint position, velocity and acceleration limits only: no jerk,
+torque, contact or tracking-error limits. Acceleration jumps at piece
+boundaries. With an equality path constraint (zero width), most shortcuts
+leave the constraint and are rejected, so most stops remain.
+
+**Measured** on the pick and transport demos, 100 seeds each, at 1.57 rad/s
+and 4 rad/s² ([#214](https://github.com/personalrobotics/sscbirrt/issues/214),
+`tools/trajectory_benchmark.py`):
+
+| | Path with stops | Blends + TOPP-RA | Timed trajectory | Smoothing time (p90) |
+|---|---|---|---|---|
+| pick, median duration | 6.23 s | 4.47 s | **3.61 s** | 0.04 s |
+| transport, median duration | 3.97 s | 2.78 s | **2.42 s** | 0.015 s |
+
+Every timed trajectory passed validation. The blends + TOPP-RA baseline
+failed it on 8–9% of seeds. On these demos, smoothing took less time than
+the solve that found the path (p90 0.076 s and 0.070 s).
 
 ## How it works
 

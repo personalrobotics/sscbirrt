@@ -36,6 +36,7 @@ from sscbirrt.sets import (
     supports,
 )
 from sscbirrt.space import JointSpace, SpaceSampler
+from sscbirrt.trajectory import Trajectory, TrajectoryOptions
 from sscbirrt.tsr_set import PoseRegion, TSRConfigurationSet, region_volume, tsr_weights
 
 __all__ = [
@@ -44,6 +45,8 @@ __all__ = [
     "CBiRRTConfig",
     "PlanResult",
     "PlanningProblem",
+    "Trajectory",
+    "TrajectoryOptions",
     "MotionValidator",
     "LocalMotion",
     "DiscreteMotionValidator",

@@ -366,3 +366,53 @@ Independent TSRs on different robot links (an end-effector region and an
 elbow clearance region) are a different object: they compose as `AllOf` of
 per-link sets with a joint projection strategy and need forward kinematics
 per link. That is not implemented.
+
+## Timed trajectories (#214)
+
+Given velocity and acceleration limits, the planner also returns a timed
+trajectory along the path: `trajectory=TrajectoryOptions(...)` on `solve`,
+`plan` and `sscbirrt.mujoco.plan`, or `CBiRRT.smooth_trajectory`. This
+section fixes what that result is and is not.
+
+**Three objects.**
+- The path is the search's output and is never changed.
+- The `Trajectory` is an exact source law: piecewise-constant acceleration
+  per joint, synchronized into pieces.
+- A sampled command (`Trajectory.sample`) is a discretization for one
+  command period.
+
+A consumer that interpolates the samples (linearly, say) deviates from the
+source law. It must validate the command under its own interpolation, speed
+and acceleration rules, and timing conventions. sscbirrt does not claim the
+command reproduces the trajectory.
+
+**Validation is a record, at one resolution.** The problem declares one
+validation resolution `r`, its `edge_resolution`. Each step that adds
+geometry validates exactly what it adds, at `r`, and records it:
+- the planner validates its edges;
+- the smoother validates each shortcut. Samples are at most `r` apart, each
+  is admissible (joint space, validator, path constraint), and the motion
+  validator accepts every chord.
+
+Each piece of a `Trajectory` carries its record: `"planned"` or
+`"shortcut"`. Nothing already validated is re-checked downstream.
+Re-checking a whole trajectory at `r` or denser is a diagnostic, not a
+contract: the discrete guarantee at `r` is the guarantee.
+
+**Why the smoother lives here.** Which corner to cut, and by how much,
+depends on the limits. Checking a cut needs the problem's full admissibility
+boundary, and only the planner holds it. A downstream retimer can only time
+geometry it is given. It cannot change the geometry safely.
+
+**Claim boundary.** Each shortcut is time-optimal between its two boundary
+states under the per-joint limits (after Hauser and Ng-Thow-Hing, ICRA
+2010). Randomized shortcutting does not make the whole trajectory globally
+time-optimal. Jerk, torque, contact and tracking error are out of scope.
+Acceleration is discontinuous at piece boundaries. Equality path
+constraints reject most shortcuts, so most stops remain.
+
+**Determinism.** Every stopping rule except `time_budget` (convergence, the
+attempt cap, patience) depends only on the trajectory. A seed therefore
+gives the same trajectory on any machine. The native core and the Python
+reference implement the same contract, and only their random streams differ
+([native-design.md](native-design.md)).

@@ -12,6 +12,21 @@ from typing import Any
 import mujoco
 
 from sscbirrt.demo.render import Camera, Clip
+from sscbirrt.demo.scene import ACCELERATION_LIMIT, VELOCITY_LIMIT
+from sscbirrt.trajectory import TrajectoryOptions, coalesce, initial_trajectory
+
+# Every demo motion is timed under the same limits (#214): ``plan(..., trajectory=TIMING)``.
+TIMING = TrajectoryOptions(VELOCITY_LIMIT, ACCELERATION_LIMIT)
+
+
+def timing_report(result) -> str:
+    """One report line: the timed duration against stopping at every corner, and the smoothing cost."""
+    traj = result.trajectory
+    stops = initial_trajectory(coalesce(result.path), traj.velocity_limits, traj.acceleration_limits).duration
+    return (
+        f"timed: {traj.duration:.2f} s at {VELOCITY_LIMIT} rad/s and {ACCELERATION_LIMIT} rad/s^2 "
+        f"({stops:.2f} s with a stop at every corner), smoothed in {traj.diagnostics['seconds']:.3f} s ({traj.backend})"
+    )
 
 
 @dataclass

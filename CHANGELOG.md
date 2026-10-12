@@ -6,6 +6,46 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+Timed trajectories for execution (#214). Given joint velocity and
+acceleration limits, sscbirrt now also returns a trajectory along the planned
+path. It carries velocity through corners and cuts them where the planning
+problem allows. On the pick demo the median duration falls from 6.23 s (a
+stop at every corner) to 3.61 s. PR #211's blends retimed by TOPP-RA reach
+4.47 s, and they fail validation on 8% of seeds.
+
+### Added
+- **`trajectory=TrajectoryOptions(...)`** on `CBiRRT.solve`, `CBiRRT.plan`
+  (with `return_details=True`) and `sscbirrt.mujoco.plan` sets
+  `result.trajectory`. **`CBiRRT.smooth_trajectory(problem, path, options)`**
+  times a path you already have. `result.path` is unchanged.
+- **`sscbirrt.Trajectory`**: the exact source law. It provides:
+  - `evaluate`, which gives `q`, `qdot` and `qddot`;
+  - the boundary states `start` and `goal`;
+  - the limits used, `joint_names` and the validation `resolution`;
+  - `seed`, `backend` and why it `stopped`;
+  - a validation record on every piece (`"planned"` or `"shortcut"`).
+
+  `sample(dt_ns)` gives a runtime command. It is a discretization, which the
+  consumer validates under its own interpolation.
+- **`sscbirrt.TrajectoryOptions`**: the limits (required; a scalar or one per
+  joint) and named stopping defaults:
+  - stop once the last 40 attempts shortened the trajectory by less than 0.5%;
+  - at most 400 attempts;
+  - no time budget.
+
+  The defaults come from a stopping-rule study
+  (`tools/trajectory_benchmark.py trace` / `stopping`). Every rule except
+  `time_budget` depends only on the trajectory, so a seed gives the same
+  trajectory on any machine. `abort_fn` also stops smoothing.
+- **Native trajectory smoother** (`sscbirrt::trajectory` in the C++ core).
+  It mirrors the Python reference operation by operation, and only the
+  random stream differs. Parity tests hold the ramps, synchronization and
+  corner merging to 1e-12. `backend="auto"` uses it when the problem lowers.
+- `tools/trajectory_benchmark.py`: #214's adoption benchmark and gates, and
+  offline replay of stopping rules. `tools/blend_baseline.py` is a frozen copy
+  of PR #211's blends, for the TOPP-RA baseline only. Results are in
+  `benchmarks/trajectory/`.
+
 ## [3.4.0] - 2026-10-07
 
 Defaults set from measurement. Collision checking is finer by default, and
