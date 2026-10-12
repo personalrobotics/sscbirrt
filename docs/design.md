@@ -255,10 +255,11 @@ sampler or projector.
   with the same pose. That happens often: every winding of an IK solution can
   be a root.
 
-  After smoothing, the planner proposes the reached endpoint's windings:
-  `q + 2πk`, with each `k_j` in {−1, 0, 1}, on joints whose limits admit a
-  full turn. It never offsets a continuous joint, whose distance already
-  wraps. The role's set decides membership by `contains`, as for every
+  After smoothing, the planner proposes only windings that unwind a turn:
+  joint `j` is offset by ±2π only where the endpoint is more than π from the
+  path's other end on that joint, toward it, and within the limits. It never
+  offsets a continuous joint, whose distance already wraps. A path with no
+  such joint proposes nothing and costs nothing. The role's set decides membership by `contains`, as for every
   member; nothing is inferred or declared.
 
   A candidate is used only if it is admissible and a validated route reaches

@@ -990,7 +990,7 @@ class CBiRRT:
             prefix.append(prefix[-1] + dist(a, b))
         total = prefix[-1]
         attempts = 0
-        candidates = sorted(self._windings(space, path[-1]), key=lambda c: dist(path[0], c))  # stable
+        candidates = sorted(self._windings(space, path[-1], path[0]), key=lambda c: dist(path[0], c))  # stable
         for target in candidates:
             if attempts >= self.config.smoothing_iterations:
                 break
@@ -1048,18 +1048,22 @@ class CBiRRT:
         return out
 
     @staticmethod
-    def _windings(space: JointSpace, q: np.ndarray) -> list[np.ndarray]:
-        """Other windings of ``q`` within the limits: ``q + 2*pi*k`` with each ``k_j`` in {-1, 0, 1}, lexicographic
-        over joints. Only bounded joints whose limits admit a full turn are offset. With more than 10 such joints
-        there would be up to 3^10 candidates, so none are proposed."""
+    def _windings(space: JointSpace, q: np.ndarray, ref: np.ndarray) -> list[np.ndarray]:
+        """Other windings of ``q`` that unwind a full turn: ``q + 2*pi*k``, lexicographic over joints. Joint ``j`` is
+        offset by ``+-2*pi`` only where that brings it nearer ``ref`` (the path's other end), which is when
+        ``|q_j - ref_j| > pi``, and only within its limits; never on a continuous joint. A path with no such joint
+        proposes nothing. With more than 10 such joints none are proposed (up to 2^10 candidates)."""
         two_pi = 2.0 * np.pi
         continuous = space.continuous_joints if space.continuous_joints is not None else np.zeros(len(q), dtype=bool)
         choices = []
         for j in range(len(q)):
             options = [0.0]
             if not continuous[j]:
-                options = [
-                    o for o in (-two_pi, 0.0, two_pi) if o == 0.0 or space.lower[j] <= q[j] + o <= space.upper[j]
+                options += [
+                    o
+                    for o in (-two_pi, two_pi)
+                    if space.lower[j] <= q[j] + o <= space.upper[j]
+                    and abs(q[j] + o - ref[j]) < abs(q[j] - ref[j]) - 1e-9
                 ]
             choices.append(options)
         if sum(len(c) > 1 for c in choices) > 10:

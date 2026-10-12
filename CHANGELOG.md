@@ -13,8 +13,9 @@ follows [Semantic Versioning](https://semver.org/).
   with the same pose. On the pick demo that spun the wrist an extra turn on
   most seeds.
 
-  After smoothing, the planner proposes the endpoint's windings, and the
-  set's `contains` decides membership. A candidate is used if a validated
+  After smoothing, the planner proposes the endpoint's windings that unwind
+  a turn (a joint more than π from the path's other end), and the set's
+  `contains` decides membership. A candidate is used if a validated
   route makes the path shorter. The route unwinds the path: it keeps the
   path's route and makes the turn early, so the end of the path is
   physically unchanged. The pass is deterministic and is in both backends.

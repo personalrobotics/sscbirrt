@@ -614,10 +614,12 @@ contract; `planner.py` is the reference for anything it leaves open.
    the last case the result is still `Success` with the path so far.
    Then, if `shorten_endpoints`, **endpoint windings (#212)**, for the goal
    and then the start, each only when that role's set is not `is_finite()`:
-   1. Candidates are the endpoint's windings, `q + 2πk_j` with `k_j` in
-      {−1, 0, 1}, in odometer order with the last joint fastest. Only
-      bounded joints whose limits admit the offset are offset, never angular
-      ones, and none are proposed with more than 10 such joints.
+   1. Candidates are the endpoint's windings that unwind a turn, in odometer
+      order with the last joint fastest. Joint `j` is offset by ±2π only
+      where that brings it nearer the path's other end, which happens when
+      `|q_j − ref_j| > π`, and within its limits. Angular joints are never
+      offset, and no candidates are proposed with more than 10 such
+      joints.
    2. Candidates are stably sorted by their straight-line bound from the
       path's other end. The loop stops at the first bound not below the path
       length by `1e-9`.

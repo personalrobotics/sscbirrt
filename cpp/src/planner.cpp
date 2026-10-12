@@ -164,7 +164,7 @@ class Solve {
   std::optional<std::vector<Config>> shorten_end(const std::vector<Config>& path, const StateSet& role);
   std::optional<std::vector<Config>> unwind(const std::vector<Config>& path, const std::vector<double>& prefix,
                                             const Config& target, double done);
-  std::vector<Config> windings(const Config& q) const;
+  std::vector<Config> windings(const Config& q, const Config& ref) const;
   PlanResult failure(Status status, std::string reason, int iterations) const;
 
   const PlannerConfig& cfg_;
@@ -409,7 +409,7 @@ std::optional<std::vector<Config>> Solve::shorten_end(const std::vector<Config>&
     return s;
   };
 
-  std::vector<Config> candidates = windings(path.back());
+  std::vector<Config> candidates = windings(path.back(), path.front());
   std::vector<double> bound(candidates.size());
   for (std::size_t c = 0; c < candidates.size(); ++c) bound[c] = space.distance(path.front(), candidates[c]);
   std::vector<std::size_t> order(candidates.size());
@@ -465,9 +465,10 @@ std::optional<std::vector<Config>> Solve::unwind(const std::vector<Config>& path
   return out;
 }
 
-std::vector<Config> Solve::windings(const Config& q) const {
-  // q + 2*pi*k, each k_j in {-1, 0, 1}, lexicographic over joints, within the limits. Only bounded joints whose limits
-  // admit a full turn are offset; with more than 10 such joints none are proposed (up to 3^10 candidates).
+std::vector<Config> Solve::windings(const Config& q, const Config& ref) const {
+  // q + 2*pi*k that unwind a full turn, lexicographic over joints (the last fastest). Joint j is offset by +-2*pi only
+  // where that brings it nearer ref, the path's other end (|q_j - ref_j| > pi), within its limits, never on an angular
+  // joint. A path with no such joint proposes nothing; with more than 10 such joints none are proposed.
   const JointSpace& space = *p_.space;
   const double two_pi = 2.0 * std::numbers::pi;
   std::vector<std::vector<double>> choices(q.size());
@@ -475,9 +476,9 @@ std::vector<Config> Solve::windings(const Config& q) const {
   for (std::size_t j = 0; j < q.size(); ++j) {
     choices[j].push_back(0.0);
     if (!space.angular()[j]) {
-      choices[j].clear();
-      for (const double o : {-two_pi, 0.0, two_pi}) {
-        if (o == 0.0 || (space.lower()[j] <= q[j] + o && q[j] + o <= space.upper()[j])) choices[j].push_back(o);
+      for (const double o : {-two_pi, two_pi}) {
+        const bool in_limits = space.lower()[j] <= q[j] + o && q[j] + o <= space.upper()[j];
+        if (in_limits && std::fabs(q[j] + o - ref[j]) < std::fabs(q[j] - ref[j]) - 1e-9) choices[j].push_back(o);
       }
     }
     if (choices[j].size() > 1) ++wide;

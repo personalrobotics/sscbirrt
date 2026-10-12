@@ -128,18 +128,24 @@ class TestStart:
 
 
 class TestWindings:
-    def test_only_bounded_joints_with_room_for_a_full_turn_are_offset(self):
+    def test_only_a_full_turn_that_unwinds_is_proposed(self):
         space = _planner().space
-        out = CBiRRT._windings(space, np.array([0.5, 0.3]))
-        assert [list(np.round(q - [0.5, 0.3], 9)) for q in out] == [[-round(TWO_PI, 9), 0.0], [round(TWO_PI, 9), 0.0]]
-        assert CBiRRT._windings(space, np.array([6.0, 0.3]))[0][0] == pytest.approx(6.0 - TWO_PI)
-        assert len(CBiRRT._windings(space, np.array([6.0, 0.3]))) == 1  # +2*pi would leave the limits
+        start = np.array([0.0, 0.3])
+        # joint 0 at 0.5 is within pi of the start: no turn to unwind, so nothing is proposed
+        assert CBiRRT._windings(space, np.array([0.5, 0.3]), start) == []
+        # at 0.5 - 2*pi it is a turn away: the one candidate unwinds it
+        (only,) = CBiRRT._windings(space, np.array([0.5 - TWO_PI, 0.3]), start)
+        assert only[0] == pytest.approx(0.5) and only[1] == 0.3
+        # the turn that would unwind leaves the limits: nothing
+        assert CBiRRT._windings(space, np.array([6.0, 0.3]), np.array([6.9, 0.3])) == []
+        # +pi against -pi is a tie, not a turn to unwind
+        assert CBiRRT._windings(space, np.array([np.pi, 0.3]), np.array([0.0, 0.3])) == []
 
     def test_continuous_joints_are_never_offset(self):
         planner = CBiRRT(
             WideArm(), PlanarIK(), NoCollision(), CBiRRTConfig(continuous_joints=(True, False)), backend="python"
         )
-        assert CBiRRT._windings(planner.space, np.array([0.5, 0.3])) == []
+        assert CBiRRT._windings(planner.space, np.array([0.5 - TWO_PI, 0.3]), np.array([0.0, 0.3])) == []
 
     def test_an_abort_leaves_the_path_as_it_is(self):
         planner = _planner(abort_fn=lambda: True)
