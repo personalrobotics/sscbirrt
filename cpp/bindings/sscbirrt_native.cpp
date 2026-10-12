@@ -204,6 +204,7 @@ PYBIND11_MODULE(_native, m) {
       .def_readwrite("smooth_path", &PlannerConfig::smooth_path)
       .def_readwrite("smoothing_iterations", &PlannerConfig::smoothing_iterations)
       .def_readwrite("smoothing_patience", &PlannerConfig::smoothing_patience)
+      .def_readwrite("shorten_endpoints", &PlannerConfig::shorten_endpoints)
       .def("validate", &PlannerConfig::validate);
 
   py::class_<CancellationToken, std::shared_ptr<CancellationToken>>(m, "CancellationToken")

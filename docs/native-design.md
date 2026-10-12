@@ -428,6 +428,7 @@ struct PlannerConfig {
   bool smooth_path         = true;
   int  smoothing_iterations = 50;
   int  smoothing_patience   = 15;
+  bool shorten_endpoints   = true;  // #212: end on the nearest winding of a reached set member
 };
 ```
 
@@ -611,6 +612,26 @@ contract; `planner.py` is the reference for anything it leaves open.
    `smoothing_patience` attempts without improvement, when the path has two
    waypoints, or when the cancellation token is set before an attempt; in
    the last case the result is still `Success` with the path so far.
+   Then, if `shorten_endpoints`, **endpoint windings (#212)**, for the goal
+   and then the start, each only when that role's set is not `is_finite()`:
+   1. Candidates are the endpoint's windings, `q + 2πk_j` with `k_j` in
+      {−1, 0, 1}, in odometer order with the last joint fastest. Only
+      bounded joints whose limits admit the offset are offset, never angular
+      ones, and none are proposed with more than 10 such joints.
+   2. Candidates are stably sorted by their straight-line bound from the
+      path's other end. The loop stops at the first bound not below the path
+      length by `1e-9`.
+   3. Each candidate must be in the role's set (`contains`) and admissible.
+   4. Each candidate is tried as an unwound path, which makes the turn by
+      0.25, 0.5 and 1.0 of the path length, every edge regrown. It is then
+      tried as a straight shortcut from waypoints, in order of their bound.
+   5. The first route that makes the path shorter by more than `1e-9` is
+      kept.
+
+   At most `smoothing_iterations` attempts are made per endpoint, and the
+   pass stops when the token is set. It draws no random numbers. If an
+   endpoint moved, smoothing runs again on the new path. The Python
+   reference is `CBiRRT._shorten_endpoints`.
 10. **Output.** `space.unwrap_path` on the final path. `start_source` and
     `goal_source` are the provenance of the roots the meeting node descends
     from in each tree.

@@ -36,6 +36,8 @@ struct PlannerConfig {
   bool smooth_path = true;
   int smoothing_iterations = 50;
   int smoothing_patience = 15;
+  // End the path on the nearest winding of a reached start or goal set member (#212); needs smooth_path.
+  bool shorten_endpoints = true;
 
   // Throws std::invalid_argument("<field> must be <requirement>, got <value>") with CBiRRTConfig's ranges.
   void validate() const;

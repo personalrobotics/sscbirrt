@@ -495,4 +495,53 @@ TEST(windings_share_a_verdict_only_when_the_validator_declares_invariance) {
   CHECK(shared_calls < unshared_calls);
 }
 
+namespace {
+// A set whose membership is the same pose up to full turns of joint 0, whose sampler offers only its far winding.
+class FarWinding final : public StateSet, public SetSampler {
+ public:
+  explicit FarWinding(Config target, Config far) : target_(std::move(target)), far_(std::move(far)) {}
+  bool contains(ConfigView q) const override {
+    const double d0 = std::remainder(q[0] - target_[0], 2.0 * kPi);
+    return std::fabs(d0) < 1e-9 && std::fabs(q[1] - target_[1]) < 1e-9;
+  }
+  std::vector<Sample> sample(Rng&) const override { return {Sample{far_, {}, {}}}; }
+  const SetSampler* sampler() const override { return this; }
+  std::string describe() const override { return "FarWinding"; }
+
+ private:
+  Config target_, far_;
+};
+
+double path_length(const JointSpace& space, const std::vector<Config>& path) {
+  double s = 0.0;
+  for (std::size_t i = 0; i + 1 < path.size(); ++i) s += space.distance(path[i], path[i + 1]);
+  return s;
+}
+}  // namespace
+
+TEST(a_set_endpoint_moves_to_its_nearest_winding) {
+  auto s = std::make_shared<JointSpace>(std::vector<double>{-7.0, -1.5}, std::vector<double>{7.0, 1.5});
+  const Config near{0.5, 0.3}, far{0.5 - 2.0 * kPi, 0.3};
+  auto p = problem(s, finite(*s, {{0.0, 0.3}}), std::make_shared<FarWinding>(near, far));
+  PlannerConfig on = base(), off = base();
+  off.shorten_endpoints = false;
+  const PlanResult a = Planner(on).solve(p, seeded(1)), b = Planner(off).solve(p, seeded(1));
+  CHECK(a.success() && b.success());
+  CHECK(b.path.back() == far);
+  CHECK_NEAR(a.path.back()[0], near[0], 1e-12);
+  CHECK(p.goal->contains(a.path.back()) && validate(p, on, a.path).all());
+  CHECK(path_length(*s, a.path) < path_length(*s, b.path) - 1.0);
+  CHECK(a.goal_source == b.goal_source && a.path.front() == b.path.front());
+}
+
+TEST(a_finite_endpoint_never_moves_and_the_rest_is_unchanged) {
+  auto s = std::make_shared<JointSpace>(std::vector<double>{-7.0, -1.5}, std::vector<double>{7.0, 1.5});
+  const Config far{0.5 - 2.0 * kPi, 0.3};
+  auto p = problem(s, finite(*s, {{0.0, 0.3}}), finite(*s, {far}));
+  PlannerConfig on = base(), off = base();
+  off.shorten_endpoints = false;
+  const PlanResult a = Planner(on).solve(p, seeded(2)), b = Planner(off).solve(p, seeded(2));
+  CHECK(a.success() && a.path == b.path);  // nothing proposed, no random draw consumed
+}
+
 HARNESS_MAIN()

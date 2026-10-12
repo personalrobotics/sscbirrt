@@ -248,7 +248,35 @@ sampler or projector.
   accepts a shortcut only if its joint-space path length under the problem's
   space is shorter than the segment it replaces, as in the original CBiRRT;
   fewer waypoints is not the criterion. The first and last waypoints of a
-  path are preserved exactly, except as the next rule says.
+  path are preserved exactly, except as the next two rules say.
+- **An endpoint may move to another winding of the same member (#212).**
+  When the start or goal is a set that is not finite, the member the trees
+  reached can be a full turn of a bounded joint away from another member
+  with the same pose. That happens often: every winding of an IK solution can
+  be a root.
+
+  After smoothing, the planner proposes the reached endpoint's windings:
+  `q + 2πk`, with each `k_j` in {−1, 0, 1}, on joints whose limits admit a
+  full turn. It never offsets a continuous joint, whose distance already
+  wraps. The role's set decides membership by `contains`, as for every
+  member; nothing is inferred or declared.
+
+  A candidate is used only if it is admissible and a validated route reaches
+  it that makes the path shorter. Two kinds of route are tried, every edge
+  re-validated:
+  - unwinding the path, which keeps its route and makes the turn over its
+    first quarter, half, or whole length, so its end is physically
+    unchanged;
+  - a shortcut from one of its waypoints.
+
+  If an endpoint moved, the path is smoothed again. A finite set is never
+  moved: its members are explicit, and `goal_index` names them.
+  `start_source` and `goal_source` still identify the roots the search
+  reached; the path ends on that member's nearer winding.
+
+  `shorten_endpoints=False` turns this off. The pass is deterministic: it
+  draws no random numbers, so a path whose endpoints do not move is
+  unchanged.
 - **Output representation on continuous joints.** A returned path is unwrapped
   forward from its first waypoint, so on a continuous joint each consecutive
   raw difference is the short way around and never exceeds one step. The

@@ -281,6 +281,7 @@ def _lower_config(config: CBiRRTConfig):
     c.smooth_path = bool(config.smooth_path)
     c.smoothing_iterations = int(config.smoothing_iterations)
     c.smoothing_patience = int(config.smoothing_patience)
+    c.shorten_endpoints = bool(config.shorten_endpoints)
     return c
 
 

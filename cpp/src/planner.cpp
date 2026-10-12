@@ -7,6 +7,7 @@
 #include <cmath>
 #include <limits>
 #include <map>
+#include <numbers>
 #include <random>
 #include <sstream>
 #include <stdexcept>
@@ -158,6 +159,12 @@ class Solve {
   std::vector<Config> extract_path(const Tree& ts, const Tree& tg, bool a_is_start, int idx_a, int idx_b) const;
   std::vector<Config> smooth(const std::vector<Config>& path);
   std::optional<std::vector<Config>> try_shortcut(ConfigView from, ConfigView to);
+  // Endpoint windings (#212): nullopt when neither endpoint moved.
+  std::optional<std::vector<Config>> shorten_endpoints(const std::vector<Config>& path);
+  std::optional<std::vector<Config>> shorten_end(const std::vector<Config>& path, const StateSet& role);
+  std::optional<std::vector<Config>> unwind(const std::vector<Config>& path, const std::vector<double>& prefix,
+                                            const Config& target, double done);
+  std::vector<Config> windings(const Config& q) const;
   PlanResult failure(Status status, std::string reason, int iterations) const;
 
   const PlannerConfig& cfg_;
@@ -368,6 +375,140 @@ std::vector<Config> Solve::extract_path(const Tree& ts, const Tree& tg, bool a_i
   return deduped;
 }
 
+// Endpoint windings (#212); the reference is CBiRRT._shorten_endpoints. Deterministic: no random draws.
+constexpr double kUnwindBy[] = {0.25, 0.5, 1.0};
+
+std::optional<std::vector<Config>> Solve::shorten_endpoints(const std::vector<Config>& path) {
+  std::vector<Config> out = path;
+  bool moved = false;
+  for (const bool goal : {true, false}) {
+    if (aborted()) break;
+    const StateSet& role = goal ? *p_.goal : *p_.start;
+    if (role.is_finite()) continue;  // explicit members, which goal_index names
+    std::vector<Config> oriented = out;
+    if (!goal) std::reverse(oriented.begin(), oriented.end());
+    if (auto shortened = shorten_end(oriented, role)) {
+      if (!goal) std::reverse(shortened->begin(), shortened->end());
+      out = std::move(*shortened);
+      moved = true;
+    }
+  }
+  if (!moved) return std::nullopt;
+  return out;
+}
+
+std::optional<std::vector<Config>> Solve::shorten_end(const std::vector<Config>& path, const StateSet& role) {
+  if (path.size() < 2) return std::nullopt;
+  const JointSpace& space = *p_.space;
+  std::vector<double> prefix{0.0};  // path length up to each waypoint
+  for (std::size_t i = 0; i + 1 < path.size(); ++i) prefix.push_back(prefix.back() + space.distance(path[i], path[i + 1]));
+  const double total = prefix.back();
+  auto length = [&space](const std::vector<Config>& seg) {
+    double s = 0.0;
+    for (std::size_t i = 0; i + 1 < seg.size(); ++i) s += space.distance(seg[i], seg[i + 1]);
+    return s;
+  };
+
+  std::vector<Config> candidates = windings(path.back());
+  std::vector<double> bound(candidates.size());
+  for (std::size_t c = 0; c < candidates.size(); ++c) bound[c] = space.distance(path.front(), candidates[c]);
+  std::vector<std::size_t> order(candidates.size());
+  for (std::size_t c = 0; c < order.size(); ++c) order[c] = c;
+  std::stable_sort(order.begin(), order.end(), [&bound](std::size_t a, std::size_t b) { return bound[a] < bound[b]; });
+
+  int attempts = 0;
+  for (const std::size_t c : order) {
+    if (attempts >= cfg_.smoothing_iterations) break;
+    if (bound[c] >= total - 1e-9) break;  // sorted by this bound: no later candidate can be shorter either
+    const Config& target = candidates[c];
+    if (!role.contains(target) || !admissible(target)) continue;
+    for (const double done : kUnwindBy) {
+      if (attempts >= cfg_.smoothing_iterations || aborted()) return std::nullopt;
+      ++attempts;
+      if (auto unwound = unwind(path, prefix, target, done)) {
+        if (length(*unwound) < total - 1e-9) return unwound;
+      }
+    }
+    // Or leave the path at a waypoint and go straight there, waypoints in order of the same bound.
+    std::vector<double> via(path.size() - 1);
+    for (std::size_t i = 0; i + 1 < path.size(); ++i) via[i] = prefix[i] + space.distance(path[i], target);
+    std::vector<std::size_t> anchors(via.size());
+    for (std::size_t i = 0; i < anchors.size(); ++i) anchors[i] = i;
+    std::stable_sort(anchors.begin(), anchors.end(), [&via](std::size_t a, std::size_t b) { return via[a] < via[b]; });
+    for (const std::size_t i : anchors) {
+      if (via[i] >= total - 1e-9) break;
+      if (attempts >= cfg_.smoothing_iterations || aborted()) return std::nullopt;
+      ++attempts;
+      if (auto shortcut = try_shortcut(path[i], target)) {
+        if (prefix[i] + length(*shortcut) < total - 1e-9) {
+          std::vector<Config> next(path.begin(), path.begin() + static_cast<std::ptrdiff_t>(i));
+          next.insert(next.end(), shortcut->begin(), shortcut->end());
+          return next;
+        }
+      }
+    }
+  }
+  return std::nullopt;
+}
+
+std::optional<std::vector<Config>> Solve::unwind(const std::vector<Config>& path, const std::vector<double>& prefix,
+                                                 const Config& target, double done) {
+  // The change of winding is made along the first `done` of the path's length; every waypoint after that is moved by
+  // whole turns, the same pose, so the end of the path is physically unchanged. Every edge is re-validated.
+  const double reach = done * prefix.back();
+  const std::size_t dof = target.size();
+  std::vector<Config> moved(path.size(), Config(dof));
+  for (std::size_t i = 0; i < path.size(); ++i) {
+    const double w = std::min(1.0, prefix[i] / reach);
+    for (std::size_t k = 0; k < dof; ++k) moved[i][k] = path[i][k] + w * (target[k] - path.back()[k]);
+  }
+  moved.front() = path.front();
+  moved.back() = target;
+  std::vector<Config> out{moved.front()};
+  for (std::size_t i = 0; i + 1 < moved.size(); ++i) {
+    auto edge = try_shortcut(moved[i], moved[i + 1]);
+    if (!edge) return std::nullopt;
+    out.insert(out.end(), edge->begin() + 1, edge->end());
+  }
+  return out;
+}
+
+std::vector<Config> Solve::windings(const Config& q) const {
+  // q + 2*pi*k, each k_j in {-1, 0, 1}, lexicographic over joints, within the limits. Only bounded joints whose limits
+  // admit a full turn are offset; with more than 10 such joints none are proposed (up to 3^10 candidates).
+  const JointSpace& space = *p_.space;
+  const double two_pi = 2.0 * std::numbers::pi;
+  std::vector<std::vector<double>> choices(q.size());
+  int wide = 0;
+  for (std::size_t j = 0; j < q.size(); ++j) {
+    choices[j].push_back(0.0);
+    if (!space.angular()[j]) {
+      choices[j].clear();
+      for (const double o : {-two_pi, 0.0, two_pi}) {
+        if (o == 0.0 || (space.lower()[j] <= q[j] + o && q[j] + o <= space.upper()[j])) choices[j].push_back(o);
+      }
+    }
+    if (choices[j].size() > 1) ++wide;
+  }
+  std::vector<Config> out;
+  if (wide > 10) return out;
+  std::vector<std::size_t> digit(q.size(), 0);
+  while (true) {
+    bool any = false;
+    Config candidate(q.size());
+    for (std::size_t j = 0; j < q.size(); ++j) {
+      const double o = choices[j][digit[j]];
+      any = any || o != 0.0;
+      candidate[j] = q[j] + o;
+    }
+    if (any && space.contains(candidate)) out.push_back(std::move(candidate));
+    std::size_t j = q.size();  // odometer, the last joint fastest (itertools.product)
+    while (j > 0 && ++digit[j - 1] == choices[j - 1].size()) digit[--j] = 0;
+    if (j == 0) break;
+  }
+  return out;
+}
+
 std::optional<std::vector<Config>> Solve::try_shortcut(ConfigView from, ConfigView to) {
   Tree temp(std::vector<Config>{to_config(from)});
   const auto [idx, reached] = grow(temp, to, std::nullopt);
@@ -505,7 +646,12 @@ PlanResult Solve::run() {
       stats_.seconds_search = std::chrono::duration<double>(Clock::now() - t0_).count();
       std::vector<Config> path = extract_path(*tree_start_, *tree_goal_, a_is_start, grow_idx, connect_idx);
       const auto t_smooth = Clock::now();
-      if (cfg_.smooth_path) path = smooth(path);
+      if (cfg_.smooth_path) {
+        path = smooth(path);
+        if (cfg_.shorten_endpoints) {
+          if (auto shortened = shorten_endpoints(path)) path = smooth(*shortened);  // shortcut the unwound path too
+        }
+      }
       stats_.seconds_smoothing = std::chrono::duration<double>(Clock::now() - t_smooth).count();
       path = space.unwrap_path(path);
 
