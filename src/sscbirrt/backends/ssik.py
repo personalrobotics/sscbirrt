@@ -46,7 +46,8 @@ try:
     import ssik  # noqa: F401
 except ImportError as e:  # pragma: no cover - exercised only without the extra
     raise ImportError(
-        'The SSIK backend requires the optional dependency ssik (>=7,<8). Install it with: pip install "sscbirrt[ssik]"'
+        # No version range here: the [ssik] extra pins it, so the message cannot fall behind the requirement (#226).
+        'The SSIK backend requires the optional dependency ssik. Install it with: pip install "sscbirrt[ssik]"'
     ) from e
 
 
