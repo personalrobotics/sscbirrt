@@ -6,6 +6,8 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.7.1] - 2026-10-13
+
 ### Fixed
 - The `ImportError` raised by `sscbirrt.backends.ssik` when ssik is missing named the old range `>=7,<8`. It now
   names the `[ssik]` extra, which pins the supported range (`>=8.2,<9` since 3.7.0), with no range of its own (#226).
