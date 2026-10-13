@@ -672,10 +672,11 @@ a native form: finite sets, `AnyOf`/`AllOf` with the named strategies,
 `EmptySet`, the validators in `sscbirrt.testing`, any validator or IK solver
 that implements the integration protocols below (the MuJoCo scene and SSIK
 do), and `TSRConfigurationSet`s whose region is a `TSR` or `TSRChain` and whose IK
-has a native form (SSIK around an `ssik.Manipulator` of a verified family,
-the UR family `ikgeo.three_parallel`). TSRs and SSIK then run entirely in
-C++: TSRs and TSR chains are sstsr's own C++ core (sstsr 3.3), and the SSIK
-adapter is checked against the Python one on the UR5e. Anything else
+has a native form (SSIK around an `ssik.Manipulator` of any family ssik
+solves natively, `ssik.cpp.NATIVE_FAMILIES`). TSRs and SSIK then run entirely
+in C++: TSRs and TSR chains are sstsr's own C++ core (sstsr 3.3), and SSIK is
+ssik's own C++ (`ssik::Solver`, ssik 8.2), which ssik verifies against its
+Python. Anything else
 (Python-only IK, predicates, Python-only validators, samplers, or motion
 validators) makes `backend="native"` raise `NativeUnsupported` listing every
 blocker, and the default fall back to Python with the same list on the
@@ -772,10 +773,12 @@ the planner sees the complete TSR-induced configuration set. The adapter does
 no collision checking and applies no solution cap; joint limits are enforced
 by `JointSpace` and collision by the planner's validator.
 
-SSIK runs on the native backend for a 6-DOF `ssik.Manipulator` of a verified
-family, today the UR family (`ikgeo.three_parallel`). Any other arm, a 7R arm
-such as a Franka included, plans with SSIK on the Python backend, and
-`result.backend_reasons` says so.
+SSIK runs on the native backend for every family ssik solves natively, 6R and
+7R alike: UR arms (`ikgeo.three_parallel`), general 6R arms such as Kinova's
+JACO2 (`ikgeo.general_6r`), and the 7R SRS and spherical-shoulder arms such as
+the KUKA iiwa and the Franka Panda (`seven_r.*`); `ssik.cpp.NATIVE_FAMILIES`
+lists them. An arm whose family ssik solves only in Python plans with SSIK on
+the Python backend, and `result.backend_reasons` says so.
 
 `sscbirrt.mujoco.Arm(..., mjcf=path)` builds SSIK for you, computes both
 frame offsets from the MuJoCo model (so the arm can stand anywhere in the

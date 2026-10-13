@@ -84,7 +84,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y libeigen3-dev
           uv venv "$RUNNER_TEMP/ssik-env"
-          uv pip install --python "$RUNNER_TEMP/ssik-env/bin/python" "ssik>=7.0,<8" "sstsr>=3.3,<4"
+          uv pip install --python "$RUNNER_TEMP/ssik-env/bin/python" "ssik>=8.2,<9" "sstsr>=3.3,<4"
           echo "SSIK_CMAKE_DIR=$("$RUNNER_TEMP/ssik-env/bin/python" -c 'import ssik; print(ssik.get_cmake_dir())')" >> "$GITHUB_ENV"
           echo "SSTSR_CMAKE_DIR=$("$RUNNER_TEMP/ssik-env/bin/python" -c 'import tsr; print(tsr.get_cmake_dir())')" >> "$GITHUB_ENV"
           uv pip install --python "$RUNNER_TEMP/ssik-env/bin/python" "mujoco==3.14.0"

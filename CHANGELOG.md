@@ -6,6 +6,19 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **Every SSIK family runs natively (#220).** The native backend plans pose regions (TSRs and TSR chains) with SSIK
+  for every family ssik solves natively (`ssik.cpp.NATIVE_FAMILIES`), 6R and 7R alike:
+  - UR arms;
+  - general 6R arms such as ADA's Kinova JACO2;
+  - the 7R SRS and spherical-shoulder arms such as the KUKA iiwa and the Franka Panda.
+
+  Only UR arms ran natively before; the others fell back to Python for every pose goal. The adapter is ssik's own
+  `ssik::Solver` (ssik 8.2, personalrobotics/ssik#707), which ssik verifies against its Python, so sscbirrt drops its
+  family allowlist.
+- **Requires `ssik>=8.2,<9`** (was `>=7.0,<8`). ssik 8.2 also caches the general-6R preparation, so a runtime-built
+  JACO2's first query no longer takes about 30 s once the cache is warm (personalrobotics/ssik#708).
+
 ## [3.6.0] - 2026-10-11
 
 Paths end on the nearest winding of the start or goal member they reached

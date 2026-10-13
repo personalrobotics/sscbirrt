@@ -15,6 +15,7 @@
 #include "sscbirrt/trajectory.hpp"
 #if SSCBIRRT_HAS_SSIK
 #include "sscbirrt/ssik/ssik_arm.hpp"
+#include "ssik_cpp/pybind11/solver_data.hpp"
 #include "sscbirrt/tsr/tsr.hpp"
 #include "sscbirrt/tsr/tsr_set.hpp"
 #endif
@@ -416,35 +417,14 @@ PYBIND11_MODULE(_native, m) {
 #if SSCBIRRT_HAS_SSIK
   m.def("has_ssik", [] { return true; });
   m.def("ssik_unavailable_reason", [] { return std::string(); });
-  py::class_<ssik::SSIKArm, ForwardKinematics, IKSolver, std::shared_ptr<ssik::SSIKArm>>(m, "SSIKArm", py::multiple_inheritance())
-      .def(py::init([](const std::string& solver, const std::vector<std::array<double, 3>>& axis,
-                       const std::vector<std::array<double, 16>>& t_left, const std::vector<std::array<double, 16>>& t_right,
-                       const std::vector<int>& joint_type, const std::vector<double>& lo, const std::vector<double>& hi,
-                       const std::vector<bool>& present, const Rows4& T_base, const Rows4& T_ee) {
-             if (axis.size() != 6 || t_left.size() != 6 || t_right.size() != 6 || joint_type.size() != 6 || lo.size() != 6 ||
-                 hi.size() != 6 || present.size() != 6) {
-               throw std::invalid_argument("SSIKArm expects six joints");
-             }
-             ssik::ArmSpec spec;
-             spec.solver_name = solver;
-             for (std::size_t i = 0; i < 6; ++i) {
-               spec.axis[i] = axis[i];
-               spec.t_left[i] = t_left[i];
-               spec.t_right[i] = t_right[i];
-               spec.revolute[i] = joint_type[i] == 0;
-               spec.lo[i] = lo[i];
-               spec.hi[i] = hi[i];
-               spec.present[i] = present[i];
-             }
-             spec.T_base = from_rows(T_base);
-             spec.T_ee = from_rows(T_ee);
-             return std::make_shared<ssik::SSIKArm>(std::move(spec));
+  py::class_<sscbirrt::ssik::SSIKArm, ForwardKinematics, IKSolver, std::shared_ptr<sscbirrt::ssik::SSIKArm>>(m, "SSIKArm", py::multiple_inheritance())
+      .def(py::init([](py::handle data, const Rows4& T_base, const Rows4& T_ee) {
+             sscbirrt::ssik::ArmSpec spec{::ssik::pybind11_interop::solver_data_from_python(data), from_rows(T_base), from_rows(T_ee)};
+             return std::make_shared<sscbirrt::ssik::SSIKArm>(std::move(spec));
            }),
-           py::arg("solver"), py::arg("axis"), py::arg("t_left"), py::arg("t_right"), py::arg("joint_type"), py::arg("lo"),
-           py::arg("hi"), py::arg("present"), py::arg("T_base"), py::arg("T_ee"),
-           "Constants as ssik.cpp.joint_data renders them (t_left/t_right as flat row-major 16-vectors), plus the "
-           "SSIKSolver frame offsets.")
-      .def_property_readonly("family", [](const ssik::SSIKArm& a) { return std::string(ssik::family_name(a.family())); });
+           py::arg("data"), py::arg("T_base"), py::arg("T_ee"),
+           "An arm from ssik.cpp.solver_data(manipulator) (ssik >= 8.2), plus the SSIKSolver frame offsets.")
+      .def_property_readonly("family", [](const sscbirrt::ssik::SSIKArm& a) { return a.family(); });
 #else
   m.def("has_ssik", [] { return false; });
   m.def("ssik_unavailable_reason", [] {
