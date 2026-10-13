@@ -6,6 +6,12 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.7.0] - 2026-10-13
+
+Every ssik family runs natively (#220). Pose goals on the JACO2, the Panda and
+the iiwa now plan in C++, 14–19x faster than on the Python backend in a
+no-obstacle probe. Requires ssik 8.2.
+
 ### Changed
 - **Every SSIK family runs natively (#220).** The native backend plans pose regions (TSRs and TSR chains) with SSIK
   for every family ssik solves natively (`ssik.cpp.NATIVE_FAMILIES`), 6R and 7R alike:
