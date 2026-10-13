@@ -36,7 +36,7 @@ dependencies = [
 
 [project.optional-dependencies]
 mujoco = ["mujoco==3.14.0"]  # exact: sscbirrt._native_mujoco is built against this MuJoCo and refuses another (docs/native-design.md, v1.7.0)
-ssik = ["ssik>=7.0,<8"]  # 7.0 ships the ssik_cpp headers and ssik.cpp.joint_data for the native SSIK adapter (ssik#641)
+ssik = ["ssik>=8.2,<9"]  # 8.2 ships ssik.cpp.solver_data and ssik::Solver: every native family (ssik#707, #220)
 # `sscbirrt-demo`: rendered MuJoCo scenarios. The robot models come from the sscbirrt-assets data wheel;
 # imageio[ffmpeg] brings its own ffmpeg binary, so no system package is needed.
 demo = [
@@ -67,7 +67,7 @@ sscbirrt-assets = { path = "assets" }
 # ssik is a build requirement so the isolated build can ask it for the ssik_cpp CMake package
 # (SSCBIRRT_WITH_SSIK=AUTO); without it the extension builds with the adapter disabled. sstsr is one because the native
 # pose regions are its C++ core, found through tsr.get_cmake_dir() (#184); find_package pins no version.
-requires = ["scikit-build-core>=0.10", "pybind11>=2.12", "ssik>=7.0,<8", "mujoco==3.14.0", "sstsr>=3.3,<4"]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12", "ssik>=8.2,<9", "mujoco==3.14.0", "sstsr>=3.3,<4"]
 build-backend = "scikit_build_core.build"
 
 # The C++ core under cpp/ is the primary build; the wheel reuses it with the Python
@@ -91,7 +91,7 @@ sdist.include = ["cpp/", "src/", "tests/", "tools/", "docs/"]
 build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
 skip = ["*-musllinux_*", "*-manylinux_i686", "*-win*", "pp*", "*linux_aarch64", "cp314t-*"]
 build-verbosity = 1
-test-requires = ["mujoco==3.14.0", "ssik>=7.0,<8"]
+test-requires = ["mujoco==3.14.0", "ssik>=8.2,<9"]
 test-command = [
     "python -c \"import sscbirrt._native as n; assert n.has_ssik(), n.ssik_unavailable_reason(); from sscbirrt.backends import native_mujoco as m; assert m.available(), m.unavailable_reason(); print('wheel: ssik and mujoco native modules ok')\"",
     "python {project}/tools/reference_artifact.py --backend native --check",

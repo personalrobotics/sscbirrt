@@ -3,8 +3,9 @@
 > **Reading this for what is supported today?** This is a design record built
 > up release by release: each section states the scope *of its release*, and
 > later sections extend earlier ones. Today the native backend also plans
-> TSRs and TSR chains (sstsr's C++, the last section), runs SSIK for the UR
-> family and checks collisions in MuJoCo. The README's
+> TSRs and TSR chains (sstsr's C++), runs SSIK for every family ssik solves
+> natively (6R and 7R; the v3.7.0 addendum, which supersedes the v1.6.0 SSIK
+> allowlist) and checks collisions in MuJoCo. The README's
 > [Backends](../README.md#backends-native-and-python) section is the current
 > summary.
 
@@ -1746,3 +1747,40 @@ The C++ header is not yet a stable public interface.
   not lower (a Python validator or motion validator, say) is smoothed by the
   Python reference, with the reasons on `Trajectory.backend_reasons`.
   `backend="native"` raises `NativeUnsupported`.
+
+# v3.7.0 addendum: every SSIK family native (#220)
+
+Supersedes the v1.6.0 SSIK adapter's allowlist. ssik 8.2 (personalrobotics/ssik#707) gives native consumers the
+complete solver input of any arm, and one C++ entry point that dispatches on the family:
+
+- `ssik.cpp.solver_data(manipulator)` returns a `SolverData`: the family, a schema version and named arrays. It covers
+  prebuilt and runtime-built arms (`from_mjcf`, `from_urdf`, `from_axes`) of every family in
+  `ssik.cpp.NATIVE_FAMILIES`. That is the UR three-parallel and spherical-two-parallel 6R arms, general 6R arms (ADA's
+  JACO2), and the 7R SRS and spherical-shoulder arms (the iiwa, the Panda), including their polished variants and
+  prebuilt jointlock arms.
+- `ssik::Solver` (`ssik_cpp/solve.hpp`) validates a `SolverData`, prepares the family once, and provides
+  `solve<6>`/`solve<7>` and `fk<6>`/`fk<7>`. It returns exactly what ssik's `solve(native=True)` returns: ssik's own
+  native backend runs through this class, and ssik's parity gate tests it against its Python.
+
+**sscbirrt trusts that verification.** It keeps no family allowlist and does no per-family parity checks of its own.
+
+- **`SSIKArm`** holds an `ArmSpec { ssik::SolverData data; Transform T_base, T_ee; }` and one `ssik::Solver`.
+  - `dof()` is the solver's: 6 or 7.
+  - `solve` and `fk` dispatch on it, with the Python adapter's defaults: `respect_limits`, `enumerate_windings`, no cap,
+    and a seed only if given.
+  - `revolute_joints()` comes from the data's `joint_type`.
+  - `family()` is the dispatched solver's name.
+  - `ssik_arm.hpp` stays Eigen-free: `ssik_cpp/solver_data.hpp` holds only plain arrays. So `sscbirrt::ssik` links
+    `ssik::ssik_cpp` PUBLIC, and only `ssik_arm.cpp` includes `ssik_cpp/solve.hpp` and Eigen.
+- **The binding** takes the Python `SolverData` through `ssik::pybind11_interop::solver_data_from_python`:
+  `_native.SSIKArm(ssik.cpp.solver_data(m), T_base, T_ee)`.
+- **Lowering:** `backends.native_ssik.unsupported_reason` refuses only a family outside `ssik.cpp.NATIVE_FAMILIES`:
+  "SSIK family <name> has no native solver in ssik <version>". `ssik.cpp.UnsupportedFamilyError` covers what remains,
+  runtime-built jointlock arms.
+- **What sscbirrt still tests** (`tests/test_native_ssik.py`): its own adapter on one prebuilt arm per family.
+  - Solution sets equal Python's `SSIKSolver`, within 1e-6, because the polished families refine numerically.
+  - FK agrees, and every solution closes.
+  - Seeded solves agree, and wrong-length seeds are refused.
+  - `tests/test_native_backend.py` plans a TSR goal natively on each 7R and general-6R arm.
+- **Pins:** `ssik>=8.2,<9` in the `ssik` extra, the build requirements and the test requirements.
+

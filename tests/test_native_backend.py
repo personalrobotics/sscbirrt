@@ -376,6 +376,41 @@ class TestTSRLowering:
             # projection lands in the set or reports failure, judged by the Python chain
             assert p is None or chain.contains(np.array(p))
 
+    @pytest.mark.parametrize("name", ["panda", "iiwa14", "jaco2", "gen3", "xarm7"])
+    def test_every_native_ssik_family_plans_tsr_goals_natively(self, name):
+        """Since #220 every family ssik solves natively lowers: 6- and 7-joint arms alike."""
+        ssik = pytest.importorskip("ssik")
+        from sscbirrt.backends.ssik import SSIKRobotModel, SSIKSolver
+
+        ik = SSIKSolver(ssik.Manipulator.from_prebuilt(name))
+        robot = SSIKRobotModel(ik)
+        unlimited = tuple(lim is None for lim in ik.solver.joint_limits)  # Kinova arms have continuous joints
+        cfg = CBiRRTConfig(
+            step_size=0.2, edge_resolution=0.05, timeout=30.0, num_tree_roots=20, continuous_joints=unlimited
+        )
+        planner = CBiRRT(robot, ik, NoCollision(), cfg, backend="native")
+        lo, hi = robot.joint_limits
+        lo, hi = np.maximum(lo, -np.pi) + 0.1, np.minimum(hi, np.pi) - 0.1
+        rng = np.random.default_rng(0)
+        q0, qg = rng.uniform(lo, hi), rng.uniform(lo, hi)
+        problem = PlanningProblem(
+            space=planner.space,
+            start=_finite(planner, [q0]),
+            goal=self._grasp(robot, ik, planner, qg),
+            validator=planner.collision,
+        )
+        result = planner.solve(problem, seed=1)
+        assert result.success and result.backend == "native"
+        assert problem.goal.contains(result.path[-1])
+
+    def test_a_family_ssik_cannot_run_natively_says_so(self, ur5e, monkeypatch):
+        ssik_cpp = pytest.importorskip("ssik.cpp")
+        from sscbirrt.backends.native_ssik import unsupported_reason
+
+        monkeypatch.setattr(ssik_cpp, "NATIVE_FAMILIES", ())
+        robot, ik, cfg = ur5e
+        assert "has no native solver" in unsupported_reason(ik.solver)
+
     def test_auto_backend_runs_tsr_problems_natively(self, ur5e):
         robot, ik, cfg = ur5e
         planner = CBiRRT(robot, ik, NoCollision(), cfg, backend="auto")

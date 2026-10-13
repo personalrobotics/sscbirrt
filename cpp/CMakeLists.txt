@@ -122,7 +122,7 @@ set(Eigen3_FOUND TRUE)
 endif()
 
 # The SSIK adapter: the only target that sees Eigen and ssik's header-only solvers. AUTO: build it when
-# ssik_cpp (ssik >= 7.0, which ships its CMake package; pass -DSSCBIRRT_SSIK_CMAKE_DIR=$(python -c
+# ssik_cpp (ssik >= 8.2, which ships its CMake package and ssik::Solver; pass -DSSCBIRRT_SSIK_CMAKE_DIR=$(python -c
 # "import ssik; print(ssik.get_cmake_dir())") or put it on CMAKE_PREFIX_PATH) and Eigen3 are found.
 set(SSCBIRRT_WITH_SSIK AUTO CACHE STRING "Build sscbirrt::ssik (ON, OFF, or AUTO)")
 set(SSCBIRRT_SSIK_CMAKE_DIR "" CACHE PATH "Directory holding ssik_cppConfig.cmake (ssik.get_cmake_dir())")
@@ -149,7 +149,8 @@ if(NOT SSCBIRRT_WITH_SSIK STREQUAL "OFF")
   if(TARGET ssik::ssik_cpp)
     add_library(sscbirrt_ssik STATIC src/ssik/ssik_arm.cpp)
     add_library(sscbirrt::ssik ALIAS sscbirrt_ssik)
-    target_link_libraries(sscbirrt_ssik PUBLIC sscbirrt_tsr PRIVATE ssik::ssik_cpp)
+    # PUBLIC: ssik_arm.hpp holds an ssik::SolverData (ssik_cpp/solver_data.hpp, Eigen-free).
+    target_link_libraries(sscbirrt_ssik PUBLIC sscbirrt_tsr ssik::ssik_cpp)
     target_compile_options(sscbirrt_ssik PRIVATE -Wall -Wextra)
     set_target_properties(sscbirrt_ssik PROPERTIES POSITION_INDEPENDENT_CODE ON OUTPUT_NAME sscbirrt_ssik EXPORT_NAME ssik)
     set(SSCBIRRT_HAS_SSIK ON)
