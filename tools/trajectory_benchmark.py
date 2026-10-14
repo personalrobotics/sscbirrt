@@ -36,6 +36,7 @@ time), and ``stopping`` replays its prefixes under each candidate rule, against 
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import sys
 import time
@@ -199,10 +200,15 @@ def raw_and_smoother(result, planner, problem, seed: int) -> list[dict[str, Any]
                    stopped=traj.stopped)  # fmt: skip
         rows.append(row)
 
-    def python(options):  # the reference loop
-        return shortcut(traj0, motion_validator=planner._motion_validator(problem),
+    def python(options):  # the reference loop, under the planner's own acceptance rule (#230)
+        from sscbirrt.validation import Validator
+
+        start = dataclasses.replace(traj0, path=[np.array(q, dtype=float) for q in result.path])
+        validator = Validator.for_problem(problem, planner.config, backend="python")
+        return shortcut(start, motion_validator=planner._motion_validator(problem),
                         admissible=lambda q: planner._admissible(problem, q),
-                        resolution=planner.config.edge_resolution, options=options, seed=seed)  # fmt: skip
+                        resolution=planner.config.edge_resolution, options=options, seed=seed,
+                        validator=validator)  # fmt: skip
 
     def native(options):  # the public entry point; wall time includes lowering (a fresh native collision checker)
         traj = planner.smooth_trajectory(problem, result.path, options)
