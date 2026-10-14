@@ -288,6 +288,28 @@ class CBiRRT:
             return result
         return result.path
 
+    def validator(self, constraint_tsrs=None, *, backend: str | None = None) -> Validator:
+        """The validator ``plan(..., constraint_tsrs=constraint_tsrs)`` applies (#236): this planner's space,
+        collision checker, path constraint lowered exactly as ``plan`` lowers it, and
+        ``ValidationPolicy.from_config(self.config)``. Starts and goals do not affect it.
+
+        Its reports equal the plan's: ``validator.validate_path(result.path) == result.validation`` and
+        ``validator.validate_trajectory(result.trajectory) == result.trajectory.validation``. Use it to validate
+        another motion, such as a runtime command sampled from ``result.trajectory``, under the same rules.
+
+        Args:
+            constraint_tsrs: The path-constraint TSRs (or TSR chains) passed to ``plan``; several are an
+                intersection, as there.
+            backend: ``"auto"``, ``"native"`` or ``"python"``; default this planner's. A report records which
+                implementation answered, and both give the same answer.
+        """
+        if self.ik is None and constraint_tsrs:
+            raise ValueError("TSR constraints need IK: CBiRRT(robot, ik=..., collision_checker=...)")
+        problem = legacy_problem(
+            self.robot, self.ik, self.collision, self.space, self.config, None, None, None, None, constraint_tsrs
+        )
+        return Validator.for_problem(problem, self.config, backend=backend or self.backend)
+
     def solve(
         self, problem: PlanningProblem, seed: int | None = None, trajectory: TrajectoryOptions | None = None
     ) -> PlanResult:
