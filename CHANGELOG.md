@@ -6,6 +6,12 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.9.0] - 2026-10-14
+
+`planner.validator(constraint_tsrs=...)` returns the validator a
+`CBiRRT.plan()` call applies, so a consumer can validate another motion under
+the plan's own rules using only public API (#236).
+
 ### Added
 - `CBiRRT.validator(constraint_tsrs=None, *, backend=None)`: the validator `plan(..., constraint_tsrs=...)` applies.
   - It lowers the constraint exactly as `plan` does, with the same space, checker, policy and backend selection.
