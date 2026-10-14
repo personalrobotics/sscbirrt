@@ -22,11 +22,14 @@ add_library(sscbirrt_core STATIC
   src/config.cpp
   src/planner.cpp
   src/trajectory.cpp
-  src/transform.cpp)
+  src/transform.cpp
+  src/validation.cpp)
 add_library(sscbirrt::core ALIAS sscbirrt_core)
 # The trajectory smoother mirrors sscbirrt._trajectory operation by operation (#214); without contraction into fused
 # multiply-adds, both round the same way on every platform.
-set_source_files_properties(src/trajectory.cpp PROPERTIES COMPILE_OPTIONS -ffp-contract=off)
+set_source_files_properties(src/trajectory.cpp src/validation.cpp PROPERTIES COMPILE_OPTIONS -ffp-contract=off)
+# sscbirrt::version() and every validation report's implementation (#230); CI holds it equal to pyproject's version.
+set_source_files_properties(src/validation.cpp PROPERTIES COMPILE_DEFINITIONS SSCBIRRT_VERSION="${PROJECT_VERSION}")
 target_include_directories(sscbirrt_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
@@ -260,6 +263,7 @@ if(SSCBIRRT_BUILD_TESTS)
   sscbirrt_test(test_sets)
   sscbirrt_test(test_motion)
   sscbirrt_test(test_planner)
+  sscbirrt_test(test_validation)
   sscbirrt_test(test_trajectory)
   sscbirrt_test(test_tsr_set)
   target_link_libraries(test_tsr_set PRIVATE sscbirrt::tsr)

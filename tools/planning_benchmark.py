@@ -134,6 +134,8 @@ def measure(result, wall: float) -> dict[str, Any]:
         "iterations": int(result.iterations),
         "state_checks": int(s.get("state_checks", 0)),
         "edge_checks": int(s.get("edge_checks", 0)),
+        # states the final validation of the returned path checked (#230); 0 before 3.8, which had none
+        "validation_checks": int(getattr(getattr(result, "validation", None), "checks", 0)),
         "set_samples": int(s.get("set_samples", 0)),
         "tree_nodes": int(sum(result.tree_sizes)) if result.tree_sizes else 0,
         "roots": _roots(result.tree_start) + _roots(result.tree_goal),

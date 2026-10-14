@@ -27,6 +27,7 @@ from sscbirrt.sets import Sample, SetProjector, SetSampler, StateSet, explicit_s
 from sscbirrt.space import JointSpace
 from sscbirrt.trajectory import Trajectory, TrajectoryOptions, coalesce, initial_trajectory, limits, shortcut
 from sscbirrt.tree import RRTree
+from sscbirrt.validation import ValidationReport, Validator, classify
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +78,10 @@ class PlanResult:
         tree_goal: The search tree rooted at the goal set.
         trajectory: With ``trajectory=TrajectoryOptions(...)``, the timed trajectory along the path
             (``sscbirrt.trajectory.Trajectory``, #214); ``path`` is unchanged. None otherwise, or if planning failed.
+        validation: The returned path's ``ValidationReport`` (#230): the planner validates the path it returns
+            with ``Validator.for_problem(problem, config)`` and succeeds only if it is valid; a path that fails
+            is not returned, and this report says where and why. None when the search failed, or when the
+            problem has a custom motion validator (it owns its motions, so no policy describes them).
     """
 
     path: list[np.ndarray] | None
@@ -98,6 +103,7 @@ class PlanResult:
     )  # versions; scene, MJB and snapshot hashes when native MuJoCo
     stats: dict = field(default_factory=dict, repr=False)  # cost breakdown: counts and seconds per component
     trajectory: Trajectory | None = field(default=None, repr=False)
+    validation: ValidationReport | None = field(default=None, repr=False)
 
 
 def as_configurations(value, dof: int, name: str) -> list[np.ndarray]:
@@ -119,6 +125,13 @@ def as_configurations(value, dof: int, name: str) -> list[np.ndarray]:
     if arr.size == 0:
         return []
     raise ValueError(f"{name}: expected one configuration of length {dof} or a list of them, got shape {arr.shape}")
+
+
+def final_validation_reason(report: ValidationReport) -> str:
+    """The failure reason of a plan whose returned path the validator rejected."""
+    w = report.witness
+    where = "" if w.segment is None else f" at segment {w.segment}, fraction {w.fraction:.4g}"
+    return f"Returned path failed final validation: {w.failure}{where} ({w.detail})"
 
 
 class _AbortedDuringRoots(Exception):
@@ -502,6 +515,14 @@ class CBiRRT:
                             path = self._smooth_path(problem, shortened)
                 # Angular joints: same physical path, continuous in raw joint values for executors (#77)
                 path = problem.space.unwrap_path(path)
+                # The path returned is the path validated, by the public validator (#230)
+                report = None
+                if problem.motion_validator is None:
+                    report = Validator.for_problem(problem, self.config, backend="python").validate_path(path)
+                    if not report.valid:
+                        failed = _failure(iteration + 1, final_validation_reason(report))
+                        failed.validation = report
+                        return failed
 
                 if tree_a is tree_start:
                     start_source = tree_start.get_root_source_index(grow_idx)
@@ -524,6 +545,7 @@ class CBiRRT:
                     goal_source=goal_source,
                     tree_start=tree_start,
                     tree_goal=tree_goal,
+                    validation=report,
                 )
 
         return _failure(
@@ -555,14 +577,8 @@ class CBiRRT:
         counts = getattr(self, "_counts", None)
         if counts is not None:
             counts["state_checks"] += 1
-        why = problem.space.why_invalid(q)
-        if why is not None:
-            return False, f"outside joint space ({why})"
-        if not (problem.validator.is_valid(q) if valid is None else valid):
-            return False, "in collision"
-        if problem.path_constraint is not None and not problem.path_constraint.contains(q):
-            return False, "violates path constraints"
-        return True, None
+        why = classify(problem.space, problem.validator, problem.path_constraint, q, valid)
+        return (True, None) if why is None else (False, why[1])
 
     def _draw_roots(
         self,

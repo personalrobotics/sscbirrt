@@ -166,8 +166,16 @@ PYBIND11_MODULE(_native, m) {
            py::arg("children"), py::arg("projection") = nullptr, py::arg("sampling") = nullptr);
 
   // ----- validity and motion ------------------------------------------------------------------
+  py::class_<Contact>(m, "Contact")
+      .def_readonly("kind", &Contact::kind)
+      .def_readonly("body1", &Contact::body1)
+      .def_readonly("body2", &Contact::body2)
+      .def_readonly("geom1", &Contact::geom1)
+      .def_readonly("geom2", &Contact::geom2)
+      .def_readonly("distance", &Contact::distance);
   py::class_<StateValidator, std::shared_ptr<StateValidator>>(m, "StateValidator")
-      .def("is_valid", [](const StateValidator& v, const Config& q) { return v.is_valid(q); });
+      .def("is_valid", [](const StateValidator& v, const Config& q) { return v.is_valid(q); })
+      .def("contacts", [](const StateValidator& v, const Config& q) { return v.contacts(q); });
   py::class_<AcceptAll, StateValidator, std::shared_ptr<AcceptAll>>(m, "AcceptAll").def(py::init<>());
   py::class_<JointBoxObstacles, StateValidator, std::shared_ptr<JointBoxObstacles>>(m, "JointBoxObstacles")
       .def(py::init([](const std::vector<std::pair<std::vector<double>, std::vector<double>>>& boxes) {
@@ -175,6 +183,47 @@ PYBIND11_MODULE(_native, m) {
            }),
            py::arg("boxes"), "Open axis-aligned boxes as (lo, hi) pairs; infinite bounds allowed.");
   py::class_<MotionValidator, std::shared_ptr<MotionValidator>>(m, "MotionValidator");
+
+  // ----- validation (#230) ---------------------------------------------------------------------
+  m.attr("__version__") = version();
+  py::class_<ValidationPolicy>(m, "ValidationPolicy")
+      .def(py::init([](double resolution) {
+             ValidationPolicy p{resolution};
+             p.validate();
+             return p;
+           }),
+           py::arg("resolution") = 0.05)
+      .def_readonly("resolution", &ValidationPolicy::resolution)
+      .def_property_readonly("parameters", &ValidationPolicy::parameters)
+      .def_property_readonly("summary", &ValidationPolicy::summary);
+  py::class_<InvalidWitness>(m, "InvalidWitness")
+      .def_property_readonly("failure", [](const InvalidWitness& w) { return std::string(failure_name(w.failure)); })
+      .def_readonly("configuration", &InvalidWitness::configuration)
+      .def_readonly("segment", &InvalidWitness::segment)
+      .def_readonly("fraction", &InvalidWitness::fraction)
+      .def_readonly("contacts", &InvalidWitness::contacts)
+      .def_readonly("constraint", &InvalidWitness::constraint)
+      .def_readonly("detail", &InvalidWitness::detail);
+  py::class_<ValidationReport>(m, "ValidationReport")
+      .def_readonly("subject", &ValidationReport::subject)
+      .def_readonly("valid", &ValidationReport::valid)
+      .def_readonly("intervals", &ValidationReport::intervals)
+      .def_readonly("checks", &ValidationReport::checks)
+      .def_readonly("policy", &ValidationReport::policy)
+      .def_readonly("implementation", &ValidationReport::implementation)
+      .def_readonly("witness", &ValidationReport::witness);
+  py::class_<Validator>(m, "Validator")
+      .def(py::init<std::shared_ptr<const JointSpace>, std::shared_ptr<const StateValidator>,
+                    std::shared_ptr<const StateSet>, ValidationPolicy>(),
+           py::arg("space"), py::arg("validator"), py::arg("path_constraint") = nullptr,
+           py::arg("policy") = ValidationPolicy{},
+           "Not thread-safe: the validator's components are used without locks (one Validator per thread).")
+      .def("validate_state", [](const Validator& v, const Config& q) { return v.validate_state(q); },
+           py::call_guard<py::gil_scoped_release>())
+      .def("validate_motion", [](const Validator& v, const Config& a, const Config& b) { return v.validate_motion(a, b); },
+           py::call_guard<py::gil_scoped_release>())
+      .def("validate_path", &Validator::validate_path, py::call_guard<py::gil_scoped_release>())
+      .def_property_readonly("policy", &Validator::policy);
 
   // ----- problem, config, cancellation --------------------------------------------------------
   py::class_<PlanningProblem>(m, "PlanningProblem")
@@ -252,7 +301,8 @@ PYBIND11_MODULE(_native, m) {
       .def_readonly("goal_roots", &PlanResult::goal_roots)
       .def_readonly("stats", &PlanResult::stats)
       .def_readonly("tree_start", &PlanResult::tree_start)
-      .def_readonly("tree_goal", &PlanResult::tree_goal);
+      .def_readonly("tree_goal", &PlanResult::tree_goal)
+      .def_readonly("validation", &PlanResult::validation);
 
   // ----- planner ------------------------------------------------------------------------------
   py::class_<Planner>(m, "Planner")

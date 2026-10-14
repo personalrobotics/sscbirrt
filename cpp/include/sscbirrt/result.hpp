@@ -10,10 +10,12 @@
 #include "sscbirrt/errors.hpp"
 #include "sscbirrt/space.hpp"
 #include "sscbirrt/types.hpp"
+#include "sscbirrt/validation.hpp"
 
 namespace sscbirrt {
 
-enum class Status { Success, Timeout, Aborted, MaxIterations };
+// InvalidResult: the search connected, but the path it would return failed final validation (#230).
+enum class Status { Success, Timeout, Aborted, MaxIterations, InvalidResult };
 const char* status_name(Status s);
 
 struct Node {
@@ -69,6 +71,9 @@ struct PlanResult {
   RootReport start_roots, goal_roots;
   SolveStats stats;
   std::shared_ptr<const Tree> tree_start, tree_goal;  // null unless SolveOptions::keep_trees
+  // The returned path's report, from Validator::for_problem: valid on Success, the rejection on InvalidResult; none
+  // when the search failed or the problem has a custom motion validator (#230).
+  std::optional<ValidationReport> validation;
 
   bool success() const { return status == Status::Success; }
 };

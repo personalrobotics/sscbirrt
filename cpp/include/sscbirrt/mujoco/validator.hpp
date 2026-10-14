@@ -35,6 +35,7 @@ class SceneValidator final : public StateValidator {
   bool is_valid(ConfigView q) const override;
   bool full_turn_invariant() const override;  // every controlled joint is a hinge
   std::vector<InvalidContact> invalid_contacts(ConfigView q) const;
+  std::vector<Contact> contacts(ConfigView q) const override;  // invalid_contacts with body names
   const Scene& scene() const { return *scene_; }
   const Snapshot& snapshot() const { return snapshot_; }
 

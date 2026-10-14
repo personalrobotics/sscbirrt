@@ -231,7 +231,7 @@ class TestParityWithTheArtifact:
                 py.failure_reason
             ), case["name"]
             if py.success:
-                v = artifact_tool.validate(problem, cfg, nat.path)
+                v = artifact_tool.validate(problem, cfg, nat.path, nat.validation)
                 assert all(
                     v[k]
                     for k in (
@@ -239,7 +239,8 @@ class TestParityWithTheArtifact:
                         "first_in_start_set",
                         "last_in_goal_set",
                         "all_admissible",
-                        "edges_validated_at_resolution",
+                        "path_valid",
+                        "report_matches_planning",
                         "raw_steps_within_step_size",
                     )
                 ), (case["name"], v)

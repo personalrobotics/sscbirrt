@@ -165,7 +165,7 @@ problem = PlanningProblem(
 )
 result = planner.solve(problem, seed=0)
 result.success        # True
-result.path           # 47 waypoints; every one has end-effector x >= -0.2
+result.path           # 35 waypoints; every one has end-effector x >= -0.2
 result.goal_source    # () : the goal is a single leaf, no choice to record
 result.backend        # "python": result.backend_reasons names PlanarIK and RightOfWall, which have no native form
 ```
@@ -220,6 +220,7 @@ returns the path, or the `PlanResult` with `return_details=True`:
 | `provenance` | dependency versions, and for MuJoCo the scene and snapshot hashes and the SSIK family |
 | `stats` | the cost of the solve by component (counts and seconds) |
 | `trajectory` | with `trajectory=TrajectoryOptions(...)`, the timed trajectory along `path` ([Timed trajectories](#timed-trajectories-for-execution)); otherwise `None` |
+| `validation` | the returned path's `ValidationReport` ([Validating a path](#validating-a-path)) |
 
 ### When planning fails
 
@@ -251,9 +252,58 @@ sets. With a path constraint, a small tree that stops growing usually means
 projection onto the constraint keeps failing: check that the constraint
 leaves room to move between the start and the goal.
 
+**The path found fails final validation.** Before returning a path, the
+planner validates it whole with the public validator (see
+[Validating a path](#validating-a-path)). This can fail only for a collision
+checker that is not invariant to full turns of a continuous joint, because
+the path is returned in unwrapped raw values. The result then has
+`success=False`, a `failure_reason` that starts with `Returned path failed
+final validation`, and the rejection in `result.validation`.
+
 `backend="native"` raises `NativeUnsupported`, listing every component without
 a native form, instead of planning; the default `backend="auto"` plans in
 Python with that list in `result.backend_reasons`.
+
+## Validating a path
+
+`sscbirrt.Validator` is the check the planner itself applies, available to
+anyone holding a path (#230). It is bound to a joint space, a collision
+checker and an optional path constraint, under a `ValidationPolicy`. After the
+[quick start](#quick-start-without-a-simulator):
+
+```python
+from sscbirrt import Validator, ValidationPolicy
+
+validator = Validator.for_problem(problem, planner.config)  # exactly the planner's check
+# or: Validator(space, checker, path_constraint, policy=ValidationPolicy(resolution=0.05))
+
+report = validator.validate_path(result.path)  # also validate_state(q), validate_motion(q0, q1)
+assert report == result.validation
+if not report.valid:
+    w = report.witness
+    print(w.failure, w.segment, w.fraction, w.configuration, w.contacts, w.detail)
+```
+
+- **Motions are raw-linear.** `validate_motion(q0, q1)` checks the straight
+  line in raw joint values, the motion a runtime executes when it
+  interpolates them. A continuous joint is never wrapped: a half turn or
+  more is checked as the long raw line it is.
+- **The guarantee is discrete.** States at most `resolution` apart (Euclidean,
+  in joint space) are checked, both ends included, and nothing is claimed
+  between them. The report carries the policy, so no answer depends on a
+  hidden setting.
+- **The report** gives `valid`, the number of states checked, and for an
+  invalid subject the first invalid state: its segment and fraction, the
+  failure (`position_limits`, `collision` or `path_constraint`), the
+  contacts when the checker can name them (the native MuJoCo scene does),
+  and which member of an `AllOf` path constraint was violated.
+  `report.to_dict()` is JSON-ready.
+- **One contract, two implementations.** `backend="auto"` runs the native
+  core when every component has a native form, as planning does; both give
+  the same report. A validator is not thread-safe, so use one per thread.
+  Nothing is cached, so the order of queries cannot change an answer.
+- **Malformed input raises.** A wrong-length or non-finite configuration, or
+  an empty path, raises `ValueError` rather than being checked more weakly.
 
 ## Timed trajectories for execution
 

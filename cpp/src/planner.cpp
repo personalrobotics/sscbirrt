@@ -26,6 +26,7 @@ const char* status_name(Status s) {
     case Status::Timeout: return "timeout";
     case Status::Aborted: return "aborted";
     case Status::MaxIterations: return "max_iterations";
+    case Status::InvalidResult: return "invalid_result";
   }
   return "?";
 }
@@ -121,9 +122,7 @@ class Solve {
   std::optional<std::string> why_inadmissible_counted(ConfigView q, bool valid) const {
     const auto t = Clock::now();
     std::optional<std::string> why;
-    if (auto w = p_.space->why_invalid(q)) why = "outside joint space (" + *w + ")";
-    else if (!valid) why = std::string("in collision");
-    else if (p_.path_constraint && !p_.path_constraint->contains(q)) why = std::string("violates path constraints");
+    if (auto w = classify(*p_.space, *p_.validator, p_.path_constraint.get(), q, valid)) why = std::move(w->second);
     ++stats_.state_checks;
     stats_.seconds_state_checks += std::chrono::duration<double>(Clock::now() - t).count();
     return why;
@@ -647,6 +646,21 @@ PlanResult Solve::run() {
       }
       stats_.seconds_smoothing = std::chrono::duration<double>(Clock::now() - t_smooth).count();
       path = space.unwrap_path(path);
+      // The path returned is the path validated, by the public validator (#230)
+      std::optional<ValidationReport> report;
+      if (!p_.motion_validator) {
+        report = Validator::for_problem(p_, cfg_).validate_path(path);
+        if (!report->valid) {
+          const InvalidWitness& w = *report->witness;
+          std::string where = w.segment ? " at segment " + std::to_string(*w.segment) + ", fraction " + fmt(*w.fraction) : "";
+          PlanResult failed = failure(Status::InvalidResult,
+                                      std::string("Returned path failed final validation: ") + failure_name(w.failure) +
+                                          where + " (" + w.detail + ")",
+                                      iteration + 1);
+          failed.validation = std::move(report);
+          return failed;
+        }
+      }
 
       PlanResult r;
       r.status = Status::Success;
@@ -659,6 +673,7 @@ PlanResult Solve::run() {
       r.start_roots = start_report_;
       r.goal_roots = goal_report_;
       r.stats = stats_;
+      r.validation = std::move(report);
       if (opt_.keep_trees) {
         r.tree_start = tree_start_;
         r.tree_goal = tree_goal_;
@@ -679,9 +694,7 @@ PlanResult Solve::run() {
 Planner::Planner(PlannerConfig config) : config_(std::move(config)) { config_.validate(); }
 
 std::optional<std::string> Planner::why_inadmissible(const PlanningProblem& problem, ConfigView q) {
-  if (auto why = problem.space->why_invalid(q)) return "outside joint space (" + *why + ")";
-  if (!problem.validator->is_valid(q)) return std::string("in collision");
-  if (problem.path_constraint && !problem.path_constraint->contains(q)) return std::string("violates path constraints");
+  if (auto why = classify(*problem.space, *problem.validator, problem.path_constraint.get(), q)) return why->second;
   return std::nullopt;
 }
 

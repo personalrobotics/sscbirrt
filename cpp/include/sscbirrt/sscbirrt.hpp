@@ -17,4 +17,5 @@
 #include "sscbirrt/space.hpp"
 #include "sscbirrt/transform.hpp"
 #include "sscbirrt/types.hpp"
+#include "sscbirrt/validation.hpp"
 #include "sscbirrt/validity.hpp"
