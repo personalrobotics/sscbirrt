@@ -6,6 +6,16 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `CBiRRT.validator(constraint_tsrs=None, *, backend=None)`: the validator `plan(..., constraint_tsrs=...)` applies.
+  - It lowers the constraint exactly as `plan` does, with the same space, checker, policy and backend selection.
+  - Its reports equal `result.validation` and `result.trajectory.validation`, on either backend (#236).
+  - It lets personalrobotics/ssrobot#132 validate a runtime command under the plan's own rules with public API only.
+
+### Changed
+- `ValidationReport.backend` is recorded but no longer part of equality. Two reports for the same subject under the
+  same policy compare equal whichever implementation answered.
+
 ## [3.8.0] - 2026-10-14
 
 Motion validation is public, and it is the planner's own check (#230).

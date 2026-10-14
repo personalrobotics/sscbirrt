@@ -177,7 +177,8 @@ class ValidationReport:
         checks: States checked, the invalid one included.
         policy: The policy applied.
         implementation: ``sscbirrt X.Y.Z``.
-        backend: ``python`` or ``native``: which implementation of the one contract answered.
+        backend: ``python`` or ``native``: which implementation of the one contract answered. Recorded, but not
+            part of equality: two reports for the same subject under the same policy are equal whichever answered.
         witness: The first invalid state; present exactly when not valid.
         interpolation: ``raw_linear`` for a motion or path; None otherwise.
         law: ``piecewise_constant_acceleration`` for a trajectory; None otherwise.
@@ -192,7 +193,7 @@ class ValidationReport:
     checks: int
     policy: ValidationPolicy
     implementation: str
-    backend: str
+    backend: str = field(compare=False)  # recorded, not compared: both implementations give the same answer
     witness: InvalidWitness | None = None
     interpolation: str | None = None
     law: str | None = None

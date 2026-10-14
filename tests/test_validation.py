@@ -454,3 +454,60 @@ def test_a_whole_shortcut_matches_the_step_by_step_walk(continuous):
         if reached_a:
             a, b = stepwise.get_path_to_root(i_a), whole.get_path_to_root(i_b)
             assert len(a) == len(b) and all(np.array_equal(x, y) for x, y in zip(a, b)), trial
+
+
+class TestPlannerValidator:
+    """#236: CBiRRT.validator(constraint_tsrs) is the validator plan(..., constraint_tsrs=...) applies."""
+
+    def test_the_planner_validator_is_the_plans_on_python(self):
+        from tsr import TSR
+
+        from sscbirrt.testing import PlanarIK
+
+        robot = PlanarArm()
+        planner = CBiRRT(robot, PlanarIK(robot), Wall(0, -0.1, 0.1, extent=1.0), CBiRRTConfig(timeout=10.0))
+        right = TSR(T0_w=np.eye(4), Tw_e=np.eye(4), Bw=np.array([[-0.5, 2.5], [-2.5, 2.5], [0, 0], [0, 0], [0, 0],
+                                                                   [-np.pi, np.pi]]))  # fmt: skip
+        options = TrajectoryOptions(velocity_limits=1.0, acceleration_limits=2.0)
+        r = planner.plan(start=np.array([-0.5, 0.5]), goal=np.array([0.5, -0.5]), constraint_tsrs=[right], seed=0,
+                         trajectory=options, return_details=True)  # fmt: skip
+        assert r.success and r.backend == "python"
+        for backend in (None, "python"):
+            v = planner.validator(constraint_tsrs=[right], backend=backend)
+            assert v.validate_path(r.path) == r.validation
+            assert v.validate_trajectory(r.trajectory) == r.trajectory.validation
+        # the constraint is the plan's: a state outside it fails on it
+        w = planner.validator(constraint_tsrs=[right]).validate_state([np.pi, 0.0]).witness
+        assert w.failure == "path_constraint"
+
+    def test_the_planner_validator_is_the_plans_on_native(self):
+        ssik = pytest.importorskip("ssik")
+        from tsr import TSR
+
+        from sscbirrt.backends.ssik import SSIKRobotModel, SSIKSolver
+
+        if not native.available():
+            pytest.skip("needs sscbirrt._native")
+        ik = SSIKSolver(ssik.Manipulator.from_prebuilt("ur5e"))
+        planner = CBiRRT(SSIKRobotModel(ik), ik, NoCollision(), CBiRRTConfig(timeout=10.0), backend="native")
+        free = [-np.pi, np.pi]
+        bounds = np.array([[-1.2, 1.2], [-1.2, 1.2], [0.05, 1.5], free, free, free])
+        above = TSR(T0_w=np.eye(4), Tw_e=np.eye(4), Bw=bounds)
+        options = TrajectoryOptions(velocity_limits=1.57, acceleration_limits=4.0)
+        r = planner.plan(start=np.array([0.0, -1.2, 1.0, -1.4, -1.57, 0.0]),
+                         goal=np.array([0.8, -1.0, 0.8, -1.3, -1.57, 0.4]),
+                         constraint_tsrs=[above, above], seed=12, trajectory=options, return_details=True)  # fmt: skip
+        assert r.success and r.backend == "native"
+        for backend in (None, "python"):  # another implementation of the one contract: the same report
+            v = planner.validator(constraint_tsrs=[above, above], backend=backend)
+            assert v.backend == (backend or "native")
+            assert v.validate_path(r.path) == r.validation
+            assert v.validate_trajectory(r.trajectory) == r.trajectory.validation
+
+    def test_tsr_constraints_need_ik(self):
+        from tsr import TSR
+
+        planner = CBiRRT(PlanarArm(), collision_checker=NoCollision())
+        with pytest.raises(ValueError, match="need IK"):
+            planner.validator(constraint_tsrs=[TSR()])
+        assert planner.validator().validate_state([0.0, 0.0]).valid

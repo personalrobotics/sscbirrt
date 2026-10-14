@@ -328,6 +328,14 @@ validator agree that it is valid under that policy, and the policy is what
 #222 strengthens. `tests/reference/geodude_132_evidence.json` records the case,
 and `tests/reference/validation_evidence.json` the rest of #230's evidence.
 
+**For `CBiRRT.plan`,** `planner.validator(constraint_tsrs=...)`, given the
+same constraint TSRs, is the validator that call applies. It uses the same
+space, checker, constraint lowering, policy and backend selection, so its
+reports equal `result.validation` and `result.trajectory.validation`. Use it to
+validate another motion under the same rules, such as a runtime command
+sampled from `result.trajectory`. A report records which backend answered,
+but that is not part of equality: both give the same answer.
+
 **For a MuJoCo plan,** `sscbirrt.mujoco.validator(model, data, arm,
 holding=..., constraint=..., config=...)`, called with `plan`'s arguments, is
 the plan's own validator. The report's `snapshot_sha256` shows whether
