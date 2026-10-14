@@ -159,9 +159,9 @@ class DiscreteMotionValidator:
             configs.append(q)
         return LocalMotion(configs=configs, reached=True)
 
-    def validate_whole(self, q_from: np.ndarray, q_to: np.ndarray) -> list[np.ndarray] | None:
-        """``validate``'s configurations if every one is admissible, else None: the same samples, checked in van der
-        Corput order (``spread_order``), stopping at the first inadmissible one found."""
+    def samples(self, q_from: np.ndarray, q_to: np.ndarray) -> list[np.ndarray] | None:
+        """The configurations ``validate`` checks and, on success, returns, unchecked; None if ``q_to`` is outside
+        the space (``validate`` then returns an empty ``LocalMotion``)."""
         if not self.space.contains(q_to):
             return None
         q_from = np.asarray(q_from, dtype=float)
@@ -170,10 +170,15 @@ class DiscreteMotionValidator:
         if distance == 0.0:
             return []
         n = subdivisions(distance, self.resolution)
-        configs = [
-            np.array(q_to, dtype=float) if i == n else line_point(q_from, direction, i, n) for i in range(1, n + 1)
-        ]
-        for k in spread_order(n):
+        return [np.array(q_to, dtype=float) if i == n else line_point(q_from, direction, i, n) for i in range(1, n + 1)]
+
+    def validate_whole(self, q_from: np.ndarray, q_to: np.ndarray) -> list[np.ndarray] | None:
+        """``validate``'s configurations if every one is admissible, else None: the same samples, checked in van der
+        Corput order (``spread_order``), stopping at the first inadmissible one found."""
+        configs = self.samples(q_from, q_to)
+        if configs is None:
+            return None
+        for k in spread_order(len(configs)):
             if not self.is_admissible(configs[k]):
                 return None
         return configs

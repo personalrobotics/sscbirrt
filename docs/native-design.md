@@ -1879,6 +1879,14 @@ Every motion check answers one of two questions, and the caller says which.
   der Corput: the middle first, then the quarters, and so on, in integer arithmetic) and returns the same
   configurations on a yes. Nodes, paths and trajectories are therefore unchanged; the Python artifact still matches
   bit for bit.
+- **Whole shortcuts without projection.** A path shortcut on a problem with no projector and the default motion
+  validator has no step that depends on validity. `Solve::grow_whole` (Python: `CBiRRT._grow_whole`) therefore
+  computes the walk first, by `grow`'s own rules: the step size, `contains`, the stall test and the final hop to the
+  exact target. Each edge holds the configurations `DiscreteMotionValidator::samples` gives. A walk that ends short
+  fails with no check, as `grow` would. Otherwise every sample is checked as one `spread_order` search, and on a yes
+  the same nodes are added. With projection, each step depends on the last projected one, so edges stay one by one.
+  `test_a_whole_shortcut_matches_the_step_by_step_walk` holds the verdict and the nodes equal to the step-by-step
+  walk over 800 random cases.
 - **Reports.** `Validator::search` visits all of a subject's states in `spread_order`. For a report (`first`), it
   refines a failure to the earliest invalid state by checking, in order, the earlier states not yet checked. A valid
   subject costs the same either way.

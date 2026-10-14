@@ -27,7 +27,7 @@ from sscbirrt.sets import Sample, SetProjector, SetSampler, StateSet, explicit_s
 from sscbirrt.space import JointSpace
 from sscbirrt.trajectory import Trajectory, TrajectoryOptions, coalesce, initial_trajectory, limits, shortcut
 from sscbirrt.tree import RRTree
-from sscbirrt.validation import ValidationReport, Validator, classify
+from sscbirrt.validation import ValidationReport, Validator, classify, spread_order
 
 logger = logging.getLogger(__name__)
 
@@ -815,6 +815,8 @@ class CBiRRT:
             return self._nearest_node(space, tree, q_target), False
 
         current_idx = self._nearest_node(space, tree, q_target)
+        if whole and projector is None and max_steps is None and problem.motion_validator is None:
+            return self._grow_whole(problem, tree, current_idx, q_target)
         steps_taken = 0
         prev_distance = float("inf")
 
@@ -858,6 +860,62 @@ class CBiRRT:
                 break
 
         return current_idx, False
+
+    def _grow_whole(
+        self, problem: PlanningProblem, tree: RRTree, current_idx: int, q_target: np.ndarray
+    ) -> tuple[int, bool]:
+        """``_grow(whole=True)`` without projection, with the default motion validator, to the end (#230).
+
+        No step depends on validity then, so the walk is computed first by ``_grow``'s own rules (step size,
+        ``space.contains``, the stall test, the final hop to the exact target), each edge's configurations exactly
+        those ``DiscreteMotionValidator.validate`` would return. A walk that ends short fails with no check, as
+        ``_grow`` would. Otherwise every sample of every edge is checked as one van der Corput search
+        (``spread_order``), which reaches an obstacle sooner than edge after edge; on a yes the same nodes are added.
+        The verdict and the nodes are ``_grow``'s, whatever the order (a test holds them equal).
+        """
+        space = problem.space
+        mv = self.default_motion_validator(problem)
+        tol = self.config.connection_tolerance
+        edges: list[list[np.ndarray]] = []
+        q_current = tree.nodes[current_idx].config
+        prev_distance = float("inf")
+        while True:
+            direction = space.direction(q_current, q_target)
+            distance = float(np.linalg.norm(direction))
+            if distance == 0.0:
+                break
+            final = distance < tol
+            if final:
+                q_next = np.asarray(q_target, dtype=float)
+            else:
+                if prev_distance - distance < self.config.progress_tolerance:
+                    return current_idx, False
+                prev_distance = distance
+                q_next = q_current + direction / distance * min(distance, self.config.step_size)
+                if not space.contains(q_next):
+                    return current_idx, False
+            # _extend_along_edge: outside the space fails; a zero-length edge succeeds and adds nothing
+            if not space.contains(q_next):
+                return current_idx, False
+            if space.distance(q_current, q_next) != 0.0:
+                configs = mv.samples(q_current, q_next)
+                if configs is None:
+                    return current_idx, False
+                edges.append(configs)
+                q_current = configs[-1]
+            if final:
+                break
+        counts = getattr(self, "_counts", None)
+        if counts is not None:
+            counts["edge_checks"] += len(edges)
+        states = [q for configs in edges for q in configs]
+        for k in spread_order(len(states)):
+            if not mv.is_admissible(states[k]):
+                return current_idx, False
+        for configs in edges:
+            for q in configs:
+                current_idx = tree.add_node(q, current_idx)
+        return current_idx, True
 
     def _extend_along_edge(
         self,

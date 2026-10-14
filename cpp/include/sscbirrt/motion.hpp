@@ -44,6 +44,8 @@ class DiscreteMotionValidator final : public MotionValidator {
   LocalMotion validate(ConfigView q_from, ConfigView q_to) const override;
   // The same samples, checked in van der Corput order (spread_order), stopping at the first inadmissible one found.
   std::optional<std::vector<Config>> validate_whole(ConfigView q_from, ConfigView q_to) const override;
+  // The configurations validate checks and, on success, returns, unchecked; nullopt if q_to is outside the space.
+  std::optional<std::vector<Config>> samples(ConfigView q_from, ConfigView q_to) const;
 
  private:
   std::shared_ptr<const JointSpace> space_;

@@ -425,3 +425,32 @@ def test_a_spread_check_has_the_same_verdict_and_finds_an_obstacle_sooner(backen
     whole = v.check_piece(piece, 0, 0.0, V2, None, first=False)  # the verdict only
     assert earliest[1].failure == whole[1].failure == "collision"
     assert whole[0] < earliest[0]  # the wall is mid-way: the first probe lands near it
+
+
+@pytest.mark.parametrize("continuous", [(False, False), (True, False)])
+def test_a_whole_shortcut_matches_the_step_by_step_walk(continuous):
+    """Without projection, _grow(whole=True) checks a shortcut's samples as one van der Corput search. The verdict and
+    the nodes must be the step-by-step walk's, always: random walls, distances, windings and stalls."""
+    from sscbirrt import PlanningProblem
+    from sscbirrt.tree import RRTree
+
+    rng = np.random.default_rng(7)
+    space = plane(continuous)
+    for trial in range(400):
+        config = CBiRRTConfig(step_size=float(rng.choice([0.1, 0.3])), edge_resolution=float(rng.choice([0.05, 0.07])))
+        lo = rng.uniform(-2, 2)
+        wall = Wall(int(rng.integers(2)), lo, lo + rng.uniform(0.01, 0.3))
+        planner = CBiRRT(PlanarArm(), collision_checker=wall, config=config, backend="python")
+        planner.space = space
+        q0 = rng.uniform(-1.9, 1.9, 2)
+        q1 = rng.uniform(-1.9, 1.9, 2) if trial % 5 else q0 + rng.normal(scale=1e-4, size=2)
+        if continuous[0] and trial % 3 == 0:
+            q1[0] += 2 * np.pi  # another winding of the target
+        problem = PlanningProblem(space=space, start=FiniteSet([q0]), goal=FiniteSet([q1]), validator=wall)
+        stepwise, whole = RRTree(q0), RRTree(q0)
+        i_a, reached_a = planner._grow(problem, stepwise, q1, None)
+        i_b, reached_b = planner._grow(problem, whole, q1, None, whole=True)
+        assert reached_a == reached_b, trial
+        if reached_a:
+            a, b = stepwise.get_path_to_root(i_a), whole.get_path_to_root(i_b)
+            assert len(a) == len(b) and all(np.array_equal(x, y) for x, y in zip(a, b)), trial

@@ -60,6 +60,15 @@ LocalMotion DiscreteMotionValidator::validate(ConfigView q_from, ConfigView q_to
 }
 
 std::optional<std::vector<Config>> DiscreteMotionValidator::validate_whole(ConfigView q_from, ConfigView q_to) const {
+  auto configs = samples(q_from, q_to);
+  if (!configs) return std::nullopt;
+  for (const int k : spread_order(static_cast<int>(configs->size()))) {
+    if (!is_admissible_((*configs)[static_cast<std::size_t>(k)])) return std::nullopt;
+  }
+  return configs;
+}
+
+std::optional<std::vector<Config>> DiscreteMotionValidator::samples(ConfigView q_from, ConfigView q_to) const {
   if (!space_->contains(q_to)) return std::nullopt;
   const Config d = space_->direction(q_from, q_to);
   double dist = 0.0;
@@ -77,9 +86,6 @@ std::optional<std::vector<Config>> DiscreteMotionValidator::validate_whole(Confi
       const double t = static_cast<double>(i) / static_cast<double>(n);
       for (std::size_t k = 0; k < d.size(); ++k) q[k] = q_from[k] + t * d[k];
     }
-  }
-  for (const int k : spread_order(n)) {
-    if (!is_admissible_(configs[static_cast<std::size_t>(k)])) return std::nullopt;
   }
   return configs;
 }
