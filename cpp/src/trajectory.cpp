@@ -475,7 +475,7 @@ std::optional<std::string> accepts(const Trajectory& traj, double t1, double t2,
   for (const auto& [name, part] : parts) {
     if (part->duration() <= kEpsT) continue;
     if (part != &piece && evidence && evidence->straight_span(*part)) continue;
-    auto [checks, w] = validator.check_piece(*part, 0, 0.0, traj.velocity_limits, evidence, /*spread=*/true);
+    auto [checks, w] = validator.check_piece(*part, 0, 0.0, traj.velocity_limits, evidence, /*first=*/false);
     (void)checks;
     if (w) return std::string(name) + ": " + failure_name(w->failure) + " (" + w->detail + ")";
   }

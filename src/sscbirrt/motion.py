@@ -25,6 +25,13 @@ a ``LocalMotion`` must satisfy its contract (see ``LocalMotion``; violations
 raise ``MotionContractError``). Node admissibility says nothing about the
 motion *between* nodes; that is the validator's responsibility.
 
+**Two modes** (#230). ``validate`` answers *how far from the start* the motion is
+valid: its prefix becomes tree nodes, so it checks in order. Where only *whether
+the whole motion* is valid matters (path shortcuts, whose tree is discarded on a
+no), the planner calls ``validate_whole`` instead (see ``validate_whole``): the
+same states, visited in van der Corput order, which reaches an obstacle sooner.
+A validator without ``validate_whole`` answers through ``validate``.
+
 **Reversibility.** The search is bidirectional: the goal tree grows toward
 the start, so its edges are validated with ``q_from`` on the goal side and
 executed in the opposite direction. A custom validator must therefore treat
@@ -41,7 +48,7 @@ from typing import Protocol, runtime_checkable
 import numpy as np
 
 from sscbirrt.space import JointSpace
-from sscbirrt.validation import line_point, subdivisions
+from sscbirrt.validation import line_point, spread_order, subdivisions
 
 
 @dataclass
@@ -73,6 +80,17 @@ class MotionValidator(Protocol):
     def validate(self, q_from: np.ndarray, q_to: np.ndarray) -> LocalMotion: ...
 
 
+def validate_whole(validator, q_from: np.ndarray, q_to: np.ndarray) -> list[np.ndarray] | None:
+    """Whether the whole motion is valid: the configurations ``validator.validate`` would return with
+    ``reached=True``, or None. Uses the validator's own ``validate_whole`` (optional; the same states in any order,
+    the same configurations on a yes) when it has one, else ``validate``."""
+    method = getattr(validator, "validate_whole", None)
+    if method is not None:
+        return method(q_from, q_to)
+    motion = validator.validate(q_from, q_to)
+    return list(motion.configs) if motion.reached else None
+
+
 class RestrictedMotionValidator:
     """Compose a base validator with an extra motion predicate.
 
@@ -93,6 +111,11 @@ class RestrictedMotionValidator:
         if not self.accepts(np.asarray(q_from), np.asarray(q_to)):
             return LocalMotion()
         return self.base.validate(q_from, q_to)
+
+    def validate_whole(self, q_from: np.ndarray, q_to: np.ndarray) -> list[np.ndarray] | None:
+        if not self.accepts(np.asarray(q_from), np.asarray(q_to)):
+            return None
+        return validate_whole(self.base, q_from, q_to)
 
 
 class DiscreteMotionValidator:
@@ -135,3 +158,22 @@ class DiscreteMotionValidator:
                 return LocalMotion(configs=configs, reached=False)
             configs.append(q)
         return LocalMotion(configs=configs, reached=True)
+
+    def validate_whole(self, q_from: np.ndarray, q_to: np.ndarray) -> list[np.ndarray] | None:
+        """``validate``'s configurations if every one is admissible, else None: the same samples, checked in van der
+        Corput order (``spread_order``), stopping at the first inadmissible one found."""
+        if not self.space.contains(q_to):
+            return None
+        q_from = np.asarray(q_from, dtype=float)
+        direction = self.space.direction(q_from, q_to)
+        distance = float(np.linalg.norm(direction))
+        if distance == 0.0:
+            return []
+        n = subdivisions(distance, self.resolution)
+        configs = [
+            np.array(q_to, dtype=float) if i == n else line_point(q_from, direction, i, n) for i in range(1, n + 1)
+        ]
+        for k in spread_order(n):
+            if not self.is_admissible(configs[k]):
+                return None
+        return configs

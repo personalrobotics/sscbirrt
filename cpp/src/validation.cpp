@@ -119,28 +119,6 @@ std::optional<InvalidWitness> Validator::witness(ConfigView q, std::optional<int
   return w;
 }
 
-std::pair<long, std::optional<InvalidWitness>> Validator::segment(ConfigView q0, ConfigView q1, int index) const {
-  const std::size_t dof = q0.size();
-  Config d(dof);
-  double dist = 0.0;
-  for (std::size_t k = 0; k < dof; ++k) {
-    d[k] = q1[k] - q0[k];
-    dist += d[k] * d[k];
-  }
-  const int n = subdivisions(std::sqrt(dist), policy_.resolution);
-  Config q(dof);
-  for (int i = 1; i <= n; ++i) {
-    const double t = static_cast<double>(i) / static_cast<double>(n);
-    if (i == n) {
-      q.assign(q1.begin(), q1.end());
-    } else {
-      for (std::size_t k = 0; k < dof; ++k) q[k] = q0[k] + t * d[k];
-    }
-    if (auto w = witness(q, index, t)) return {i, std::move(w)};
-  }
-  return {n, std::nullopt};
-}
-
 ValidationReport Validator::report(const char* subject, int intervals, long checks,
                                    std::optional<InvalidWitness> w) const {
   ValidationReport r;
@@ -154,21 +132,69 @@ ValidationReport Validator::report(const char* subject, int intervals, long chec
   return r;
 }
 
+void Validator::segment_entries(ConfigView q0, ConfigView q1, int index, std::vector<Entry>& out) const {
+  const std::size_t dof = q0.size();
+  Config d(dof);
+  double dist = 0.0;
+  for (std::size_t k = 0; k < dof; ++k) {
+    d[k] = q1[k] - q0[k];
+    dist += d[k] * d[k];
+  }
+  const int n = subdivisions(std::sqrt(dist), policy_.resolution);
+  for (int i = 1; i <= n; ++i) {
+    const double t = static_cast<double>(i) / static_cast<double>(n);
+    Entry e;
+    if (i == n) {
+      e.q.assign(q1.begin(), q1.end());
+    } else {
+      e.q.resize(dof);
+      for (std::size_t k = 0; k < dof; ++k) e.q[k] = q0[k] + t * d[k];
+    }
+    e.segment = index;
+    e.fraction = t;
+    out.push_back(std::move(e));
+  }
+}
+
+std::pair<long, std::optional<InvalidWitness>> Validator::search(const std::vector<Entry>& entries, bool first) const {
+  std::vector<bool> checked(entries.size(), false);
+  long checks = 0;
+  for (const int k : spread_order(static_cast<int>(entries.size()))) {
+    ++checks;
+    auto w = entry_witness(entries[static_cast<std::size_t>(k)]);
+    if (!w) {
+      checked[static_cast<std::size_t>(k)] = true;
+      continue;
+    }
+    if (first) {
+      for (int i = 0; i < k; ++i) {
+        if (checked[static_cast<std::size_t>(i)]) continue;
+        ++checks;
+        if (auto earlier = entry_witness(entries[static_cast<std::size_t>(i)])) return {checks, std::move(earlier)};
+      }
+    }
+    return {checks, std::move(w)};
+  }
+  return {checks, std::nullopt};
+}
+
 ValidationReport Validator::validate_state(ConfigView q) const {
   check_config(q, "q");
-  return report("state", 0, 1, witness(q, std::nullopt, std::nullopt));
+  std::vector<Entry> entries(1);
+  entries[0].q = to_config(q);
+  auto [checks, w] = search(entries, true);
+  return report("state", 0, checks, std::move(w));
 }
 
 ValidationReport Validator::validate_motion(ConfigView q0, ConfigView q1) const {
   check_config(q0, "q0");
   check_config(q1, "q1");
-  auto w = witness(q0, 0, 0.0);
-  long checks = 1;
-  if (!w) {
-    auto [more, w1] = segment(q0, q1, 0);
-    checks += more;
-    w = std::move(w1);
-  }
+  std::vector<Entry> entries(1);
+  entries[0].q = to_config(q0);
+  entries[0].segment = 0;
+  entries[0].fraction = 0.0;
+  segment_entries(q0, q1, 0, entries);
+  auto [checks, w] = search(entries, true);
   return report("motion", 1, checks, std::move(w));
 }
 
@@ -176,13 +202,14 @@ ValidationReport Validator::validate_path(const std::vector<Config>& path) const
   if (path.empty()) throw std::invalid_argument("path: empty");
   for (std::size_t i = 0; i < path.size(); ++i) check_config(path[i], "path[" + std::to_string(i) + "]");
   const bool many = path.size() > 1;
-  auto w = witness(path[0], many ? std::optional<int>(0) : std::nullopt, many ? std::optional<double>(0.0) : std::nullopt);
-  long checks = 1;
-  for (std::size_t k = 0; k + 1 < path.size() && !w; ++k) {
-    auto [more, wk] = segment(path[k], path[k + 1], static_cast<int>(k));
-    checks += more;
-    w = std::move(wk);
+  std::vector<Entry> entries(1);
+  entries[0].q = path[0];
+  if (many) {
+    entries[0].segment = 0;
+    entries[0].fraction = 0.0;
   }
+  for (std::size_t k = 0; k + 1 < path.size(); ++k) segment_entries(path[k], path[k + 1], static_cast<int>(k), entries);
+  auto [checks, w] = search(entries, true);
   return report("path", static_cast<int>(path.size()) - 1, checks, std::move(w));
 }
 
@@ -445,46 +472,54 @@ std::vector<int> spread_order(int n) {
   return out;
 }
 
-namespace {
-std::vector<int> visit_order(std::size_t n, bool spread) {
-  if (spread) return spread_order(static_cast<int>(n));
-  std::vector<int> out(n);
-  for (std::size_t i = 0; i < n; ++i) out[i] = static_cast<int>(i);
-  return out;
+std::optional<InvalidWitness> Validator::entry_witness(const Entry& e) const {
+  auto w = witness(e.q, e.segment, e.fraction, e.time_s);
+  if (w && e.ramp) {
+    const auto r = static_cast<std::size_t>(e.ref);
+    w->time_s = e.t0 + time_at(*e.ramp, e.q[r], e.ramp_T);
+  }
+  return w;
 }
-}  // namespace
 
-std::pair<long, std::optional<InvalidWitness>> Validator::check_piece(const trajectory::Piece& piece, int index,
-                                                                      double t0, const std::vector<double>& vmax,
-                                                                      const PathEvidence* evidence, bool spread) const {
+void Validator::piece_entries(const trajectory::Piece& piece, int index, double t0, const std::vector<double>& vmax,
+                              const PathEvidence* evidence, std::vector<Entry>& out) const {
   const double T = piece.duration();
   if (evidence) {
     if (auto span = evidence->straight_span(piece)) {
-      const auto& [states, ref] = *span;
-      long checked = 0;
-      for (const int i : visit_order(states.size(), spread)) {
-        ++checked;
-        const auto k = static_cast<std::size_t>(i);
-        const Config& q = states[k].second;
-        if (auto w = witness(q, index, std::nullopt, std::nullopt)) {
-          const auto r = static_cast<std::size_t>(ref);
-          w->time_s = t0 + (k + 1 == states.size() ? T : time_at(piece.ramps[r], q[r], T));
-          return {checked, std::move(w)};
+      auto& [states, ref] = *span;
+      for (std::size_t i = 0; i < states.size(); ++i) {
+        Entry e;
+        e.q = std::move(states[i].second);
+        e.segment = index;
+        if (i + 1 == states.size()) {
+          e.time_s = t0 + T;
+        } else {
+          e.ramp = &piece.ramps[static_cast<std::size_t>(ref)];
+          e.ref = ref;
+          e.ramp_T = T;
+          e.t0 = t0;
         }
+        out.push_back(std::move(e));
       }
-      return {static_cast<long>(states.size()), std::nullopt};
+      return;
     }
   }
-  const std::vector<double> ts = time_steps(piece, vmax);
-  Config q(piece.ramps.size());
-  long checked = 0;
-  for (const int i : visit_order(ts.size(), spread)) {
-    ++checked;
-    const auto k = static_cast<std::size_t>(i);
-    for (std::size_t j = 0; j < q.size(); ++j) q[j] = piece.ramps[j].position(ts[k]);
-    if (auto w = witness(q, index, std::nullopt, t0 + ts[k])) return {checked, std::move(w)};
+  for (const double t : time_steps(piece, vmax)) {
+    Entry e;
+    e.q.resize(piece.ramps.size());
+    for (std::size_t j = 0; j < e.q.size(); ++j) e.q[j] = piece.ramps[j].position(t);
+    e.segment = index;
+    e.time_s = t0 + t;
+    out.push_back(std::move(e));
   }
-  return {static_cast<long>(ts.size()), std::nullopt};
+}
+
+std::pair<long, std::optional<InvalidWitness>> Validator::check_piece(const trajectory::Piece& piece, int index,
+                                                                      double t0, const std::vector<double>& vmax,
+                                                                      const PathEvidence* evidence, bool first) const {
+  std::vector<Entry> entries;
+  piece_entries(piece, index, t0, vmax, evidence, entries);
+  return search(entries, first);
 }
 
 ValidationReport Validator::validate_trajectory(const trajectory::Trajectory& traj) const {
@@ -492,16 +527,15 @@ ValidationReport Validator::validate_trajectory(const trajectory::Trajectory& tr
   std::optional<PathEvidence> evidence;
   if (!traj.path.empty()) evidence.emplace(traj.path, policy_.resolution);
   const std::vector<double> breaks = traj.breaks();
-  Config start;
-  for (const auto& r : traj.pieces.front().ramps) start.push_back(r.x0);
-  auto w = witness(start, 0, std::nullopt, 0.0);
-  long checks = 1;
-  for (std::size_t k = 0; k < traj.pieces.size() && !w; ++k) {
-    auto [more, wk] = check_piece(traj.pieces[k], static_cast<int>(k), breaks[k], traj.velocity_limits,
-                                  evidence ? &*evidence : nullptr);
-    checks += more;
-    w = std::move(wk);
+  std::vector<Entry> entries(1);
+  for (const auto& r : traj.pieces.front().ramps) entries[0].q.push_back(r.x0);
+  entries[0].segment = 0;
+  entries[0].time_s = 0.0;
+  for (std::size_t k = 0; k < traj.pieces.size(); ++k) {
+    piece_entries(traj.pieces[k], static_cast<int>(k), breaks[k], traj.velocity_limits, evidence ? &*evidence : nullptr,
+                  entries);
   }
+  auto [checks, w] = search(entries, true);
   ValidationReport r = report("trajectory", static_cast<int>(traj.pieces.size()), checks, std::move(w));
   r.duration_s = breaks.back();
   return r;

@@ -1864,3 +1864,21 @@ piece in time order. The Python reference (`sscbirrt.validation`) matches it ope
   - motion at either end.
 - **The witness** carries the piece as `segment` and `time_s`. For a path state inside a piece, the time is found
   by bisection on the reference ramp (60 halvings).
+
+### Two modes of motion check (#230)
+
+Every motion check answers one of two questions, and the caller says which.
+- **Prefix.** `MotionValidator::validate` answers how far from the start a motion is valid. The prefix becomes tree
+  nodes, so it checks in order; nothing can do better.
+- **Whole.** `MotionValidator::validate_whole` answers whether the whole motion is valid, for callers that discard
+  the motion on a no:
+  - `Solve::grow(..., whole = true)` from `try_shortcut`, so path shortcuts and `unwind`;
+  - `trajectory::accepts`.
+
+  The default answers through `validate`. `DiscreteMotionValidator` checks the same samples in `spread_order` (van
+  der Corput: the middle first, then the quarters, and so on, in integer arithmetic) and returns the same
+  configurations on a yes. Nodes, paths and trajectories are therefore unchanged; the Python artifact still matches
+  bit for bit.
+- **Reports.** `Validator::search` visits all of a subject's states in `spread_order`. For a report (`first`), it
+  refines a failure to the earliest invalid state by checking, in order, the earlier states not yet checked. A valid
+  subject costs the same either way.

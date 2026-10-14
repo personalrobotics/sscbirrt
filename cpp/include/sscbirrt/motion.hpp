@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "sscbirrt/space.hpp"
@@ -19,10 +20,18 @@ struct LocalMotion {
   bool reached = false;
 };
 
+// Two modes (#230). validate answers how far from the start the motion is valid: its prefix becomes tree nodes.
+// validate_whole answers whether the whole motion is valid, for callers that discard the motion on a no (shortcuts):
+// the configurations validate would return with reached = true, or nullopt. The default answers through validate.
 class MotionValidator {
  public:
   virtual ~MotionValidator() = default;
   virtual LocalMotion validate(ConfigView q_from, ConfigView q_to) const = 0;
+  virtual std::optional<std::vector<Config>> validate_whole(ConfigView q_from, ConfigView q_to) const {
+    LocalMotion m = validate(q_from, q_to);
+    if (!m.reached) return std::nullopt;
+    return std::move(m.configs);
+  }
 };
 
 // Straight segment sampled every `resolution` along the space's direction: n = max(1, ceil(d / resolution)),
@@ -33,6 +42,8 @@ class DiscreteMotionValidator final : public MotionValidator {
   DiscreteMotionValidator(std::shared_ptr<const JointSpace> space, std::function<bool(ConfigView)> is_admissible,
                           double resolution);
   LocalMotion validate(ConfigView q_from, ConfigView q_to) const override;
+  // The same samples, checked in van der Corput order (spread_order), stopping at the first inadmissible one found.
+  std::optional<std::vector<Config>> validate_whole(ConfigView q_from, ConfigView q_to) const override;
 
  private:
   std::shared_ptr<const JointSpace> space_;
@@ -46,6 +57,7 @@ class RestrictedMotionValidator final : public MotionValidator {
   RestrictedMotionValidator(std::shared_ptr<const MotionValidator> base,
                             std::function<bool(ConfigView, ConfigView)> accepts);
   LocalMotion validate(ConfigView q_from, ConfigView q_to) const override;
+  std::optional<std::vector<Config>> validate_whole(ConfigView q_from, ConfigView q_to) const override;
 
  private:
   std::shared_ptr<const MotionValidator> base_;

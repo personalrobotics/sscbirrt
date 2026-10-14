@@ -324,8 +324,8 @@ class Validator:
         q = _config(q, self.space.dof, "q")
         if self._native is not None:
             return self._from_native(self._native.validate_state(q.tolist()))
-        witness = self._witness(q, None, None)
-        return self._report("state", 0, 1, witness)
+        checks, witness = self._search([(q, None, None, None)], first=True)
+        return self._report("state", 0, checks, witness)
 
     def validate_motion(self, q0, q1) -> ValidationReport:
         """Whether the raw-linear motion from ``q0`` to ``q1`` is valid, both endpoints included."""
@@ -333,31 +333,25 @@ class Validator:
         q1 = _config(q1, self.space.dof, "q1")
         if self._native is not None:
             return self._from_native(self._native.validate_motion(q0.tolist(), q1.tolist()))
-        witness = self._witness(q0, 0, 0.0)
-        checks = 1
-        if witness is None:
-            more, witness = self._segment(q0, q1, 0)
-            checks += more
+        checks, witness = self._search([(q0, 0, 0.0, None)] + self._segment_entries(q0, q1, 0), first=True)
         return self._report("motion", 1, checks, witness)
 
     def validate_path(self, path: Sequence) -> ValidationReport:
-        """Whether a path is valid: its first waypoint, then each raw-linear segment in order."""
+        """Whether a path is valid: its first waypoint and every raw-linear segment."""
         if len(path) == 0:
             raise ValueError("path: empty")
         qs = [_config(q, self.space.dof, f"path[{i}]") for i, q in enumerate(path)]
         if self._native is not None:
             return self._from_native(self._native.validate_path([q.tolist() for q in qs]))
-        witness = self._witness(qs[0], 0 if len(qs) > 1 else None, 0.0 if len(qs) > 1 else None)
-        checks = 1
+        many = len(qs) > 1
+        entries = [(qs[0], 0 if many else None, 0.0 if many else None, None)]
         for k in range(len(qs) - 1):
-            if witness is not None:
-                break
-            more, witness = self._segment(qs[k], qs[k + 1], k)
-            checks += more
+            entries += self._segment_entries(qs[k], qs[k + 1], k)
+        checks, witness = self._search(entries, first=True)
         return self._report("path", len(qs) - 1, checks, witness)
 
     def validate_trajectory(self, trajectory) -> ValidationReport:
-        """Whether a timed trajectory is valid over its whole law: its start, then every piece in time order.
+        """Whether a timed trajectory is valid over its whole law: its start and every piece.
 
         Raises ``MalformedTrajectory`` for a trajectory that breaks its own invariants (see the module docstring).
         The witness of an invalid one gives its piece (``segment``) and ``time_s``.
@@ -374,63 +368,82 @@ class Validator:
             )
         evidence = None if path is None else PathEvidence(path, self.policy.resolution)
         breaks = trajectory.breaks
-        start = np.array([r.x0 for r in trajectory.pieces[0].ramps])
-        witness = self._witness(start, 0, None, 0.0)
-        checks = 1
+        entries = [(np.array([r.x0 for r in trajectory.pieces[0].ramps]), 0, None, 0.0)]
         for k, piece in enumerate(trajectory.pieces):
-            if witness is not None:
-                break
-            more, witness = self.check_piece(piece, k, float(breaks[k]), vmax, evidence)
-            checks += more
+            entries += self._piece_entries(piece, k, float(breaks[k]), vmax, evidence)
+        checks, witness = self._search(entries, first=True)
         return self._report("trajectory", len(trajectory.pieces), checks, witness, float(trajectory.duration))
 
     def check_piece(
-        self, piece, index: int, t0: float, vmax: np.ndarray, evidence: PathEvidence | None, spread: bool = False
+        self, piece, index: int, t0: float, vmax: np.ndarray, evidence: PathEvidence | None, first: bool = True
     ):
-        """Check the states of one piece after its start: (states checked, the first invalid one in time order).
-
-        With ``spread``, the same states are checked in van der Corput order (``spread_order``), which reaches an
-        obstacle sooner, and the invalid state returned is the first one found. The smoother uses it: it needs only
-        the verdict, which does not depend on the order.
+        """Check the states of one piece after its start: (states checked, an invalid one or None).
 
         A piece whose trace lies on the source path is checked at the path's states within its span and at its end;
         any other piece at ``n = max(1, ceil(T |vmax| / resolution - ROUNDING))`` uniform time steps, with every
         bounded joint's out-of-limits turning point added. The smoother accepts a shortcut only if each piece it
-        creates passes this, so a returned trajectory passes ``validate_trajectory``.
+        creates passes this (``first=False``: the whole verdict only), so a returned trajectory passes
+        ``validate_trajectory``. See ``_search`` for the order.
         """
+        return self._search(self._piece_entries(piece, index, t0, vmax, evidence), first)
+
+    # ----- the reference implementation ----------------------------------------------------------------------------
+
+    def _search(self, entries: list, first: bool) -> tuple[int, InvalidWitness | None]:
+        """Check states in van der Corput order (``spread_order``), which reaches an obstacle sooner, stopping at the
+        first invalid one found: (states checked, the invalid one or None). The verdict does not depend on the order.
+
+        With ``first`` (every report), a failure is refined to the earliest invalid state: the states before it not
+        yet checked are checked in order. A valid subject costs the same either way.
+
+        An entry is ``(q, segment, fraction, time)``; ``time`` may be a function, called only for a witness.
+        """
+        checked = [False] * len(entries)
+        checks = 0
+        for k in spread_order(len(entries)):
+            checks += 1
+            witness = self._entry_witness(entries[k])
+            if witness is None:
+                checked[k] = True
+                continue
+            if first:
+                for i in range(k):
+                    if checked[i]:
+                        continue
+                    checks += 1
+                    earlier = self._entry_witness(entries[i])
+                    if earlier is not None:
+                        return checks, earlier
+            return checks, witness
+        return checks, None
+
+    def _entry_witness(self, entry) -> InvalidWitness | None:
+        q, segment, fraction, time_s = entry
+        witness = self._witness(q, segment, fraction, None)
+        if witness is not None and time_s is not None:
+            witness = dataclasses.replace(witness, time_s=time_s() if callable(time_s) else time_s)
+        return witness
+
+    def _segment_entries(self, q0: np.ndarray, q1: np.ndarray, segment: int) -> list:
+        """The states after ``q0`` on the raw line to ``q1``, as search entries."""
+        d = q1 - q0
+        n = subdivisions(float(np.linalg.norm(d)), self.policy.resolution)
+        return [(q1 if i == n else line_point(q0, d, i, n), segment, i / n, None) for i in range(1, n + 1)]
+
+    def _piece_entries(self, piece, index: int, t0: float, vmax: np.ndarray, evidence: PathEvidence | None) -> list:
+        """The states of one piece after its start, as search entries (see ``check_piece``)."""
         T = piece.duration
         on_path = None if evidence is None else evidence.straight_span(piece)
         if on_path is not None:
             states, ref = on_path
-            order = spread_order(len(states)) if spread else range(len(states))
-            for checked, i in enumerate(order, start=1):
-                q = states[i][1]
-                witness = self._witness(q, index, None, None)
-                if witness is not None:
-                    t = t0 + (T if i == len(states) - 1 else _time_at(piece.ramps[ref], q[ref], T))
-                    return checked, dataclasses.replace(witness, time_s=t)
-            return len(states), None
+            last = len(states) - 1
+            return [
+                (q, index, None, t0 + T if i == last else (lambda q=q: t0 + _time_at(piece.ramps[ref], q[ref], T)))
+                for i, (_, q) in enumerate(states)
+            ]
         ts = _time_steps(piece, self.policy.resolution, vmax, self.space)
         qs = np.stack([r.evaluate(ts)[0] for r in piece.ramps], axis=1)
-        order = spread_order(len(ts)) if spread else range(len(ts))
-        for checked, i in enumerate(order, start=1):
-            witness = self._witness(qs[i], index, None, t0 + float(ts[i]))
-            if witness is not None:
-                return checked, witness
-        return len(ts), None
-
-    # ----- the reference implementation ----------------------------------------------------------------------------
-
-    def _segment(self, q0: np.ndarray, q1: np.ndarray, segment: int) -> tuple[int, InvalidWitness | None]:
-        """Check the states after ``q0`` on the raw line to ``q1``: (states checked, the first invalid one)."""
-        d = q1 - q0
-        n = subdivisions(float(np.linalg.norm(d)), self.policy.resolution)
-        for i in range(1, n + 1):
-            q = q1 if i == n else line_point(q0, d, i, n)
-            witness = self._witness(q, segment, i / n)
-            if witness is not None:
-                return i, witness
-        return n, None
+        return [(qs[i], index, None, t0 + float(ts[i])) for i in range(len(ts))]
 
     def _witness(
         self, q: np.ndarray, segment: int | None, fraction: float | None, time_s: float | None = None

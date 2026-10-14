@@ -421,7 +421,7 @@ def test_the_spread_order_visits_every_state_once_middle_first():
 def test_a_spread_check_has_the_same_verdict_and_finds_an_obstacle_sooner(backend):
     piece = synchronize(np.array([-1.0, 0.0]), np.zeros(2), np.array([1.0, 0.3]), np.zeros(2), V2, A2)
     v = Validator(plane(), Wall(0, -0.05, 0.05), policy=ValidationPolicy(0.01), backend="python")
-    linear = v.check_piece(piece, 0, 0.0, V2, None)
-    spread = v.check_piece(piece, 0, 0.0, V2, None, spread=True)
-    assert linear[1].failure == spread[1].failure == "collision"
-    assert spread[0] < linear[0]  # the wall is mid-way: the first probe lands near it
+    earliest = v.check_piece(piece, 0, 0.0, V2, None)  # a report: refined to the earliest invalid state
+    whole = v.check_piece(piece, 0, 0.0, V2, None, first=False)  # the verdict only
+    assert earliest[1].failure == whole[1].failure == "collision"
+    assert whole[0] < earliest[0]  # the wall is mid-way: the first probe lands near it

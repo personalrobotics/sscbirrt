@@ -28,6 +28,14 @@ follows [Semantic Versioning](https://semver.org/).
   is the returned trajectory's report. A trajectory that failed would not be returned ("Returned trajectory failed
   final validation").
 - `sscbirrt.mujoco.validator(model, data, arm, ...)`: the validator `plan` with the same arguments applies.
+- **Two modes of motion check (#230).**
+  - **Prefix:** `MotionValidator.validate` answers how far from the start a motion is valid. Tree growth keeps that
+    prefix, so it checks in order.
+  - **Whole:** the new optional `validate_whole` (native: a virtual with a default through `validate`) answers whether
+    the whole motion is valid. It returns the same configurations on a yes, and checks the same states in van der
+    Corput order, so it stops sooner on a no. Path shortcuts and trajectory shortcut acceptance use it.
+  - **Reports:** `Validator` answers whole first. On a failure it refines to the earliest invalid state.
+  - Verdicts and planner outputs are unchanged; only the order of the checks differs.
 
 ### Changed
 - **Edge subdivision tolerates rounding (#230).** An edge of length `d` is checked at `max(1, ceil(d / resolution -

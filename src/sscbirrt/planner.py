@@ -21,7 +21,7 @@ from sscbirrt.exceptions import (
 )
 from sscbirrt.interfaces import CollisionChecker, IKSolver, RobotModel
 from sscbirrt.legacy import legacy_index, legacy_problem
-from sscbirrt.motion import DiscreteMotionValidator, MotionValidator
+from sscbirrt.motion import DiscreteMotionValidator, LocalMotion, MotionValidator, validate_whole
 from sscbirrt.problem import PlanningProblem
 from sscbirrt.sets import Sample, SetProjector, SetSampler, StateSet, explicit_samples, is_finite, supports
 from sscbirrt.space import JointSpace
@@ -779,8 +779,13 @@ class CBiRRT:
         tree: RRTree,
         q_target: np.ndarray,
         max_steps: int | None = None,
+        whole: bool = False,
     ) -> tuple[int, bool]:
         """Grow tree toward target using EXT or CON behavior.
+
+        ``whole`` (#230): only reaching the target matters, as for a shortcut on a throwaway tree, so each edge is
+        checked whole (``motion.validate_whole``) and a failing one adds nothing. The nodes of a success are the
+        same.
 
         Each new configuration is projected onto the path constraint if it
         supports projection, then connected by a checked edge that validates
@@ -824,7 +829,7 @@ class CBiRRT:
 
             if distance < self.config.connection_tolerance:
                 # Close enough to connect: validate the exact final segment and add the target
-                return self._extend_along_edge(problem, tree, current_idx, q_target)
+                return self._extend_along_edge(problem, tree, current_idx, q_target, whole)
 
             if prev_distance - distance < self.config.progress_tolerance:
                 break
@@ -847,7 +852,7 @@ class CBiRRT:
                 if not space.contains(q_new):
                     break  # a projector may move the point anywhere
 
-            current_idx, reached = self._extend_along_edge(problem, tree, current_idx, q_new)
+            current_idx, reached = self._extend_along_edge(problem, tree, current_idx, q_new, whole)
             steps_taken += 1
             if not reached:
                 break
@@ -860,8 +865,11 @@ class CBiRRT:
         tree: RRTree,
         start_idx: int,
         q_target: np.ndarray,
+        whole: bool = False,
     ) -> tuple[int, bool]:
         """Extend the tree along the local motion to ``q_target``.
+
+        With ``whole``, the motion is checked whole (``motion.validate_whole``): on a no nothing is stored.
 
         This is the single local-motion validation boundary, used for
         ordinary growth, the final connection between trees, and shortcut
@@ -907,7 +915,13 @@ class CBiRRT:
         counts = getattr(self, "_counts", None)
         if counts is not None:
             counts["edge_checks"] += 1
-        motion = validator.validate(q_from, q_target)
+        if whole:
+            whole_configs = validate_whole(validator, q_from, q_target)
+            if whole_configs is None:
+                return start_idx, False
+            motion = LocalMotion(configs=whole_configs, reached=True)
+        else:
+            motion = validator.validate(q_from, q_target)
         configs = [np.asarray(q, dtype=float) for q in motion.configs]
 
         if motion.reached:
@@ -1169,8 +1183,8 @@ class CBiRRT:
             consecutive pair validated, or None if the connection failed.
             ``q_from == q_to`` gives the single-element path ``[q_from]``.
         """
-        temp_tree = RRTree(q_from)
-        final_idx, reached = self._grow(problem, temp_tree, q_to, max_steps=None)
+        temp_tree = RRTree(q_from)  # discarded unless reached: every edge is checked whole (#230)
+        final_idx, reached = self._grow(problem, temp_tree, q_to, max_steps=None, whole=True)
         if not reached:
             return None
         return temp_tree.get_path_to_root(final_idx)

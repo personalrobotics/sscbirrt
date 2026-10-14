@@ -153,8 +153,10 @@ class Solve {
   std::vector<Sample> roots(const StateSet& s, const std::string& role, RootReport& report);
   // One sampling draw: its admissible candidates, at most min(max_per_draw, room), skipping explicit seeds (#196).
   std::vector<Sample> draw_roots(const StateSet& s, const std::vector<Sample>& seeds, int room, RootReport* report);
-  std::pair<int, bool> grow(Tree& tree, ConfigView target, std::optional<int> max_steps);
-  std::pair<int, bool> extend_along_edge(Tree& tree, int start_idx, ConfigView target);
+  // whole (#230): only reaching the target matters (a shortcut's throwaway tree), so each edge is checked whole
+  // (MotionValidator::validate_whole) and a failing one adds nothing. The nodes of a success are the same.
+  std::pair<int, bool> grow(Tree& tree, ConfigView target, std::optional<int> max_steps, bool whole = false);
+  std::pair<int, bool> extend_along_edge(Tree& tree, int start_idx, ConfigView target, bool whole = false);
   std::vector<Config> extract_path(const Tree& ts, const Tree& tg, bool a_is_start, int idx_a, int idx_b) const;
   std::vector<Config> smooth(const std::vector<Config>& path);
   std::optional<std::vector<Config>> try_shortcut(ConfigView from, ConfigView to);
@@ -272,7 +274,7 @@ std::vector<Sample> Solve::draw_roots(const StateSet& s, const std::vector<Sampl
   return out;
 }
 
-std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<int> max_steps) {
+std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<int> max_steps, bool whole) {
   const JointSpace& space = *p_.space;
   const SetProjector* projector = p_.path_constraint ? p_.path_constraint->projector() : nullptr;
 
@@ -290,7 +292,7 @@ std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<in
     distance = std::sqrt(distance);
 
     if (distance == 0.0) return {current, true};  // already there; no duplicate node
-    if (distance < cfg_.connection_tolerance) return extend_along_edge(tree, current, target);
+    if (distance < cfg_.connection_tolerance) return extend_along_edge(tree, current, target, whole);
     if (prev_distance - distance < cfg_.progress_tolerance) break;
     prev_distance = distance;
     if (max_steps && steps >= *max_steps) break;
@@ -307,7 +309,7 @@ std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<in
       if (!space.contains(q_new)) break;  // a projector may move the point anywhere
     }
 
-    const auto [idx, reached] = extend_along_edge(tree, current, q_new);
+    const auto [idx, reached] = extend_along_edge(tree, current, q_new, whole);
     current = idx;
     ++steps;
     if (!reached) break;
@@ -315,7 +317,7 @@ std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<in
   return {current, false};
 }
 
-std::pair<int, bool> Solve::extend_along_edge(Tree& tree, int start_idx, ConfigView target) {
+std::pair<int, bool> Solve::extend_along_edge(Tree& tree, int start_idx, ConfigView target, bool whole) {
   const JointSpace& space = *p_.space;
   if (!space.contains(target)) return {start_idx, false};
   const Config q_from = tree.nodes()[static_cast<std::size_t>(start_idx)].q;  // copy: tree may reallocate
@@ -323,7 +325,13 @@ std::pair<int, bool> Solve::extend_along_edge(Tree& tree, int start_idx, ConfigV
 
   const MotionValidator& validator = motion_validator();
   const auto t_edge = Clock::now();
-  LocalMotion motion = validator.validate(q_from, target);
+  LocalMotion motion;
+  if (whole) {
+    auto configs = validator.validate_whole(q_from, target);
+    if (configs) motion = LocalMotion{std::move(*configs), true};
+  } else {
+    motion = validator.validate(q_from, target);
+  }
   ++stats_.edge_checks;
   stats_.seconds_edge_checks += std::chrono::duration<double>(Clock::now() - t_edge).count();
 
@@ -503,7 +511,7 @@ std::vector<Config> Solve::windings(const Config& q, const Config& ref) const {
 
 std::optional<std::vector<Config>> Solve::try_shortcut(ConfigView from, ConfigView to) {
   Tree temp(std::vector<Config>{to_config(from)});
-  const auto [idx, reached] = grow(temp, to, std::nullopt);
+  const auto [idx, reached] = grow(temp, to, std::nullopt, /*whole=*/true);  // discarded unless reached (#230)
   if (!reached) return std::nullopt;
   return temp.path_to_root(idx);
 }

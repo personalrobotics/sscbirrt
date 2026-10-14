@@ -507,7 +507,7 @@ def accepts(traj: Trajectory, t1: float, t2: float, piece: Piece, validator: Any
     trajectory rule accepted as it stands.
 
     The new piece goes first because most candidates fail there, and its states are visited in van der Corput
-    order (``spread``), which reaches an obstacle sooner; the verdict does not depend on the order. A cut piece that
+    order, which reaches an obstacle sooner; only the verdict is needed (``first=False``). A cut piece that
     still lies on the source path is not re-checked: its states are the path's (valid when the path is) and the cut
     point, which this call checks as the new piece's start or end. Any other cut piece gets a new time grid, so it is
     checked."""
@@ -522,7 +522,7 @@ def accepts(traj: Trajectory, t1: float, t2: float, piece: Piece, validator: Any
             continue
         if name != "shortcut" and evidence is not None and evidence.straight_span(part) is not None:
             continue
-        _, witness = validator.check_piece(part, 0, 0.0, vmax, evidence, spread=True)
+        _, witness = validator.check_piece(part, 0, 0.0, vmax, evidence, first=False)
         if witness is not None:
             return f"{name}: {witness.failure} ({witness.detail})"
     return None

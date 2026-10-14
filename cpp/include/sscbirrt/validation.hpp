@@ -19,6 +19,7 @@
 namespace sscbirrt {
 
 namespace trajectory {
+struct Ramp;
 struct Piece;
 struct Trajectory;
 }  // namespace trajectory
@@ -146,11 +147,11 @@ class Validator {
   // source path.
   ValidationReport validate_trajectory(const trajectory::Trajectory& traj) const;
 
-  // One piece's states after its start: (states checked, the first invalid one in time order). With `spread`, the
-  // same states in van der Corput order, returning the first invalid one found: the smoother needs only the verdict.
+  // One piece's states after its start: (states checked, an invalid one or nullopt). first: the earliest invalid one
+  // (every report); otherwise the first found, for the smoother, which needs only the verdict. See search.
   std::pair<long, std::optional<InvalidWitness>> check_piece(const trajectory::Piece& piece, int index, double t0,
                                                              const std::vector<double>& vmax,
-                                                             const PathEvidence* evidence, bool spread = false) const;
+                                                             const PathEvidence* evidence, bool first = true) const;
   std::optional<InvalidWitness> check_state(ConfigView q) const { return witness(q, std::nullopt, std::nullopt); }
 
   const ValidationPolicy& policy() const { return policy_; }
@@ -159,7 +160,23 @@ class Validator {
   std::optional<InvalidWitness> witness(ConfigView q, std::optional<int> segment, std::optional<double> fraction,
                                         std::optional<double> time_s = std::nullopt) const;
   std::vector<double> time_steps(const trajectory::Piece& piece, const std::vector<double>& vmax) const;
-  std::pair<long, std::optional<InvalidWitness>> segment(ConfigView q0, ConfigView q1, int index) const;
+  // A state to check, with where it is. A time is either known or found, for a witness only, on a ramp.
+  struct Entry {
+    Config q;
+    std::optional<int> segment;
+    std::optional<double> fraction;
+    std::optional<double> time_s;
+    const trajectory::Ramp* ramp = nullptr;  // with ramp: time_s = t0 + time on ramp to reach q[ref]
+    int ref = 0;
+    double ramp_T = 0.0, t0 = 0.0;
+  };
+  // States in van der Corput order (spread_order), stopping at the first invalid one found; with first, refined to the
+  // earliest by checking the states before it not yet checked, in order. The verdict does not depend on the order.
+  std::pair<long, std::optional<InvalidWitness>> search(const std::vector<Entry>& entries, bool first) const;
+  std::optional<InvalidWitness> entry_witness(const Entry& e) const;
+  void segment_entries(ConfigView q0, ConfigView q1, int index, std::vector<Entry>& out) const;
+  void piece_entries(const trajectory::Piece& piece, int index, double t0, const std::vector<double>& vmax,
+                     const PathEvidence* evidence, std::vector<Entry>& out) const;
   ValidationReport report(const char* subject, int intervals, long checks, std::optional<InvalidWitness> w) const;
   void check_config(ConfigView q, const std::string& name) const;
 
