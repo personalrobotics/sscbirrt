@@ -9,6 +9,15 @@
 
 namespace sscbirrt {
 
+// A disallowed contact at an invalid state, for validation witnesses (#230): bodies by name, geoms by id, the signed
+// distance (negative is penetration), and the kind of pair.
+struct Contact {
+  std::string kind;
+  std::string body1, body2;
+  int geom1 = -1, geom2 = -1;
+  double distance = 0.0;
+};
+
 // State validity (collision, in practice). Applied to every root and every configuration along every edge.
 class StateValidator {
  public:
@@ -17,6 +26,9 @@ class StateValidator {
   // Declared, never inferred (#200): is_valid(q) does not change when a joint turns by 2*pi. A scene of hinges
   // qualifies; a validator over raw joint values does not. Lets root collection judge windings once.
   virtual bool full_turn_invariant() const { return false; }
+  // The contacts that make q invalid, when the validator can name them; empty otherwise. Diagnostics only: validity
+  // is is_valid's answer.
+  virtual std::vector<Contact> contacts(ConfigView) const { return {}; }
 };
 
 class AcceptAll final : public StateValidator {

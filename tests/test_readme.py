@@ -30,3 +30,10 @@ def test_plan_in_mujoco_runs(capsys):
         pytest.skip(native_mujoco.unavailable_reason())
     exec(compile(_first_python_block("## Plan in MuJoCo"), "README MuJoCo", "exec"), {})
     assert capsys.readouterr().out.startswith("True native")
+
+
+def test_validating_a_path_runs():
+    namespace: dict = {}
+    exec(compile(_first_python_block("## Quick start without a simulator"), "README quick start", "exec"), namespace)
+    exec(compile(_first_python_block("## Validating a path"), "README validation", "exec"), namespace)
+    assert namespace["report"].valid and namespace["report"].subject == "path"

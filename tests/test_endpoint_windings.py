@@ -175,7 +175,7 @@ def _have_demo():
 class TestUR5e:
     """The native core on the pick demo: #212's motivating case, seed 0's spinning wrist."""
 
-    @pytest.mark.parametrize("seed", [0, 1, 6, 7])
+    @pytest.mark.parametrize("seed", [0, 1, 6, 12])
     def test_pick_ends_on_a_nearer_winding_of_the_same_grasp(self, seed):
         import dataclasses
 

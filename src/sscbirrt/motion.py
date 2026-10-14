@@ -41,6 +41,7 @@ from typing import Protocol, runtime_checkable
 import numpy as np
 
 from sscbirrt.space import JointSpace
+from sscbirrt.validation import line_point, subdivisions
 
 
 @dataclass
@@ -103,6 +104,11 @@ class DiscreteMotionValidator:
     ``is_admissible``. Validity is therefore discrete: an obstacle thinner
     than ``resolution`` can be stepped over. Choose the resolution against
     the thinnest feature you must not miss.
+
+    The subdivision is ``sscbirrt.validation``'s, so an edge is checked at the
+    states ``Validator.validate_motion`` checks on the raw line from ``q_from``
+    along the wrapped direction; the planner returns its path in those raw
+    values (``JointSpace.unwrap_path``) and validates it whole before success.
     """
 
     def __init__(self, space: JointSpace, is_admissible: Callable[[np.ndarray], bool], resolution: float):
@@ -121,10 +127,10 @@ class DiscreteMotionValidator:
         distance = float(np.linalg.norm(direction))
         if distance == 0.0:
             return LocalMotion(configs=[], reached=True)
-        n_steps = max(1, int(np.ceil(distance / self.resolution)))
+        n_steps = subdivisions(distance, self.resolution)
         configs: list[np.ndarray] = []
         for i in range(1, n_steps + 1):
-            q = np.array(q_to, dtype=float) if i == n_steps else q_from + (i / n_steps) * direction
+            q = np.array(q_to, dtype=float) if i == n_steps else line_point(q_from, direction, i, n_steps)
             if not self.is_admissible(q):
                 return LocalMotion(configs=configs, reached=False)
             configs.append(q)

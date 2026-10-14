@@ -99,6 +99,15 @@ std::vector<InvalidContact> SceneValidator::invalid_contacts(ConfigView q) const
 
 bool SceneValidator::is_valid(ConfigView q) const { return invalid_contacts(q).empty(); }
 
+std::vector<Contact> SceneValidator::contacts(ConfigView q) const {
+  std::vector<Contact> out;
+  for (const InvalidContact& c : invalid_contacts(q)) {
+    out.push_back({c.kind == InvalidContact::Kind::SelfCollision ? "self_collision" : "robot_environment",
+                   scene_->body_name(c.body1), scene_->body_name(c.body2), c.geom1, c.geom2, c.dist});
+  }
+  return out;
+}
+
 bool SceneValidator::full_turn_invariant() const {
   const ::mjModel* m = scene_->model();
   return std::all_of(scene_->joint_ids().begin(), scene_->joint_ids().end(),

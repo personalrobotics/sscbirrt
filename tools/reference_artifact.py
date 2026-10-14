@@ -570,8 +570,15 @@ def ur5e_cases(base: dict[str, Any]) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 
-def validate(problem: PlanningProblem, config: CBiRRTConfig, path: list[np.ndarray]) -> dict[str, Any]:
-    """Check a path against the problem using only the problem's own operations."""
+def validate(problem: PlanningProblem, config: CBiRRTConfig, path: list[np.ndarray], planned=None) -> dict[str, Any]:
+    """Check a path against the problem with its own operations and the public validator (#230).
+
+    ``path_valid`` is ``Validator.for_problem(problem, config).validate_path(path)``, the Python reference,
+    whichever backend planned. ``report_matches_planning`` holds the planner's own report (``planned``, from
+    ``PlanResult.validation``) equal to it: the same verdict, policy, and number of states checked.
+    """
+    from sscbirrt.validation import Validator  # here, so the benchmark's older installs can still import this tool
+
     space = problem.space
 
     def admissible(q):
@@ -581,25 +588,25 @@ def validate(problem: PlanningProblem, config: CBiRRTConfig, path: list[np.ndarr
             return False
         return problem.path_constraint is None or problem.path_constraint.contains(q)
 
-    resolution = config.edge_resolution or config.step_size
-    edges_ok = True
-    max_raw_step = 0.0
-    for a, b in zip(path[:-1], path[1:]):
-        d = space.direction(a, b)
-        n = max(1, int(np.ceil(np.linalg.norm(d) / resolution)))
-        for i in range(1, n + 1):
-            if not admissible(a + (i / n) * d):
-                edges_ok = False
-        max_raw_step = max(max_raw_step, float(np.abs(np.asarray(b) - np.asarray(a)).max()))
+    report = Validator.for_problem(problem, config, backend="python").validate_path(path)
+    max_raw_step = max(
+        (float(np.abs(np.asarray(b) - np.asarray(a)).max()) for a, b in zip(path[:-1], path[1:])), default=0.0
+    )
+
+    def verdict(r):
+        return None if r is None else (r.subject, r.valid, r.intervals, r.checks, r.policy, r.witness)
+
     return {
         "all_in_space": all(space.contains(q) for q in path),
         "first_in_start_set": bool(problem.start.contains(path[0])),
         "last_in_goal_set": bool(problem.goal.contains(path[-1])),
         "all_admissible": all(admissible(q) for q in path),
-        "edges_validated_at_resolution": edges_ok,
+        "path_valid": report.valid,
+        "report_matches_planning": verdict(planned) == verdict(report),
         "raw_steps_within_step_size": max_raw_step <= config.step_size + 1e-9,
         "max_raw_step": max_raw_step,
         "waypoints": len(path),
+        "states_checked": report.checks,
     }
 
 
@@ -686,7 +693,9 @@ def run_case(case: dict[str, Any], backend: str = "python") -> dict[str, Any]:
         "goal_source": list(result.goal_source),
         "iterations": result.iterations,
         "path": [q.tolist() for q in result.path] if result.success else None,
-        "validation": validate(case["problem"], case["config"], result.path) if result.success else None,
+        "validation": (
+            validate(case["problem"], case["config"], result.path, result.validation) if result.success else None
+        ),
     }
     if python_calls is not None:
         record["native_python_calls"] = python_calls  # the no-callback proof: Python functions entered during the solve
@@ -767,7 +776,7 @@ def semantic_view(artifact: dict[str, Any]) -> list[dict[str, Any]]:
         entry = {k: case[k] for k in ("name",) + SEMANTIC_KEYS}
         if entry["validation"] is not None:
             entry["validation"] = {
-                k: v for k, v in entry["validation"].items() if k not in ("max_raw_step", "waypoints")
+                k: v for k, v in entry["validation"].items() if k not in ("max_raw_step", "waypoints", "states_checked")
             }
         view.append(entry)
     return view

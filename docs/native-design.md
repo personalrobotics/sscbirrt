@@ -1784,3 +1784,51 @@ complete solver input of any arm, and one C++ entry point that dispatches on the
   - `tests/test_native_backend.py` plans a TSR goal natively on each 7R and general-6R arm.
 - **Pins:** `ssik>=8.2,<9` in the `ssik` extra, the build requirements and the test requirements.
 
+
+## Public motion validation (#230, v3.8.0)
+
+The planner's check is a public object, so anyone holding a path can ask exactly what the planner asked.
+`sscbirrt::Validator` (`validation.hpp`) and `sscbirrt.validation.Validator` are one contract with two
+implementations, held equal on every reference case.
+
+- **The state rule.** `classify(space, validator, path_constraint, q)` checks the joint space, then the validator, then
+  the path constraint. It is the only state rule. `Planner::why_inadmissible`, the solve's counted admissibility and
+  every witness call it.
+- **The motion rule.**
+  - `validate_motion(q0, q1)` checks `q0`, then `q0 + (i/n)(q1 - q0)` for `i = 1..n`, where
+    `n = subdivisions(|q1 - q0|, resolution)` and the last sample is `q1` exactly.
+  - The line is raw: a continuous joint is never wrapped.
+  - `DiscreteMotionValidator` uses the same `subdivisions` along the tree's wrapped direction. Its samples are the
+    validator's on the raw line from `q_from`.
+  - `subdivisions` is `max(1, ceil(d / resolution - 1e-9))`. The planner stores every edge sample as a node, so a
+    path's pieces are often exactly one resolution long. Recomputed from the nodes, a piece can come out a rounding
+    error longer, and a plain `ceil` then makes the final check sample a midpoint nobody planned. On the door demo,
+    that rejected one path in 20, at the midpoint of a TSR-chain constraint's chord.
+    - The tolerance also drops a redundant sample from every edge exactly one step long (0.1 at 0.05). Search
+      state checks fall 4–14% on the benchmark problems (door about 1%), with every problem still succeeding
+      100%; seeded paths change.
+  - `validation.cpp` is compiled with `-ffp-contract=off`, so every sample rounds as the Python reference's does.
+- **The final check.**
+  - After smoothing and `unwrap_path`, the solve runs `Validator::for_problem(problem, config).validate_path(path)`.
+  - Success carries the report in `PlanResult::validation`.
+  - A rejection is `Status::InvalidResult` ("Returned path failed final validation: …"), with the report and no path.
+  - Only a validator that is not `full_turn_invariant` on a continuous joint can tell a wrapped edge from its
+    unwrapped path, so for MuJoCo hinge scenes the check is a formality that binds the claim.
+  - A custom `motion_validator` replaces the edge rule, so no policy describes its motions. `for_problem` refuses
+    such a problem, and its results carry no report.
+- **Witnesses.**
+  - `StateValidator::contacts(q)` is a new virtual, empty by default. `mujoco::SceneValidator` names the bodies of
+    `invalid_contacts`.
+  - A path-constraint failure records the first violated child of an `AllOf`.
+  - A limit failure carries `why_invalid`'s text.
+- **Policy and version.**
+  - `ValidationPolicy { resolution }` reports a fixed name, mechanism (`joint_subdivision`), guarantee
+    (`discrete`), ambiguity band (0) and parameters.
+  - `sscbirrt::version()` is CMake's `PROJECT_VERSION`, and `_native.__version__` exposes it. A test holds it equal
+    to the installed package's version.
+- **Lifetime and threading.**
+  - A `Validator` borrows shared components and keeps nothing between calls: no cache, so query order cannot
+    change an answer.
+  - It is not thread-safe, because a `SceneValidator` mutates its one `mjData`.
+  - The Python `Validator(..., backend="auto")` lowers its checker with `fresh()`, so it owns its own `mjData`.
+  - Its `validate_*` calls release the GIL, so use one `Validator` per thread.

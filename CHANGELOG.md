@@ -6,6 +6,27 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Public motion validation (#230).** `sscbirrt.Validator` validates a state, one motion or a whole path, and
+  returns a `ValidationReport`: valid under the reported `ValidationPolicy`, or the first invalid state with its
+  segment, fraction, failure kind, contacts (native MuJoCo scene) and violated path-constraint member. It is the
+  planner's own check: `Validator.for_problem(problem, config)`, in Python and natively (`sscbirrt::Validator`), with
+  the native core used when every component lowers.
+  - Motions are raw-linear: the straight line in raw joint values, as runtimes execute it. A continuous joint is never
+    wrapped, so a half turn or more is validated as the long raw line.
+  - `PlanResult.validation` is the returned path's report. A planner returns a path only after validating it whole;
+    a path that fails is not returned (`failure_reason` "Returned path failed final validation", native status
+    `invalid_result`). Only checkers that are not invariant to full turns of a continuous joint can fail it.
+  - `sscbirrt._native.__version__`, and a `StateValidator::contacts` hook that witnesses use.
+
+### Changed
+- **Edge subdivision tolerates rounding (#230).** An edge of length `d` is checked at `max(1, ceil(d / resolution -
+  1e-9))` intervals, in the planner and the validator alike. Without the tolerance, a path piece exactly one resolution
+  long, recomputed from its stored nodes, could split in two, so the final check sampled a state the planner never
+  checked (one door path in 20 failed at such a midpoint). It also drops the redundant third sample that a step of
+  exactly `step_size` took. Search state checks fall 4–14% on the benchmark problems (door about 1%), with every
+  problem still succeeding 100%. Seeded paths differ from 3.7; the reference artifact's cases and statuses do not.
+
 ## [3.7.1] - 2026-10-13
 
 ### Fixed

@@ -38,6 +38,13 @@ from sscbirrt.sets import (
 from sscbirrt.space import JointSpace, SpaceSampler
 from sscbirrt.trajectory import Trajectory, TrajectoryOptions
 from sscbirrt.tsr_set import PoseRegion, TSRConfigurationSet, region_volume, tsr_weights
+from sscbirrt.validation import (
+    Contact,
+    InvalidWitness,
+    ValidationPolicy,
+    ValidationReport,
+    Validator,
+)
 
 __all__ = [
     "NativeUnsupported",
@@ -82,4 +89,9 @@ __all__ = [
     "PoseRegion",
     "region_volume",
     "tsr_weights",
+    "Validator",
+    "ValidationPolicy",
+    "ValidationReport",
+    "InvalidWitness",
+    "Contact",
 ]

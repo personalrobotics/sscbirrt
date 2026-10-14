@@ -60,7 +60,8 @@ def test_every_success_passes_independent_validation(fresh):
             "first_in_start_set",
             "last_in_goal_set",
             "all_admissible",
-            "edges_validated_at_resolution",
+            "path_valid",
+            "report_matches_planning",
             "raw_steps_within_step_size",
         ):
             assert v[key], f"{case['name']}: {key} failed"

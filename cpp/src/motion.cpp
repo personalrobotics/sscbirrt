@@ -5,6 +5,7 @@
 #include <cmath>
 #include <stdexcept>
 
+#include "sscbirrt/validation.hpp"
 #include "sscbirrt/validity.hpp"
 
 namespace sscbirrt {
@@ -40,7 +41,7 @@ LocalMotion DiscreteMotionValidator::validate(ConfigView q_from, ConfigView q_to
   for (double v : d) dist += v * v;
   dist = std::sqrt(dist);
   if (dist == 0.0) return LocalMotion{{}, true};
-  const int n = std::max(1, static_cast<int>(std::ceil(dist / resolution_)));
+  const int n = subdivisions(dist, resolution_);  // the validator's subdivision (#230)
   LocalMotion out;
   for (int i = 1; i <= n; ++i) {
     Config q;

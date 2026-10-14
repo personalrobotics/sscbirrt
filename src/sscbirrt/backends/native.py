@@ -90,6 +90,7 @@ class Lowered:
     config: Any  # _native.PlannerConfig
     space: Any  # _native.JointSpace
     provenance: dict = field(default_factory=dict)  # merged from every integration's ``provenance``
+    checker_provenance: dict = field(default_factory=dict)  # the validator's alone, for validation reports
 
 
 def _space_metric(metric, space: JointSpace) -> bool:
@@ -312,9 +313,69 @@ def lower(problem: PlanningProblem, config: CBiRRTConfig) -> Lowered:
     np_problem.validator = validator
     np_problem.path_constraint = constraint
     provenance: dict = dict(ctx.provenance)
+    checker_provenance: dict = {}
     if isinstance(problem.validator, ValidatorIntegration):
-        provenance.update(dict(problem.validator.provenance))
-    return Lowered(np_problem, _lower_config(config), nspace, provenance)
+        checker_provenance = dict(problem.validator.provenance)
+        provenance.update(checker_provenance)
+    return Lowered(np_problem, _lower_config(config), nspace, provenance, checker_provenance)
+
+
+@dataclass
+class _NoRoles:
+    """Stands in for a problem's roles when lowering a validator alone: nothing to hold FK agreement against."""
+
+    start: Any = field(default_factory=EmptySet)
+    goal: Any = field(default_factory=EmptySet)
+
+
+def lower_validator(space: JointSpace, checker, path_constraint, policy):
+    """A native ``Validator`` for these components and ``policy`` (``sscbirrt.validation.Validator``'s native form),
+    or ``NativeUnsupported`` with every blocker. The checker is lowered with ``fresh()``, so the validator owns its
+    collision state."""
+    if _native is None:
+        raise NativeUnsupported(["sscbirrt._native is not built; install sscbirrt from a wheel with the extension"])
+    reasons: list[str] = []
+    nspace = _lower_space(space)
+    constraint = None
+    if path_constraint is not None:
+        ctx = _Lowering(_NoRoles(), nspace)
+        constraint = _lower_set(path_constraint, "path_constraint", space, nspace, reasons, ctx)
+    validator = _lower_validator(checker, space.dof, reasons)
+    if reasons:
+        raise NativeUnsupported(reasons)
+    return _native.Validator(nspace, validator, constraint, _native.ValidationPolicy(float(policy.resolution)))
+
+
+def report_from_native(r, provenance: tuple = ()):
+    """A native ``ValidationReport`` as ``sscbirrt.validation.ValidationReport``."""
+    from sscbirrt.validation import Contact, InvalidWitness, ValidationPolicy, ValidationReport
+
+    witness = None
+    if r.witness is not None:
+        w = r.witness
+        witness = InvalidWitness(
+            failure=w.failure,
+            configuration=tuple(float(x) for x in w.configuration),
+            segment=w.segment,
+            fraction=w.fraction,
+            contacts=tuple(
+                Contact(c.kind, c.body1, c.body2, int(c.geom1), int(c.geom2), float(c.distance)) for c in w.contacts
+            ),
+            constraint=w.constraint,
+            detail=w.detail,
+        )
+    return ValidationReport(
+        subject=r.subject,
+        valid=bool(r.valid),
+        intervals=int(r.intervals),
+        checks=int(r.checks),
+        policy=ValidationPolicy(r.policy.resolution),
+        implementation=r.implementation,
+        backend="native",
+        witness=witness,
+        interpolation=None if r.subject == "state" else "raw_linear",
+        provenance=tuple(provenance),
+    )
 
 
 def _rebuild_tree(tree) -> RRTree | None:
@@ -384,7 +445,7 @@ def solve(lowered: Lowered, seed: int | None, abort_fn: Callable[[], bool] | Non
             raise UnsupportedCapability(str(e)) from None
         except _native.ContractError as e:
             raise MotionContractError(str(e)) from None
-    return convert(r, lowered.provenance)
+    return convert(r, lowered.provenance, lowered.checker_provenance)
 
 
 def smooth_trajectory(lowered: Lowered, path, vmax, amax, options, seed: int, abort_fn: Callable[[], bool] | None):
@@ -425,8 +486,8 @@ def smooth_trajectory(lowered: Lowered, path, vmax, amax, options, seed: int, ab
     return traj
 
 
-def convert(r, provenance: dict | None = None):
-    """A native PlanResult as the Python PlanResult."""
+def convert(r, provenance: dict | None = None, checker_provenance: dict | None = None):
+    """A native PlanResult as the Python PlanResult. ``checker_provenance`` goes on its validation report."""
     from sscbirrt.planner import PlanResult, versions
 
     s = r.stats
@@ -463,4 +524,9 @@ def convert(r, provenance: dict | None = None):
         backend="native",
         provenance={**versions(), "backend": "native", **(provenance or {})},
         stats=stats,
+        validation=None
+        if r.validation is None
+        else report_from_native(
+            r.validation, tuple(sorted((str(k), str(v)) for k, v in (checker_provenance or {}).items()))
+        ),
     )
