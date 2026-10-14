@@ -141,8 +141,8 @@ using WhyInadmissible = std::function<std::optional<std::string>(ConfigView)>;
 std::optional<std::string> validate_samples(const std::vector<Config>& points, const MotionValidator& motion,
                                             const WhyInadmissible& why, bool recheck_returned);
 
-// Why splicing `piece` into [t1, t2] is refused, or nullopt: its start state, then every piece the splice leaves (the
-// cut piece before, the new one, the cut piece after) through validator.check_piece (#230).
+// Why splicing `piece` into [t1, t2] is refused, or nullopt: its start state, the new piece, then the two pieces the
+// splice cuts, through validator.check_piece (#230). A cut piece still on the source path is not re-checked.
 std::optional<std::string> accepts(const Trajectory& traj, double t1, double t2, const Piece& piece,
                                    const Validator& validator, const PathEvidence* evidence);
 

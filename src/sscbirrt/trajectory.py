@@ -502,17 +502,23 @@ def validate_samples(points: np.ndarray, motion_validator: Any, admissible: Admi
 
 
 def accepts(traj: Trajectory, t1: float, t2: float, piece: Piece, validator: Any, vmax, evidence) -> str | None:
-    """Why splicing ``piece`` into ``[t1, t2]`` is refused, or ``None``: its start state, then every piece the splice
-    leaves (the cut piece before, the new one, the cut piece after), each through ``validator.check_piece``. Every
-    piece of the result is then one the trajectory rule accepted as it stands."""
+    """Why splicing ``piece`` into ``[t1, t2]`` is refused, or ``None``: its start state, the new piece, then the two
+    pieces the splice cuts, each through ``validator.check_piece``. Every piece of the result is then one the
+    trajectory rule accepted as it stands.
+
+    The new piece goes first because most candidates fail there. A cut piece that still lies on the source path is
+    not re-checked: its states are the path's (valid when the path is) and the cut point, which this call checks as
+    the new piece's start or end. Any other cut piece gets a new time grid, so it is checked."""
     witness = validator._witness(piece.state(0.0)[0], None, None, None)
     if witness is not None:
         return f"start: {witness.failure} ({witness.detail})"
     i1, tau1 = traj._locate(t1)
     i2, tau2 = traj._locate(t2)
-    parts = (("before", traj.pieces[i1].split(tau1)[0]), ("shortcut", piece), ("after", traj.pieces[i2].split(tau2)[1]))
+    parts = (("shortcut", piece), ("before", traj.pieces[i1].split(tau1)[0]), ("after", traj.pieces[i2].split(tau2)[1]))
     for name, part in parts:
         if part.duration <= _EPS_T:
+            continue
+        if name != "shortcut" and evidence is not None and evidence.straight_span(part) is not None:
             continue
         _, witness = validator.check_piece(part, 0, 0.0, vmax, evidence)
         if witness is not None:
