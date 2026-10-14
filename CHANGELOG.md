@@ -6,6 +6,14 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.8.0] - 2026-10-14
+
+Motion validation is public, and it is the planner's own check (#230).
+`sscbirrt.Validator` answers for a state, a motion, a path or a timed
+trajectory under an explicit policy. The planner returns a path or
+trajectory only after that same validator accepts it. Seeded paths differ
+from 3.7 because edge subdivision now tolerates rounding.
+
 ### Added
 - **Public motion validation (#230).** `sscbirrt.Validator` validates a state, one motion or a whole path, and
   returns a `ValidationReport`: valid under the reported `ValidationPolicy`, or the first invalid state with its
