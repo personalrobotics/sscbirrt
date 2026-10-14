@@ -405,3 +405,23 @@ class TestTimedPlans:
         assert traj.validation.valid and traj.path is not None
         v = Validator(planner.space, checker, policy=ValidationPolicy.from_config(config), backend=backend)
         assert traj.validation == v.validate_trajectory(traj)
+
+
+def test_the_spread_order_visits_every_state_once_middle_first():
+    from sscbirrt.validation import spread_order
+
+    for n in range(1, 300):
+        order = spread_order(n)
+        assert sorted(order) == list(range(n))
+        if native.available():
+            assert native._native.spread_order(n) == order
+    assert [i + 1 for i in spread_order(9)] == [5, 3, 7, 2, 4, 6, 8, 1, 9]
+
+
+def test_a_spread_check_has_the_same_verdict_and_finds_an_obstacle_sooner(backend):
+    piece = synchronize(np.array([-1.0, 0.0]), np.zeros(2), np.array([1.0, 0.3]), np.zeros(2), V2, A2)
+    v = Validator(plane(), Wall(0, -0.05, 0.05), policy=ValidationPolicy(0.01), backend="python")
+    linear = v.check_piece(piece, 0, 0.0, V2, None)
+    spread = v.check_piece(piece, 0, 0.0, V2, None, spread=True)
+    assert linear[1].failure == spread[1].failure == "collision"
+    assert spread[0] < linear[0]  # the wall is mid-way: the first probe lands near it

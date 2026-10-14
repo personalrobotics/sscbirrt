@@ -425,19 +425,51 @@ std::vector<double> Validator::time_steps(const trajectory::Piece& piece, const 
   return ts;
 }
 
+std::vector<int> spread_order(int n) {
+  std::vector<bool> seen(static_cast<std::size_t>(n) + 1, false);
+  std::vector<int> out;
+  out.reserve(static_cast<std::size_t>(n));
+  for (int level = 1; static_cast<int>(out.size()) < n && (1LL << level) <= 4LL * n; ++level) {
+    const long long denom = 1LL << level;
+    for (long long j = 1; j < denom; j += 2) {
+      const long long p = (j * n + denom - 1) >> level;
+      if (1 <= p && p <= n && !seen[static_cast<std::size_t>(p)]) {
+        seen[static_cast<std::size_t>(p)] = true;
+        out.push_back(static_cast<int>(p) - 1);
+      }
+    }
+  }
+  for (int p = 1; p <= n; ++p) {
+    if (!seen[static_cast<std::size_t>(p)]) out.push_back(p - 1);
+  }
+  return out;
+}
+
+namespace {
+std::vector<int> visit_order(std::size_t n, bool spread) {
+  if (spread) return spread_order(static_cast<int>(n));
+  std::vector<int> out(n);
+  for (std::size_t i = 0; i < n; ++i) out[i] = static_cast<int>(i);
+  return out;
+}
+}  // namespace
+
 std::pair<long, std::optional<InvalidWitness>> Validator::check_piece(const trajectory::Piece& piece, int index,
                                                                       double t0, const std::vector<double>& vmax,
-                                                                      const PathEvidence* evidence) const {
+                                                                      const PathEvidence* evidence, bool spread) const {
   const double T = piece.duration();
   if (evidence) {
     if (auto span = evidence->straight_span(piece)) {
       const auto& [states, ref] = *span;
-      for (std::size_t i = 0; i < states.size(); ++i) {
-        const Config& q = states[i].second;
+      long checked = 0;
+      for (const int i : visit_order(states.size(), spread)) {
+        ++checked;
+        const auto k = static_cast<std::size_t>(i);
+        const Config& q = states[k].second;
         if (auto w = witness(q, index, std::nullopt, std::nullopt)) {
           const auto r = static_cast<std::size_t>(ref);
-          w->time_s = t0 + (i + 1 == states.size() ? T : time_at(piece.ramps[r], q[r], T));
-          return {static_cast<long>(i) + 1, std::move(w)};
+          w->time_s = t0 + (k + 1 == states.size() ? T : time_at(piece.ramps[r], q[r], T));
+          return {checked, std::move(w)};
         }
       }
       return {static_cast<long>(states.size()), std::nullopt};
@@ -445,9 +477,12 @@ std::pair<long, std::optional<InvalidWitness>> Validator::check_piece(const traj
   }
   const std::vector<double> ts = time_steps(piece, vmax);
   Config q(piece.ramps.size());
-  for (std::size_t i = 0; i < ts.size(); ++i) {
-    for (std::size_t j = 0; j < q.size(); ++j) q[j] = piece.ramps[j].position(ts[i]);
-    if (auto w = witness(q, index, std::nullopt, t0 + ts[i])) return {static_cast<long>(i) + 1, std::move(w)};
+  long checked = 0;
+  for (const int i : visit_order(ts.size(), spread)) {
+    ++checked;
+    const auto k = static_cast<std::size_t>(i);
+    for (std::size_t j = 0; j < q.size(); ++j) q[j] = piece.ramps[j].position(ts[k]);
+    if (auto w = witness(q, index, std::nullopt, t0 + ts[k])) return {checked, std::move(w)};
   }
   return {static_cast<long>(ts.size()), std::nullopt};
 }

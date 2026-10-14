@@ -384,8 +384,14 @@ class Validator:
             checks += more
         return self._report("trajectory", len(trajectory.pieces), checks, witness, float(trajectory.duration))
 
-    def check_piece(self, piece, index: int, t0: float, vmax: np.ndarray, evidence: PathEvidence | None):
-        """Check the states of one piece after its start, in time order: (states checked, the first invalid one).
+    def check_piece(
+        self, piece, index: int, t0: float, vmax: np.ndarray, evidence: PathEvidence | None, spread: bool = False
+    ):
+        """Check the states of one piece after its start: (states checked, the first invalid one in time order).
+
+        With ``spread``, the same states are checked in van der Corput order (``spread_order``), which reaches an
+        obstacle sooner, and the invalid state returned is the first one found. The smoother uses it: it needs only
+        the verdict, which does not depend on the order.
 
         A piece whose trace lies on the source path is checked at the path's states within its span and at its end;
         any other piece at ``n = max(1, ceil(T |vmax| / resolution - ROUNDING))`` uniform time steps, with every
@@ -396,18 +402,21 @@ class Validator:
         on_path = None if evidence is None else evidence.straight_span(piece)
         if on_path is not None:
             states, ref = on_path
-            for i, (_, q) in enumerate(states):
+            order = spread_order(len(states)) if spread else range(len(states))
+            for checked, i in enumerate(order, start=1):
+                q = states[i][1]
                 witness = self._witness(q, index, None, None)
                 if witness is not None:
                     t = t0 + (T if i == len(states) - 1 else _time_at(piece.ramps[ref], q[ref], T))
-                    return i + 1, dataclasses.replace(witness, time_s=t)
+                    return checked, dataclasses.replace(witness, time_s=t)
             return len(states), None
         ts = _time_steps(piece, self.policy.resolution, vmax, self.space)
         qs = np.stack([r.evaluate(ts)[0] for r in piece.ramps], axis=1)
-        for i, (t, q) in enumerate(zip(ts, qs)):
-            witness = self._witness(q, index, None, t0 + float(t))
+        order = spread_order(len(ts)) if spread else range(len(ts))
+        for checked, i in enumerate(order, start=1):
+            witness = self._witness(qs[i], index, None, t0 + float(ts[i]))
             if witness is not None:
-                return i + 1, witness
+                return checked, witness
         return len(ts), None
 
     # ----- the reference implementation ----------------------------------------------------------------------------
@@ -538,6 +547,25 @@ def well_formed(trajectory, dof: int) -> tuple[np.ndarray, np.ndarray]:
         if abs(pieces[0].ramps[j].v0) > _TOL_V * max(1.0, vmax[j]) or abs(previous[j][1]) > _TOL_V * max(1.0, vmax[j]):
             raise MalformedTrajectory(f"joint {j}: not at rest at both ends")
     return vmax, amax
+
+
+def spread_order(n: int) -> list[int]:
+    """The indices ``0..n-1`` of the states along a motion (position ``p`` is index ``p - 1``; position ``n`` is the
+    end) in van der Corput order: level by level, the positions ``ceil(j n / 2^L)`` for odd ``j``, so the middle comes
+    first, then the quarters, and so on; repeats are skipped and any position left is appended. Each index exactly
+    once, in integer arithmetic, as the native core computes it."""
+    seen = [False] * (n + 1)
+    out = []
+    level = 1
+    while len(out) < n and (1 << level) <= 4 * n:
+        for j in range(1, 1 << level, 2):
+            p = (j * n + (1 << level) - 1) >> level
+            if 1 <= p <= n and not seen[p]:
+                seen[p] = True
+                out.append(p - 1)
+        level += 1
+    out += [p - 1 for p in range(1, n + 1) if not seen[p]]
+    return out
 
 
 def _time_steps(piece, resolution: float, vmax: np.ndarray, space: JointSpace) -> np.ndarray:

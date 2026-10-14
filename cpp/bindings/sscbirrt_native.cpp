@@ -197,6 +197,7 @@ PYBIND11_MODULE(_native, m) {
 
   // ----- validation (#230) ---------------------------------------------------------------------
   m.attr("__version__") = version();
+  m.def("spread_order", &spread_order, py::arg("n"), "Van der Corput visiting order of n states (sscbirrt.validation).");
   py::class_<ValidationPolicy>(m, "ValidationPolicy")
       .def(py::init([](double resolution) {
              ValidationPolicy p{resolution};

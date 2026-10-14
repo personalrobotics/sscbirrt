@@ -468,13 +468,14 @@ std::optional<std::string> accepts(const Trajectory& traj, double t1, double t2,
   const auto [i2, tau2] = locate(br, traj.pieces.size(), t2);
   const Piece before = traj.pieces[i1].split(tau1).first;
   const Piece after = traj.pieces[i2].split(tau2).second;
-  // The new piece first: most candidates fail there. A cut piece still on the source path is not re-checked: its
+  // The new piece first: most candidates fail there. States in van der Corput order: it reaches an obstacle sooner, and
+  // the verdict does not depend on the order. A cut piece still on the source path is not re-checked: its
   // states are the path's (valid when the path is) and the cut point, checked here as the new piece's start or end.
   const std::pair<const char*, const Piece*> parts[] = {{"shortcut", &piece}, {"before", &before}, {"after", &after}};
   for (const auto& [name, part] : parts) {
     if (part->duration() <= kEpsT) continue;
     if (part != &piece && evidence && evidence->straight_span(*part)) continue;
-    auto [checks, w] = validator.check_piece(*part, 0, 0.0, traj.velocity_limits, evidence);
+    auto [checks, w] = validator.check_piece(*part, 0, 0.0, traj.velocity_limits, evidence, /*spread=*/true);
     (void)checks;
     if (w) return std::string(name) + ": " + failure_name(w->failure) + " (" + w->detail + ")";
   }

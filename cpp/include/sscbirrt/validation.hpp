@@ -90,6 +90,10 @@ class MalformedTrajectory : public std::invalid_argument {
 inline constexpr const char* kLaw = "piecewise_constant_acceleration";
 inline constexpr double kOnPath = 1e-8;  // a trajectory point this near the source path (relative, >= 1) lies on it
 
+// The indices 0..n-1 of the states along a motion in van der Corput order (sscbirrt.validation.spread_order): level
+// by level the positions ceil(j n / 2^L) for odd j, repeats skipped, any position left appended.
+std::vector<int> spread_order(int n);
+
 // The trajectory's own invariants, or MalformedTrajectory naming the first one broken.
 void well_formed(const trajectory::Trajectory& traj, int dof);
 
@@ -142,11 +146,11 @@ class Validator {
   // source path.
   ValidationReport validate_trajectory(const trajectory::Trajectory& traj) const;
 
-  // One piece's states after its start, in time order: (states checked, the first invalid one). The smoother
-  // accepts a shortcut only if every piece it creates passes this.
+  // One piece's states after its start: (states checked, the first invalid one in time order). With `spread`, the
+  // same states in van der Corput order, returning the first invalid one found: the smoother needs only the verdict.
   std::pair<long, std::optional<InvalidWitness>> check_piece(const trajectory::Piece& piece, int index, double t0,
                                                              const std::vector<double>& vmax,
-                                                             const PathEvidence* evidence) const;
+                                                             const PathEvidence* evidence, bool spread = false) const;
   std::optional<InvalidWitness> check_state(ConfigView q) const { return witness(q, std::nullopt, std::nullopt); }
 
   const ValidationPolicy& policy() const { return policy_; }
