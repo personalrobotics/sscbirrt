@@ -1,0 +1,383 @@
+{
+ "case": "personalrobotics/ssrobot#132: Geodude's right arm back to ready, ssrobot 6f660eb, CI run 38499490297",
+ "issue": "https://github.com/personalrobotics/sscbirrt/issues/230",
+ "planned_with_this_sscbirrt": {
+  "dense": {
+   "invalid": 0,
+   "scene_agrees": true,
+   "states": 20001
+  },
+  "path_waypoints": 121,
+  "planning_equals_public": true,
+  "planning_trajectory_report": {
+   "backend": "native",
+   "checks": 292,
+   "duration_s": 1.863218395714634,
+   "implementation": "sscbirrt 3.7.1",
+   "interpolation": null,
+   "intervals": 10,
+   "law": "piecewise_constant_acceleration",
+   "policy": {
+    "ambiguity_band_m": 0.0,
+    "guarantee": "discrete",
+    "mechanism": "joint_subdivision",
+    "name": "joint_l2_subdivision",
+    "parameters": [
+     [
+      "endpoints",
+      "checked"
+     ],
+     [
+      "interpolation",
+      "raw_linear"
+     ],
+     [
+      "rounding",
+      "1e-09"
+     ],
+     [
+      "trajectory",
+      "source_path_states_or_speed_bounded_time_steps"
+     ],
+     [
+      "trajectory_limits",
+      "exact"
+     ]
+    ],
+    "resolution": 0.05,
+    "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+   },
+   "subject": "trajectory",
+   "valid": true,
+   "witness": null
+  },
+  "public_path_report": {
+   "backend": "native",
+   "checks": 121,
+   "duration_s": null,
+   "implementation": "sscbirrt 3.7.1",
+   "interpolation": "raw_linear",
+   "intervals": 120,
+   "law": null,
+   "policy": {
+    "ambiguity_band_m": 0.0,
+    "guarantee": "discrete",
+    "mechanism": "joint_subdivision",
+    "name": "joint_l2_subdivision",
+    "parameters": [
+     [
+      "endpoints",
+      "checked"
+     ],
+     [
+      "interpolation",
+      "raw_linear"
+     ],
+     [
+      "rounding",
+      "1e-09"
+     ],
+     [
+      "trajectory",
+      "source_path_states_or_speed_bounded_time_steps"
+     ],
+     [
+      "trajectory_limits",
+      "exact"
+     ]
+    ],
+    "resolution": 0.05,
+    "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+   },
+   "subject": "path",
+   "valid": true,
+   "witness": null
+  },
+  "public_trajectory_report": {
+   "backend": "native",
+   "checks": 292,
+   "duration_s": 1.863218395714634,
+   "implementation": "sscbirrt 3.7.1",
+   "interpolation": null,
+   "intervals": 10,
+   "law": "piecewise_constant_acceleration",
+   "policy": {
+    "ambiguity_band_m": 0.0,
+    "guarantee": "discrete",
+    "mechanism": "joint_subdivision",
+    "name": "joint_l2_subdivision",
+    "parameters": [
+     [
+      "endpoints",
+      "checked"
+     ],
+     [
+      "interpolation",
+      "raw_linear"
+     ],
+     [
+      "rounding",
+      "1e-09"
+     ],
+     [
+      "trajectory",
+      "source_path_states_or_speed_bounded_time_steps"
+     ],
+     [
+      "trajectory_limits",
+      "exact"
+     ]
+    ],
+    "resolution": 0.05,
+    "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+   },
+   "subject": "trajectory",
+   "valid": true,
+   "witness": null
+  },
+  "smoother_rerun_reproduces_trajectory": true,
+  "ssrobot_prepared": {
+   "chord_resolution": "longest step 0.00628, bound 0.05: the stricter of the scene's 0.05 and the trajectory's 0.05; a shorter period_ns shortens the steps",
+   "collision": "0 of 932 steps invalid",
+   "continuous_joints": "largest continuous-joint step 0 rad, which must be under pi",
+   "description_limits": "joint order, position, velocity, and acceleration within the description",
+   "effective_rates": "velocity and acceleration within the request's effective limits",
+   "goal": "last waypoint 4.44e-16 from the goal, bound 0.001",
+   "start": "first waypoint 0 from the request's start"
+  },
+  "trajectory_pieces": 10
+ },
+ "recorded_plan": {
+  "dense_recheck_3_7": {
+   "deepest_contact": {
+    "body1": "right_ur5e/gripper/left_follower",
+    "body2": "left_ur5e/gripper/right_coupler",
+    "dist": -0.0011780353481109296
+   },
+   "invalid": 44,
+   "pieces": [
+    3
+   ],
+   "scene_agrees": true,
+   "states": 20001,
+   "window_s": [
+    0.6094621918026323,
+    0.6135102106854734
+   ]
+  },
+  "dense_recheck_rebuilt_scene": {
+   "deepest_contact": {
+    "body1": "right_ur5e/gripper/left_follower",
+    "body2": "left_ur5e/gripper/right_coupler",
+    "dist": -0.0011780353481109296
+   },
+   "invalid": 44,
+   "pieces": [
+    3
+   ],
+   "scene_agrees": true,
+   "states": 20001,
+   "window_s": [
+    0.6094621918026323,
+    0.6135102106854734
+   ]
+  },
+  "python_equals_native": true,
+  "result_equals_ci_artifact": true,
+  "result_sha256": "5d03435993b0eeb4febb2c42ba62e08eee48afb924aa557cdae19654a7a4a2a8",
+  "rule_3_7_per_piece": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "smoother_3_7_rerun_reproduces_trajectory": true,
+  "snapshot_fingerprint_matches": true,
+  "ssrobot_prepared": "execution_unready: collision: 3 of 941 steps invalid, first 304",
+  "this_validator": {
+   "native": {
+    "path": {
+     "backend": "native",
+     "checks": 156,
+     "duration_s": null,
+     "implementation": "sscbirrt 3.7.1",
+     "interpolation": "raw_linear",
+     "intervals": 155,
+     "law": null,
+     "policy": {
+      "ambiguity_band_m": 0.0,
+      "guarantee": "discrete",
+      "mechanism": "joint_subdivision",
+      "name": "joint_l2_subdivision",
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "resolution": 0.05,
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "subject": "path",
+     "valid": true,
+     "witness": null
+    },
+    "trajectory": {
+     "backend": "native",
+     "checks": 295,
+     "duration_s": 1.8827994803912025,
+     "implementation": "sscbirrt 3.7.1",
+     "interpolation": null,
+     "intervals": 9,
+     "law": "piecewise_constant_acceleration",
+     "policy": {
+      "ambiguity_band_m": 0.0,
+      "guarantee": "discrete",
+      "mechanism": "joint_subdivision",
+      "name": "joint_l2_subdivision",
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "resolution": 0.05,
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "subject": "trajectory",
+     "valid": true,
+     "witness": null
+    }
+   },
+   "python": {
+    "path": {
+     "backend": "python",
+     "checks": 156,
+     "duration_s": null,
+     "implementation": "sscbirrt 3.7.1",
+     "interpolation": "raw_linear",
+     "intervals": 155,
+     "law": null,
+     "policy": {
+      "ambiguity_band_m": 0.0,
+      "guarantee": "discrete",
+      "mechanism": "joint_subdivision",
+      "name": "joint_l2_subdivision",
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "resolution": 0.05,
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "subject": "path",
+     "valid": true,
+     "witness": null
+    },
+    "trajectory": {
+     "backend": "python",
+     "checks": 295,
+     "duration_s": 1.8827994803912025,
+     "implementation": "sscbirrt 3.7.1",
+     "interpolation": null,
+     "intervals": 9,
+     "law": "piecewise_constant_acceleration",
+     "policy": {
+      "ambiguity_band_m": 0.0,
+      "guarantee": "discrete",
+      "mechanism": "joint_subdivision",
+      "name": "joint_l2_subdivision",
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "resolution": 0.05,
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "subject": "trajectory",
+     "valid": true,
+     "witness": null
+    }
+   }
+  }
+ },
+ "versions": {
+  "captured_with": "3.7.0",
+  "evaluated_with": "3.7.1",
+  "mujoco": "3.14.0",
+  "ssik": "8.2.0"
+ }
+}

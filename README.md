@@ -321,6 +321,13 @@ checks a trajectory's whole law, not its knots, and equals
   invariants (continuity, its velocity or acceleration limits, rest at both
   ends) raises `MalformedTrajectory`, a `ValueError`.
 
+**What it does not claim.** The guarantee is discrete. Geodude's reference
+plan in personalrobotics/ssrobot#132 crosses the other gripper for 4 ms
+between two states the 0.05 rad policy checks 6.4 ms apart. Planning and this
+validator agree that it is valid under that policy, and the policy is what
+#222 strengthens. `tests/reference/geodude_132_evidence.json` records the case,
+and `tests/reference/validation_evidence.json` the rest of #230's evidence.
+
 **For a MuJoCo plan,** `sscbirrt.mujoco.validator(model, data, arm,
 holding=..., constraint=..., config=...)`, called with `plan`'s arguments, is
 the plan's own validator. The report's `snapshot_sha256` shows whether
