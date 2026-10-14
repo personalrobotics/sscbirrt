@@ -14,7 +14,16 @@ from sscbirrt.backends import native
 from sscbirrt.sets import AllOf, FiniteSet
 from sscbirrt.testing import NoCollision, Wall
 from sscbirrt.testing.planar import PlanarArm
-from sscbirrt.validation import ValidationPolicy, Validator
+from sscbirrt.trajectory import (
+    Piece,
+    Ramp,
+    Trajectory,
+    TrajectoryOptions,
+    coalesce,
+    initial_trajectory,
+    synchronize,
+)
+from sscbirrt.validation import MalformedTrajectory, ValidationPolicy, Validator
 
 BACKENDS = ["python"] + (["native"] if native.available() else [])
 
@@ -277,3 +286,122 @@ def test_a_path_of_planner_samples_checks_no_new_state(backend):
         d *= 0.1 / np.linalg.norm(d)  # one planner step: two samples, each exactly one resolution
         path = [a, a + 0.5 * d, a + d]
         assert v.validate_path(path).checks == 3
+
+
+# ----- timed trajectories --------------------------------------------------------------------------------------------
+
+V2, A2 = np.array([1.0, 1.0]), np.array([2.0, 2.0])
+
+
+def dense(points, step=0.05):
+    """A planner-like dense path through ``points``: every edge cut into samples at most ``step`` apart."""
+    from sscbirrt.validation import line_point, subdivisions
+
+    out = [np.asarray(points[0], dtype=float)]
+    for a, b in zip(points, points[1:]):
+        a, b = np.asarray(a, dtype=float), np.asarray(b, dtype=float)
+        n = subdivisions(float(np.linalg.norm(b - a)), step)
+        out += [b if i == n else line_point(a, b - a, i, n) for i in range(1, n + 1)]
+    return out
+
+
+def timed(path):
+    traj = initial_trajectory(coalesce(path), V2, A2)
+    traj.path = path
+    return traj
+
+
+class TestTrajectories:
+    def test_pieces_on_the_source_path_reuse_its_states(self, backend):
+        path = dense([[-1.0, 0.0], [0.0, 0.5], [1.0, 0.5]])
+        v = Validator(plane(), NoCollision(), backend=backend)
+        r = v.validate_trajectory(timed(path))
+        assert r.valid and r.subject == "trajectory" and r.law == "piecewise_constant_acceleration"
+        assert r.intervals == 2 and r.duration_s > 0
+        assert r.checks == v.validate_path(path).checks  # exactly the path's states, no new one
+
+    def test_without_its_path_a_trajectory_is_sampled_in_time(self, backend):
+        path = dense([[-1.0, 0.0], [1.0, 0.0]])
+        traj = timed(path)
+        traj.path = None
+        r = Validator(plane(), NoCollision(), backend=backend).validate_trajectory(traj)
+        speed = np.linalg.norm(V2)
+        assert r.valid and r.checks == 1 + math.ceil(traj.duration * speed / 0.05 - 1e-9)
+
+    def test_a_shortcut_through_an_obstacle_is_found_in_time(self, backend):
+        piece = synchronize(np.array([-1.0, 0.0]), np.zeros(2), np.array([1.0, 0.3]), np.zeros(2), V2, A2)
+        traj = Trajectory([Piece(piece.ramps, "shortcut")], V2, A2)
+        r = Validator(plane(), Wall(0, -0.05, 0.05), backend=backend).validate_trajectory(traj)
+        w = r.witness
+        assert not r.valid and w.failure == "collision" and w.segment == 0
+        assert 0 < w.time_s < traj.duration
+        assert np.allclose(traj.state(w.time_s)[0], w.configuration, atol=1e-12)
+        assert -0.05 < w.configuration[0] < 0.05
+
+    def test_position_limits_hold_between_samples(self, backend):
+        # Joint 0 rises from 1.9 to 2.1 (beyond its limit of 2) at t = 2 s and returns, at rest at both ends. A coarse
+        # policy samples only the end; the turning point is checked exactly.
+        a = 0.2
+        up = Ramp(1.9, 0.0, ((1.0, a), (2.0, -a), (1.0, a)))
+        still = Ramp(0.0, 0.0, ((1.0, 0.0), (2.0, 0.0), (1.0, 0.0)))
+        traj = Trajectory([Piece((up, still), "shortcut")], V2, A2)
+        r = Validator(plane(), NoCollision(), policy=ValidationPolicy(100.0), backend=backend).validate_trajectory(traj)
+        w = r.witness
+        assert (w.failure, w.time_s) == ("position_limits", pytest.approx(2.0))
+        assert w.configuration[0] == pytest.approx(2.1)
+
+    @pytest.mark.parametrize("breakage", ["jump", "moving", "fast", "ramps"])
+    def test_a_trajectory_that_breaks_its_own_invariants_is_refused(self, backend, breakage):
+        p1 = synchronize(np.zeros(2), np.zeros(2), np.array([0.5, 0.0]), np.zeros(2), V2, A2)
+        p2 = synchronize(np.array([0.5, 0.0]), np.zeros(2), np.array([1.0, 0.0]), np.zeros(2), V2, A2)
+        pieces = [p1, p2]
+        if breakage == "jump":
+            pieces[1] = synchronize(np.array([0.6, 0.0]), np.zeros(2), np.array([1.0, 0.0]), np.zeros(2), V2, A2)
+        if breakage == "moving":
+            pieces = [p1, Piece(tuple(r.split(r.duration / 2)[0] for r in p2.ramps))]
+        if breakage == "fast":
+            pieces = [p1, p2]
+            V = V2 / 10
+        if breakage == "ramps":
+            pieces[1] = Piece(p2.ramps[:1])
+        traj = Trajectory(pieces, V if breakage == "fast" else V2, A2)
+        with pytest.raises(MalformedTrajectory):
+            Validator(plane(), NoCollision(), backend=backend).validate_trajectory(traj)
+
+    @pytest.mark.skipif(not native.available(), reason="needs sscbirrt._native")
+    def test_native_and_python_agree_on_trajectories(self):
+        rng = np.random.default_rng(1)
+        for _ in range(40):
+            pts = [rng.uniform(-1.5, 1.5, 2) for _ in range(rng.integers(2, 5))]
+            traj = timed(dense(pts))
+            if rng.random() < 0.5:  # a shortcut spliced in, as the smoother does
+                t1, t2 = np.sort(rng.uniform(0, traj.duration, 2))
+                qa, va, _ = traj.state(t1)
+                qb, vb, _ = traj.state(t2)
+                piece = synchronize(qa, va, qb, vb, V2, A2)
+                if piece is not None and piece.duration < t2 - t1:
+                    traj = traj.splice(t1, t2, Piece(piece.ramps, "shortcut"))
+            wall = Wall(0, rng.uniform(-1, 1), 0.0)
+            wall.hi = wall.lo + 0.1
+            a = Validator(plane(), wall, backend="python").validate_trajectory(traj)
+            b = Validator(plane(), wall, backend="native").validate_trajectory(traj)
+            (ha, wa), (hb, wb) = verdict(a), verdict(b)
+            assert ha == hb and (wa is None) == (wb is None)
+            if wa is not None:
+                assert wa[:3] == wb[:3] and np.allclose(wa[5], wb[5], atol=1e-12)
+                assert a.witness.time_s == pytest.approx(b.witness.time_s, abs=1e-12)
+
+
+class TestTimedPlans:
+    def test_a_returned_trajectory_carries_the_public_report(self, backend):
+        config = CBiRRTConfig(timeout=10.0, edge_resolution=0.03)
+        checker = Wall(0, -0.1, 0.1, extent=1.0)
+        planner = CBiRRT(PlanarArm(), collision_checker=checker, config=config, backend=backend)
+        options = TrajectoryOptions(velocity_limits=1.0, acceleration_limits=2.0)
+        r = planner.plan(start=np.array([-1.0, 0.0]), goal=np.array([1.0, 0.0]), seed=2, trajectory=options,
+                         return_details=True)  # fmt: skip
+        traj = r.trajectory
+        assert r.success and traj.backend == backend and traj.diagnostics["accepted"] > 0
+        assert traj.validation.valid and traj.path is not None
+        v = Validator(planner.space, checker, policy=ValidationPolicy.from_config(config), backend=backend)
+        assert traj.validation == v.validate_trajectory(traj)

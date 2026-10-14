@@ -348,7 +348,7 @@ def lower_validator(space: JointSpace, checker, path_constraint, policy):
 
 def report_from_native(r, provenance: tuple = ()):
     """A native ``ValidationReport`` as ``sscbirrt.validation.ValidationReport``."""
-    from sscbirrt.validation import Contact, InvalidWitness, ValidationPolicy, ValidationReport
+    from sscbirrt.validation import LAW, Contact, InvalidWitness, ValidationPolicy, ValidationReport
 
     witness = None
     if r.witness is not None:
@@ -358,6 +358,7 @@ def report_from_native(r, provenance: tuple = ()):
             configuration=tuple(float(x) for x in w.configuration),
             segment=w.segment,
             fraction=w.fraction,
+            time_s=w.time_s,
             contacts=tuple(
                 Contact(c.kind, c.body1, c.body2, int(c.geom1), int(c.geom2), float(c.distance)) for c in w.contacts
             ),
@@ -373,9 +374,19 @@ def report_from_native(r, provenance: tuple = ()):
         implementation=r.implementation,
         backend="native",
         witness=witness,
-        interpolation=None if r.subject == "state" else "raw_linear",
+        interpolation="raw_linear" if r.subject in ("motion", "path") else None,
+        law=LAW if r.subject == "trajectory" else None,
+        duration_s=r.duration_s,
         provenance=tuple(provenance),
     )
+
+
+def trajectory_data(traj) -> list:
+    """A ``Trajectory``'s pieces as the native binding takes them: ``(validated, [(x0, v0, [(d, a), ...]), ...])``."""
+    return [
+        (p.validated, [(float(r.x0), float(r.v0), [(float(d), float(a)) for d, a in r.pieces]) for r in p.ramps])
+        for p in traj.pieces
+    ]
 
 
 def _rebuild_tree(tree) -> RRTree | None:
@@ -483,6 +494,19 @@ def smooth_trajectory(lowered: Lowered, path, vmax, amax, options, seed: int, ab
     traj.diagnostics = {"attempts": records, "accepted": accepted, "seconds": seconds}
     traj.stopped, traj.seed, traj.options, traj.backend = stopped, int(seed), options, "native"
     traj.resolution = float(lowered.config.edge_resolution or lowered.config.step_size)
+    traj.path = [np.array(q, dtype=float) for q in path]
+    if lowered.problem.motion_validator is None:  # the native validator the smoother accepted shortcuts with
+        validator = _native.Validator(
+            lowered.space,
+            lowered.problem.validator,
+            lowered.problem.path_constraint,
+            _native.ValidationPolicy(traj.resolution),
+        )
+        native_path = [list(map(float, q)) for q in traj.path]
+        report = validator.validate_trajectory(pieces, [float(v) for v in vmax], [float(a) for a in amax], native_path)
+        traj.validation = report_from_native(
+            report, tuple(sorted((str(k), str(v)) for k, v in lowered.checker_provenance.items()))
+        )
     return traj
 
 

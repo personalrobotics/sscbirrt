@@ -29,6 +29,7 @@
 #include "sscbirrt/planner.hpp"
 #include "sscbirrt/problem.hpp"
 #include "sscbirrt/types.hpp"
+#include "sscbirrt/validation.hpp"
 
 namespace sscbirrt::trajectory {
 
@@ -79,6 +80,7 @@ struct Trajectory {
   std::vector<Piece> pieces;
   std::vector<double> velocity_limits;
   std::vector<double> acceleration_limits;
+  std::vector<Config> path;  // the validated path it was timed from, if any (#230); splice keeps it
 
   std::vector<double> breaks() const;
   double duration() const;
@@ -139,12 +141,21 @@ using WhyInadmissible = std::function<std::optional<std::string>(ConfigView)>;
 std::optional<std::string> validate_samples(const std::vector<Config>& points, const MotionValidator& motion,
                                             const WhyInadmissible& why, bool recheck_returned);
 
-// Randomized time-optimized shortcuts. Deterministic for a seed and an iteration budget.
-Trajectory shortcut(Trajectory traj, const MotionValidator& motion, const WhyInadmissible& why, bool recheck_returned,
-                    double resolution, const ShortcutOptions& options, ShortcutReport* report = nullptr);
+// Why splicing `piece` into [t1, t2] is refused, or nullopt: its start state, then every piece the splice leaves (the
+// cut piece before, the new one, the cut piece after) through validator.check_piece (#230).
+std::optional<std::string> accepts(const Trajectory& traj, double t1, double t2, const Piece& piece,
+                                   const Validator& validator, const PathEvidence* evidence);
 
-// The whole smoother on a planned path: coalesce, the initial trajectory, then shortcuts validated through the
-// problem's boundary at the planner's resolution (the problem's motion validator, or the planner's default).
+// Randomized time-optimized shortcuts. Deterministic for a seed and an iteration budget. With `validator`, a shortcut
+// is accepted only if `accepts` says so; otherwise its samples go through `motion` and `why` (a custom motion
+// validator's problem).
+Trajectory shortcut(Trajectory traj, const MotionValidator& motion, const WhyInadmissible& why, bool recheck_returned,
+                    double resolution, const ShortcutOptions& options, ShortcutReport* report = nullptr,
+                    const Validator* validator = nullptr);
+
+// The whole smoother on a planned path: coalesce, the initial trajectory (with `path` as its source path), then
+// shortcuts accepted by Validator::for_problem's trajectory rule, or, for a problem with a custom motion validator,
+// validated through it at the planner's resolution.
 Trajectory smooth_path_in_time(const Planner& planner, const PlanningProblem& problem, const std::vector<Config>& path,
                                const std::vector<double>& vmax, const std::vector<double>& amax,
                                const ShortcutOptions& options, ShortcutReport* report = nullptr);

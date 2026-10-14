@@ -73,6 +73,22 @@ class TestPlan:
         assert np.allclose(traj.start[0], r.path[0]) and np.allclose(traj.goal[0], r.path[-1])
         assert all(p.validated in ("planned", "shortcut") for p in traj.pieces)
 
+    @pytest.mark.parametrize("backend", ["native", "python"])
+    def test_the_validator_is_the_plans(self, world, backend):
+        """#230: sscbirrt.mujoco.validator with plan's arguments answers exactly as the plan's own reports."""
+        from sscbirrt import TrajectoryOptions
+        from sscbirrt.mujoco import validator
+
+        model, data, arm = world
+        r = plan(model, data, arm, goal=[2.5, -1.2], seed=0, backend=backend, holding="block",
+                 trajectory=TrajectoryOptions(1.57, 4.0))  # fmt: skip
+        v = validator(model, data, arm, holding="block", backend=backend)
+        assert r.validation.valid and r.trajectory.validation.valid
+        assert v.validate_path(r.path) == r.validation
+        assert v.validate_trajectory(r.trajectory) == r.trajectory.validation
+        assert not v.validate_state([0.0, 0.0]).valid  # the hand in the wall
+        assert v.validate_state([0.0, 0.0]).witness.contacts
+
     def test_holding_takes_the_grasp_from_the_current_poses(self, world):
         model, data, arm = world
         assert plan(model, data, arm, goal=[2.5, -1.2], holding="block", seed=0).success

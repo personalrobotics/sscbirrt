@@ -18,6 +18,16 @@ follows [Semantic Versioning](https://semver.org/).
     a path that fails is not returned (`failure_reason` "Returned path failed final validation", native status
     `invalid_result`). Only checkers that are not invariant to full turns of a continuous joint can fail it.
   - `sscbirrt._native.__version__`, and a `StateValidator::contacts` hook that witnesses use.
+- **Timed trajectories are validated whole (#230).** `Validator.validate_trajectory` checks a trajectory's whole law:
+  - pieces along its source path (`Trajectory.path`) at the path's own states within their span;
+  - other pieces at speed-bounded time steps;
+  - position limits exactly, at every ramp's turning point.
+
+  Its witness gives the piece and `time_s`. A trajectory that breaks its own invariants raises `MalformedTrajectory`.
+  The smoother accepts a shortcut only if every piece the splice leaves passes this rule, and `Trajectory.validation`
+  is the returned trajectory's report. A trajectory that failed would not be returned ("Returned trajectory failed
+  final validation").
+- `sscbirrt.mujoco.validator(model, data, arm, ...)`: the validator `plan` with the same arguments applies.
 
 ### Changed
 - **Edge subdivision tolerates rounding (#230).** An edge of length `d` is checked at `max(1, ceil(d / resolution -

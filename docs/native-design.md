@@ -1832,3 +1832,35 @@ implementations, held equal on every reference case.
   - It is not thread-safe, because a `SceneValidator` mutates its one `mjData`.
   - The Python `Validator(..., backend="auto")` lowers its checker with `fresh()`, so it owns its own `mjData`.
   - Its `validate_*` calls release the GIL, so use one `Validator` per thread.
+
+### Timed trajectories (#230, slice 2)
+
+`Validator::validate_trajectory` checks a `trajectory::Trajectory` over its whole law, its start first, then every
+piece in time order. The Python reference (`sscbirrt.validation`) matches it operation by operation.
+
+- **Pieces on the source path.** `Trajectory::path` (kept by `splice`) is the validated path the trajectory was
+  timed from. `PathEvidence` lists the states `validate_path` checks on it, each with its parameter `k + i/n`.
+  - A piece is checked at those states strictly inside its span, then at its end, when all of these hold:
+    - its ramps are one reference ramp scaled per joint (`straight_reference`: the same segment durations,
+      proportional start velocity and accelerations, never moving backwards);
+    - both its ends lie on the path within `kOnPath` (1e-8, relative to at least 1);
+    - every path node between them lies on its line.
+  - That is an exact reparameterization of part of the path, so it reuses the path's evidence.
+- **Why not `validate_motion` on such a piece.** A splice cuts pieces mid-way. A cut planned piece would then be
+  sampled on a new grid, at states nobody planned or checked. This is the door bug of slice 1 one level up: a
+  correct trajectory could fail its final check.
+- **Every other piece** is checked at `n = max(1, ceil(T |vmax| / resolution - 1e-9))` uniform time steps, since
+  `|q(t + dt) - q(t)| <= dt |vmax|` once velocities are within limits. Every bounded joint's turning point that
+  leaves its limits is added, so position limits are exact.
+- **The smoother.** `trajectory::accepts` checks a shortcut's start, then the cut piece before it, the new piece and
+  the cut piece after it, each with `Validator::check_piece`. Every piece of a smoothed trajectory has therefore
+  passed the rule as it stands, and the final `validate_trajectory` agrees by construction.
+  - A problem with a custom motion validator keeps the old chord-by-chord check and gets no report.
+- **Well-formedness.** `well_formed` throws `MalformedTrajectory`, which Python sees as a `ValueError`, for:
+  - wrong shapes, non-finite values, or negative durations;
+  - ramps of different durations;
+  - `|v| > vmax` or `|a| > amax`, beyond a 1e-9 relative slack;
+  - a jump between pieces;
+  - motion at either end.
+- **The witness** carries the piece as `segment` and `time_s`. For a path state inside a piece, the time is found
+  by bisection on the reference ramp (60 halvings).

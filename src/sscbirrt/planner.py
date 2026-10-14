@@ -307,6 +307,14 @@ class CBiRRT:
             result.trajectory = self._smooth_trajectory(
                 problem, result.path, trajectory, smooth_seed, lowered, result.backend_reasons
             )
+            report = result.trajectory.validation
+            if report is not None and not report.valid:  # never by construction; refused, not returned, if it were
+                w = report.witness
+                result.success, result.path = False, None
+                result.failure_reason = (
+                    f"Returned trajectory failed final validation: {w.failure} in piece {w.segment} at "
+                    f"{w.time_s:.4g} s ({w.detail})"
+                )
         return result
 
     def smooth_trajectory(
@@ -316,11 +324,11 @@ class CBiRRT:
         limits (#214).
 
         It starts from the path at rest at every corner, then replaces random windows ``[t1, t2]`` with the
-        synchronized time-optimal motion between the states there whenever that is faster and admissible. Each
-        shortcut is validated through the problem's boundary: samples at most ``edge_resolution`` apart, each
-        admissible (joint space, validator, path constraint), every chord accepted by the problem's motion
-        validator. That is the planner's discrete edge guarantee, no stronger. Each piece of the result records how
-        it was validated. Never fails on a valid path: at worst the result is the path with a stop at every corner.
+        synchronized time-optimal motion between the states there whenever that is faster and every piece the splice
+        leaves passes ``Validator.for_problem(problem, config)``'s trajectory rule (#230). That is the planner's
+        discrete edge guarantee, no stronger; the result's ``validation`` is its whole-trajectory report. A problem
+        with a custom motion validator has its shortcuts checked chord by chord through it instead, and no report.
+        Never fails on a valid path: at worst the result is the path with a stop at every corner.
 
         Uses the backend selection of ``solve``: native when the problem lowers (with ``backend="auto"``), else the
         Python reference with the reasons on ``Trajectory.backend_reasons``.
@@ -350,16 +358,23 @@ class CBiRRT:
                 traj = native.smooth_trajectory(lowered, path, vmax, amax, options, seed, self.config.abort_fn)
                 traj.joint_names = self._joint_names()
                 return traj
+        validator = None
+        if problem.motion_validator is None:
+            validator = Validator.for_problem(problem, self.config, backend="python")
+        initial = initial_trajectory(coalesce(path), vmax, amax)
+        initial.path = [np.array(q, dtype=float) for q in path]
         traj = shortcut(
-            initial_trajectory(coalesce(path), vmax, amax),
+            initial,
             motion_validator=self._motion_validator(problem),
             admissible=lambda q: self._admissible(problem, q),
             resolution=self.config.edge_resolution or self.config.step_size,
             options=options,
             seed=seed,
             abort_fn=self.config.abort_fn,
+            validator=validator,
         )
         traj.joint_names, traj.backend, traj.backend_reasons = self._joint_names(), "python", reasons
+        traj.validation = None if validator is None else validator.validate_trajectory(traj)
         return traj
 
     def _joint_names(self) -> tuple[str, ...] | None:
