@@ -28,6 +28,18 @@ follows [Semantic Versioning](https://semver.org/).
   is the returned trajectory's report. A trajectory that failed would not be returned ("Returned trajectory failed
   final validation").
 - `sscbirrt.mujoco.validator(model, data, arm, ...)`: the validator `plan` with the same arguments applies.
+- **Evidence for #230.**
+  - `tools/validation_artifact.py` writes `tests/reference/validation_evidence.json`, and a test holds a fresh run's
+    verdicts to it. On a small native MuJoCo world it records, for both backends:
+    - an accepted and a rejected path, with the rejection's witness;
+    - a trajectory along its path (an exact reparameterization), and a trace-changing shortcut through the wall;
+    - the reports from planning next to the public calls;
+    - repeated and reordered queries.
+  - `tools/geodude_132_evidence.py` reruns the reduced Geodude edge of personalrobotics/ssrobot#132 inside ssrobot and
+    records the result in `tests/reference/geodude_132_evidence.json`. Its timed trajectory crosses the left gripper
+    for 4 ms inside a shortcut.
+    - The 3.7 rule and this validator both accept it under the 0.05 policy, and planning and the public call agree.
+    - The miss is the policy's, which #222 owns.
 - **Two modes of motion check (#230).**
   - **Prefix:** `MotionValidator.validate` answers how far from the start a motion is valid. Tree growth keeps that
     prefix, so it checks in order.

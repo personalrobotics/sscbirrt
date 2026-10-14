@@ -1,0 +1,1998 @@
+{
+ "artifact": "sscbirrt public validation evidence",
+ "issue": "https://github.com/personalrobotics/sscbirrt/issues/230",
+ "versions": {
+  "sscbirrt": "3.7.1",
+  "mujoco": "3.14.0",
+  "numpy": "2.4.6"
+ },
+ "world": {
+  "mjcf": "<mujoco><compiler angle=\"radian\"/><worldbody>\n  <geom name=\"floor\" type=\"plane\" size=\"3 3 0.1\"/>\n  <geom name=\"wall\" type=\"box\" pos=\"0.47 0 0.3\" size=\"0.05 0.5 0.3\"/>\n  <body name=\"arm/base\" pos=\"0 0 0.1\"><joint name=\"j0\" type=\"hinge\" axis=\"0 0 1\" range=\"-3 3\"/>\n    <geom type=\"capsule\" size=\"0.03\" fromto=\"0 0 0 0 0 0.1\"/>\n    <body name=\"arm/link1\" pos=\"0 0 0.1\"><joint name=\"j1\" type=\"hinge\" axis=\"0 1 0\" range=\"-2 2\"/>\n      <geom type=\"capsule\" size=\"0.03\" fromto=\"0 0 0 0.4 0 0\"/>\n      <body name=\"arm/hand\" pos=\"0.4 0 0\">\n        <geom type=\"box\" size=\"0.02 0.03 0.02\"/><site name=\"tip\" pos=\"0.02 0 0\"/>\n      </body>\n    </body>\n  </body>\n</worldbody></mujoco>",
+  "start": [
+   1.5,
+   -0.3
+  ],
+  "goal": [
+   -1.5,
+   -0.3
+  ]
+ },
+ "backends": {
+  "python": {
+   "plan": {
+    "success": true,
+    "backend": "python",
+    "path": [
+     [
+      1.5,
+      -0.3
+     ],
+     [
+      1.4500334597137288,
+      -0.3018288936055532
+     ],
+     [
+      1.4000669194274575,
+      -0.3036577872111065
+     ],
+     [
+      1.35006988445618,
+      -0.3042022999114631
+     ],
+     [
+      1.3000728494849025,
+      -0.30474681261181974
+     ],
+     [
+      1.250075814513625,
+      -0.3052913253121764
+     ],
+     [
+      1.2000787795423475,
+      -0.305835838012533
+     ],
+     [
+      1.1501065005447508,
+      -0.3063800810980597
+     ],
+     [
+      1.1001342215471541,
+      -0.30692432418358645
+     ],
+     [
+      1.050134317220214,
+      -0.3068265116239298
+     ],
+     [
+      1.0001344128932736,
+      -0.3067286990642732
+     ],
+     [
+      0.9501345085663334,
+      -0.30663088650461656
+     ],
+     [
+      0.9001346042393932,
+      -0.30653307394495993
+     ],
+     [
+      0.850134699912453,
+      -0.3064352613853033
+     ],
+     [
+      0.8001347955855128,
+      -0.3063374488256467
+     ],
+     [
+      0.7501348912585726,
+      -0.30623963626599005
+     ],
+     [
+      0.7001349869316325,
+      -0.3061418237063334
+     ],
+     [
+      0.6501350826046923,
+      -0.3060440111466768
+     ],
+     [
+      0.6001351782777521,
+      -0.30594619858702016
+     ],
+     [
+      0.5501352739508119,
+      -0.30584838602736353
+     ],
+     [
+      0.5001353696238717,
+      -0.3057505734677069
+     ],
+     [
+      0.4501354652969315,
+      -0.30565276090805027
+     ],
+     [
+      0.4001355609699913,
+      -0.30555494834839364
+     ],
+     [
+      0.35013565664305113,
+      -0.305457135788737
+     ],
+     [
+      0.3001357523161109,
+      -0.3053593232290804
+     ],
+     [
+      0.25013584798917066,
+      -0.30526151066942375
+     ],
+     [
+      0.20013594366223048,
+      -0.3051636981097671
+     ],
+     [
+      0.15013603933529027,
+      -0.3050658855501105
+     ],
+     [
+      0.10013613500835006,
+      -0.30496807299045386
+     ],
+     [
+      0.05013623068140985,
+      -0.30487026043079724
+     ],
+     [
+      0.00013632635446964025,
+      -0.3047724478711406
+     ],
+     [
+      -0.04986357797247057,
+      -0.304674635311484
+     ],
+     [
+      -0.09986348229941078,
+      -0.30457682275182735
+     ],
+     [
+      -0.149863386626351,
+      -0.3044790101921707
+     ],
+     [
+      -0.1998632909532912,
+      -0.3043811976325141
+     ],
+     [
+      -0.2498631952802314,
+      -0.30428338507285746
+     ],
+     [
+      -0.2998630996071716,
+      -0.3041855725132009
+     ],
+     [
+      -0.3498630039341118,
+      -0.30408775995354426
+     ],
+     [
+      -0.399862908261052,
+      -0.3039899473938876
+     ],
+     [
+      -0.4498628125879922,
+      -0.30389213483423105
+     ],
+     [
+      -0.4998627169149324,
+      -0.3037943222745744
+     ],
+     [
+      -0.5498626212418726,
+      -0.3036965097149178
+     ],
+     [
+      -0.5998625255688128,
+      -0.30359869715526117
+     ],
+     [
+      -0.649862429895753,
+      -0.30350088459560454
+     ],
+     [
+      -0.6998623342226933,
+      -0.30340307203594796
+     ],
+     [
+      -0.7498622385496334,
+      -0.30330525947629133
+     ],
+     [
+      -0.7998621428765736,
+      -0.3032074469166347
+     ],
+     [
+      -0.8498620472035139,
+      -0.30310963435697813
+     ],
+     [
+      -0.899861951530454,
+      -0.3030118217973215
+     ],
+     [
+      -0.9498618558573942,
+      -0.30291400923766487
+     ],
+     [
+      -0.9998617601843345,
+      -0.30281619667800824
+     ],
+     [
+      -1.0498616645112748,
+      -0.3027183841183516
+     ],
+     [
+      -1.099861568838215,
+      -0.30262057155869504
+     ],
+     [
+      -1.149861473165155,
+      -0.3025227589990384
+     ],
+     [
+      -1.1998613774920954,
+      -0.3024249464393818
+     ],
+     [
+      -1.2498612818190358,
+      -0.3023271338797252
+     ],
+     [
+      -1.299861186145976,
+      -0.3022293213200686
+     ],
+     [
+      -1.3494990263877158,
+      -0.3021322170500659
+     ],
+     [
+      -1.3991368666294557,
+      -0.30203511278006323
+     ],
+     [
+      -1.4491267490083697,
+      -0.3010292998042326
+     ],
+     [
+      -1.4988654230688383,
+      -0.30002854122289746
+     ],
+     [
+      -1.5,
+      -0.3
+     ]
+    ],
+    "trajectory": [
+     {
+      "validated": "planned",
+      "ramps": [
+       [
+        1.5,
+        0.0,
+        [
+         [
+          0.00808654989143171,
+          -3.9999999999999996
+         ]
+        ]
+       ],
+       [
+        -0.3,
+        0.0,
+        [
+         [
+          0.00808654989143171,
+          -0.14640946481986064
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        1.4998692154217068,
+        -0.03234619956572683,
+        [
+         [
+          0.3844134501085683,
+          -4.0
+         ],
+         [
+          0.44127453202208067,
+          0.0
+         ]
+        ]
+       ],
+       [
+        -0.30000478702502864,
+        -0.0011839474418436188,
+        [
+         [
+          0.5979002922035584,
+          -0.011581461512161776
+         ],
+         [
+          0.22778768992709053,
+          0.011581461512161776
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        0.49908648472533335,
+        -1.57,
+        [
+         [
+          0.6054856455384713,
+          0.0
+         ]
+        ]
+       ],
+       [
+        -0.30432932055107254,
+        -0.005470392300274572,
+        [
+         [
+          0.004536717803885711,
+          -0.012381037318221315
+         ],
+         [
+          0.6009489277345855,
+          0.012381037318221315
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        -0.4515259787700666,
+        -1.57,
+        [
+         [
+          0.47156784791715506,
+          0.0
+         ],
+         [
+          0.3811210066506268,
+          4.0
+         ]
+        ]
+       ],
+       [
+        -0.30543980532302717,
+        0.0019138095279202672,
+        [
+         [
+          0.41011621502891693,
+          0.02267166985335548
+         ],
+         [
+          0.44257263953886494,
+          -0.02267166985335548
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        -1.4997410370207098,
+        -0.045515973397492804,
+        [
+         [
+          0.004833467428629869,
+          4.0
+         ]
+        ]
+       ],
+       [
+        -0.3000065941229329,
+        0.001177968186810372,
+        [
+         [
+          0.004833467428629869,
+          -0.10744577881449546
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "planned",
+      "ramps": [
+       [
+        -1.4999143121808418,
+        -0.02618210368297333,
+        [
+         [
+          0.006545525920743332,
+          4.0
+         ]
+        ]
+       ],
+       [
+        -0.3000021555480981,
+        0.0006586325145667394,
+        [
+         [
+          0.006545525920743332,
+          -0.10062331469492414
+         ]
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "during_planning": {
+    "path": {
+     "subject": "path",
+     "valid": true,
+     "intervals": 61,
+     "checks": 62,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "python",
+     "witness": null,
+     "interpolation": "raw_linear",
+     "law": null,
+     "duration_s": null,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    },
+    "trajectory": {
+     "subject": "trajectory",
+     "valid": true,
+     "intervals": 6,
+     "checks": 106,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "python",
+     "witness": null,
+     "interpolation": null,
+     "law": "piecewise_constant_acceleration",
+     "duration_s": 2.303328025477707,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    }
+   },
+   "public": {
+    "accepted_path": {
+     "subject": "path",
+     "valid": true,
+     "intervals": 61,
+     "checks": 62,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "python",
+     "witness": null,
+     "interpolation": "raw_linear",
+     "law": null,
+     "duration_s": null,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    },
+    "rejected_path": {
+     "subject": "path",
+     "valid": false,
+     "intervals": 1,
+     "checks": 18,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "python",
+     "witness": {
+      "failure": "collision",
+      "configuration": [
+       0.19999999999999996,
+       0.0
+      ],
+      "segment": 0,
+      "fraction": 0.4,
+      "time_s": null,
+      "contacts": [
+       {
+        "kind": "robot_environment",
+        "body1": "arm/link1",
+        "body2": "world",
+        "geom1": 3,
+        "geom2": 1,
+        "distance": -0.0020266311364967454
+       }
+      ],
+      "constraint": null,
+      "detail": "in collision"
+     },
+     "interpolation": "raw_linear",
+     "law": null,
+     "duration_s": null,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    },
+    "reparameterization": {
+     "subject": "trajectory",
+     "valid": true,
+     "intervals": 6,
+     "checks": 106,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "python",
+     "witness": null,
+     "interpolation": null,
+     "law": "piecewise_constant_acceleration",
+     "duration_s": 2.303328025477707,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    },
+    "trace_changing": {
+     "subject": "trajectory",
+     "valid": false,
+     "intervals": 1,
+     "checks": 33,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "python",
+     "witness": {
+      "failure": "collision",
+      "configuration": [
+       0.21212635135135133,
+       0.0
+      ],
+      "segment": 0,
+      "fraction": null,
+      "time_s": 0.698080349457738,
+      "contacts": [
+       {
+        "kind": "robot_environment",
+        "body1": "arm/link1",
+        "body2": "world",
+        "geom1": 3,
+        "geom2": 1,
+        "distance": -0.0010341780197646172
+       }
+      ],
+      "constraint": null,
+      "detail": "in collision"
+     },
+     "interpolation": null,
+     "law": "piecewise_constant_acceleration",
+     "duration_s": 1.6663853503184713,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    },
+    "state_in_wall": {
+     "subject": "state",
+     "valid": false,
+     "intervals": 0,
+     "checks": 1,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "python",
+     "witness": {
+      "failure": "collision",
+      "configuration": [
+       0.0,
+       0.0
+      ],
+      "segment": null,
+      "fraction": null,
+      "time_s": null,
+      "contacts": [
+       {
+        "kind": "robot_environment",
+        "body1": "arm/link1",
+        "body2": "world",
+        "geom1": 3,
+        "geom2": 1,
+        "distance": -0.01000000000000005
+       },
+       {
+        "kind": "robot_environment",
+        "body1": "world",
+        "body2": "arm/hand",
+        "geom1": 1,
+        "geom2": 4,
+        "distance": -5.551115123125783e-17
+       },
+       {
+        "kind": "robot_environment",
+        "body1": "world",
+        "body2": "arm/hand",
+        "geom1": 1,
+        "geom2": 4,
+        "distance": -5.551115123125783e-17
+       },
+       {
+        "kind": "robot_environment",
+        "body1": "world",
+        "body2": "arm/hand",
+        "geom1": 1,
+        "geom2": 4,
+        "distance": -5.551115123125783e-17
+       },
+       {
+        "kind": "robot_environment",
+        "body1": "world",
+        "body2": "arm/hand",
+        "geom1": 1,
+        "geom2": 4,
+        "distance": -5.551115123125783e-17
+       }
+      ],
+      "constraint": null,
+      "detail": "in collision"
+     },
+     "interpolation": null,
+     "law": null,
+     "duration_s": null,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    }
+   },
+   "planning_equals_public": {
+    "path": true,
+    "trajectory": true
+   },
+   "repeated_equal": true,
+   "reordered_equal": true,
+   "through_the_wall": {
+    "pieces": [
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        1.0,
+        0.0,
+        [
+         [
+          0.3925,
+          -4.0
+         ],
+         [
+          0.8813853503184713,
+          0.0
+         ],
+         [
+          0.3925,
+          4.0
+         ]
+        ]
+       ],
+       [
+        0.0,
+        0.0,
+        [
+         [
+          1.6663853503184713,
+          0.0
+         ]
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  "native": {
+   "plan": {
+    "success": true,
+    "backend": "native",
+    "path": [
+     [
+      1.5,
+      -0.3
+     ],
+     [
+      1.4578982412380537,
+      -0.2730288689678967
+     ],
+     [
+      1.4157964824761076,
+      -0.24605773793579333
+     ],
+     [
+      1.3736947237141615,
+      -0.21908660690368997
+     ],
+     [
+      1.3279977201818054,
+      -0.19879414849757676
+     ],
+     [
+      1.2823007166494493,
+      -0.17850169009146358
+     ],
+     [
+      1.2366037131170933,
+      -0.1582092316853504
+     ],
+     [
+      1.1909067095847372,
+      -0.1379167732792372
+     ],
+     [
+      1.1452097060523811,
+      -0.11762431487312403
+     ],
+     [
+      1.099512702520025,
+      -0.09733185646701083
+     ],
+     [
+      1.053815698987669,
+      -0.07703939806089763
+     ],
+     [
+      1.008118695455313,
+      -0.056746939654784445
+     ],
+     [
+      0.9624216919229569,
+      -0.03645448124867126
+     ],
+     [
+      0.9167246883906007,
+      -0.01616202284255807
+     ],
+     [
+      0.8710276848582446,
+      0.0041304355635551175
+     ],
+     [
+      0.8253306813258885,
+      0.024422893969668305
+     ],
+     [
+      0.7796336777935324,
+      0.044715352375781496
+     ],
+     [
+      0.7339366742611763,
+      0.06500781078189469
+     ],
+     [
+      0.6882396707288201,
+      0.08530026918800787
+     ],
+     [
+      0.642542667196464,
+      0.10559272759412107
+     ],
+     [
+      0.596845663664108,
+      0.12588518600023427
+     ],
+     [
+      0.5511486601317518,
+      0.14617764440634745
+     ],
+     [
+      0.5054516565993956,
+      0.16647010281246064
+     ],
+     [
+      0.45975465306703955,
+      0.18676256121857382
+     ],
+     [
+      0.41405764953468344,
+      0.20705501962468703
+     ],
+     [
+      0.3683606460023273,
+      0.22734747803080022
+     ],
+     [
+      0.32266364246997126,
+      0.2476399364369134
+     ],
+     [
+      0.27696663893761514,
+      0.2679323948430266
+     ],
+     [
+      0.23126963540525902,
+      0.2882248532491398
+     ],
+     [
+      0.1855726318729029,
+      0.308517311655253
+     ],
+     [
+      0.1706506297533359,
+      0.3151436565781284
+     ],
+     [
+      0.12370990126612333,
+      0.2979225065268167
+     ],
+     [
+      0.07676917277891077,
+      0.280701356475505
+     ],
+     [
+      0.029828444291698206,
+      0.26348020642419334
+     ],
+     [
+      -0.017109368848755028,
+      0.24625111191543012
+     ],
+     [
+      -0.06404718198920827,
+      0.2290220174066669
+     ],
+     [
+      -0.1109849951296615,
+      0.21179292289790366
+     ],
+     [
+      -0.15791180468010718,
+      0.194533880473244
+     ],
+     [
+      -0.20483861423055283,
+      0.17727483804858432
+     ],
+     [
+      -0.2517654237809985,
+      0.16001579562392465
+     ],
+     [
+      -0.2986922333314441,
+      0.14275675319926498
+     ],
+     [
+      -0.34561904288188977,
+      0.1254977107746053
+     ],
+     [
+      -0.3925458524323354,
+      0.10823866834994564
+     ],
+     [
+      -0.43947266198278107,
+      0.09097962592528597
+     ],
+     [
+      -0.4863994715332267,
+      0.0737205835006263
+     ],
+     [
+      -0.5333262810836723,
+      0.05646154107596663
+     ],
+     [
+      -0.580253090634118,
+      0.03920249865130697
+     ],
+     [
+      -0.6271798604859635,
+      0.02194347082725261
+     ],
+     [
+      -0.6741007462357038,
+      0.004668330293531317
+     ],
+     [
+      -0.7210216319854441,
+      -0.012606810240189973
+     ],
+     [
+      -0.7679425177351844,
+      -0.029881950773911266
+     ],
+     [
+      -0.8148634034849247,
+      -0.047157091307632557
+     ],
+     [
+      -0.8617760936391657,
+      -0.06445447557497706
+     ],
+     [
+      -0.9086887837934068,
+      -0.08175185984232157
+     ],
+     [
+      -0.9556014739476478,
+      -0.09904924410966608
+     ],
+     [
+      -1.0025141641018889,
+      -0.11634662837701058
+     ],
+     [
+      -1.0494268542561298,
+      -0.1336440126443551
+     ],
+     [
+      -1.096339544410371,
+      -0.1509413969116996
+     ],
+     [
+      -1.1432522345646121,
+      -0.16823878117904412
+     ],
+     [
+      -1.190164924718853,
+      -0.18553616544638865
+     ],
+     [
+      -1.237077614873094,
+      -0.20283354971373319
+     ],
+     [
+      -1.2839903050273351,
+      -0.2201309339810777
+     ],
+     [
+      -1.3309029951815763,
+      -0.2374283182484222
+     ],
+     [
+      -1.3778156853358172,
+      -0.2547257025157667
+     ],
+     [
+      -1.4247271446649683,
+      -0.27202263296018026
+     ],
+     [
+      -1.4715945706258744,
+      -0.289442288060066
+     ],
+     [
+      -1.5,
+      -0.3
+     ]
+    ],
+    "trajectory": [
+     {
+      "validated": "planned",
+      "ramps": [
+       [
+        1.5,
+        0.0,
+        [
+         [
+          0.006675385754802616,
+          -4.0
+         ]
+        ]
+       ],
+       [
+        -0.3,
+        0.0,
+        [
+         [
+          0.006675385754802616,
+          2.5624707209601216
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        1.4999108784500492,
+        -0.026701543019210464,
+        [
+         [
+          0.3858246142451974,
+          -4.0
+         ],
+         [
+          0.20837548444272969,
+          0.0
+         ]
+        ]
+       ],
+       [
+        -0.2999429071594111,
+        0.017105480547795985,
+        [
+         [
+          0.5446082418728254,
+          1.7665807834844576
+         ],
+         [
+          0.04959185681510159,
+          -1.7665807834844576
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        0.8647379894249144,
+        -1.57,
+        [
+         [
+          0.6047886674764079,
+          0.0
+         ]
+        ]
+       ],
+       [
+        0.01774318400608013,
+        0.8915919139007138,
+        [
+         [
+          0.0001758837041686001,
+          1.6173562991469257
+         ],
+         [
+          0.6046127837722393,
+          -1.6173562991469257
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        -0.08478021851304618,
+        -1.57,
+        [
+         [
+          0.5588062079862,
+          0.0
+         ]
+        ]
+       ],
+       [
+        0.26152223706462363,
+        -0.08599791386122135,
+        [
+         [
+          0.5588062079862,
+          -1.6218329671013059
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        -0.96210596505138,
+        -1.57,
+        [
+         [
+          0.10811744768764675,
+          0.0
+         ]
+        ]
+       ],
+       [
+        -0.03975426248882973,
+        -0.9922882441941092,
+        [
+         [
+          0.10811744768764675,
+          2.0424766207165455
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        -1.1318503579209853,
+        -1.57,
+        [
+         [
+          0.038240217884722684,
+          0.0
+         ],
+         [
+          0.26740933727112226,
+          4.0
+         ]
+        ]
+       ],
+       [
+        -0.13510028959374756,
+        -0.7714608850005467,
+        [
+         [
+          0.011407048848005027,
+          -2.07006016188761
+         ],
+         [
+          0.29424250630783993,
+          2.07006016188761
+         ]
+        ]
+       ]
+      ]
+     },
+     {
+      "validated": "planned",
+      "ramps": [
+       [
+        -1.4687046521961002,
+        -0.5003626509155111,
+        [
+         [
+          0.12509066272887776,
+          4.000000000000001
+         ]
+        ]
+       ],
+       [
+        -0.2883681650144467,
+        -0.1859744721436845,
+        [
+         [
+          0.12509066272887776,
+          1.4867174582547915
+         ]
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "during_planning": {
+    "path": {
+     "subject": "path",
+     "valid": true,
+     "intervals": 66,
+     "checks": 67,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "native",
+     "witness": null,
+     "interpolation": "raw_linear",
+     "law": null,
+     "duration_s": null,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    },
+    "trajectory": {
+     "subject": "trajectory",
+     "valid": true,
+     "intervals": 7,
+     "checks": 102,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "native",
+     "witness": null,
+     "interpolation": null,
+     "law": "piecewise_constant_acceleration",
+     "duration_s": 2.303328025477707,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    }
+   },
+   "public": {
+    "accepted_path": {
+     "subject": "path",
+     "valid": true,
+     "intervals": 66,
+     "checks": 67,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "native",
+     "witness": null,
+     "interpolation": "raw_linear",
+     "law": null,
+     "duration_s": null,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    },
+    "rejected_path": {
+     "subject": "path",
+     "valid": false,
+     "intervals": 1,
+     "checks": 18,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "native",
+     "witness": {
+      "failure": "collision",
+      "configuration": [
+       0.19999999999999996,
+       0.0
+      ],
+      "segment": 0,
+      "fraction": 0.4,
+      "time_s": null,
+      "contacts": [
+       {
+        "kind": "robot_environment",
+        "body1": "arm/link1",
+        "body2": "world",
+        "geom1": 3,
+        "geom2": 1,
+        "distance": -0.0020266311364967454
+       }
+      ],
+      "constraint": null,
+      "detail": "in collision"
+     },
+     "interpolation": "raw_linear",
+     "law": null,
+     "duration_s": null,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    },
+    "reparameterization": {
+     "subject": "trajectory",
+     "valid": true,
+     "intervals": 7,
+     "checks": 102,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "native",
+     "witness": null,
+     "interpolation": null,
+     "law": "piecewise_constant_acceleration",
+     "duration_s": 2.303328025477707,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    },
+    "trace_changing": {
+     "subject": "trajectory",
+     "valid": false,
+     "intervals": 1,
+     "checks": 33,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "native",
+     "witness": {
+      "failure": "collision",
+      "configuration": [
+       0.21212635135135133,
+       0.0
+      ],
+      "segment": 0,
+      "fraction": null,
+      "time_s": 0.698080349457738,
+      "contacts": [
+       {
+        "kind": "robot_environment",
+        "body1": "arm/link1",
+        "body2": "world",
+        "geom1": 3,
+        "geom2": 1,
+        "distance": -0.0010341780197646172
+       }
+      ],
+      "constraint": null,
+      "detail": "in collision"
+     },
+     "interpolation": null,
+     "law": "piecewise_constant_acceleration",
+     "duration_s": 1.6663853503184713,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    },
+    "state_in_wall": {
+     "subject": "state",
+     "valid": false,
+     "intervals": 0,
+     "checks": 1,
+     "policy": {
+      "name": "joint_l2_subdivision",
+      "mechanism": "joint_subdivision",
+      "guarantee": "discrete",
+      "resolution": 0.05,
+      "ambiguity_band_m": 0.0,
+      "parameters": [
+       [
+        "endpoints",
+        "checked"
+       ],
+       [
+        "interpolation",
+        "raw_linear"
+       ],
+       [
+        "rounding",
+        "1e-09"
+       ],
+       [
+        "trajectory",
+        "source_path_states_or_speed_bounded_time_steps"
+       ],
+       [
+        "trajectory_limits",
+        "exact"
+       ]
+      ],
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+     },
+     "implementation": "sscbirrt 3.7.1",
+     "backend": "native",
+     "witness": {
+      "failure": "collision",
+      "configuration": [
+       0.0,
+       0.0
+      ],
+      "segment": null,
+      "fraction": null,
+      "time_s": null,
+      "contacts": [
+       {
+        "kind": "robot_environment",
+        "body1": "arm/link1",
+        "body2": "world",
+        "geom1": 3,
+        "geom2": 1,
+        "distance": -0.01000000000000005
+       },
+       {
+        "kind": "robot_environment",
+        "body1": "world",
+        "body2": "arm/hand",
+        "geom1": 1,
+        "geom2": 4,
+        "distance": -5.551115123125783e-17
+       },
+       {
+        "kind": "robot_environment",
+        "body1": "world",
+        "body2": "arm/hand",
+        "geom1": 1,
+        "geom2": 4,
+        "distance": -5.551115123125783e-17
+       },
+       {
+        "kind": "robot_environment",
+        "body1": "world",
+        "body2": "arm/hand",
+        "geom1": 1,
+        "geom2": 4,
+        "distance": -5.551115123125783e-17
+       },
+       {
+        "kind": "robot_environment",
+        "body1": "world",
+        "body2": "arm/hand",
+        "geom1": 1,
+        "geom2": 4,
+        "distance": -5.551115123125783e-17
+       }
+      ],
+      "constraint": null,
+      "detail": "in collision"
+     },
+     "interpolation": null,
+     "law": null,
+     "duration_s": null,
+     "provenance": [
+      [
+       "scene_mjb_sha256",
+       "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
+      ],
+      [
+       "scene_model_signature",
+       "10275563867748388836"
+      ],
+      [
+       "snapshot_sha256",
+       "30f395f7a5a94c9c7c0da60ed3a51c2c48d87b4b9a3cfa5a122ec600844ed26d"
+      ]
+     ]
+    }
+   },
+   "planning_equals_public": {
+    "path": true,
+    "trajectory": true
+   },
+   "repeated_equal": true,
+   "reordered_equal": true,
+   "through_the_wall": {
+    "pieces": [
+     {
+      "validated": "shortcut",
+      "ramps": [
+       [
+        1.0,
+        0.0,
+        [
+         [
+          0.3925,
+          -4.0
+         ],
+         [
+          0.8813853503184713,
+          0.0
+         ],
+         [
+          0.3925,
+          4.0
+         ]
+        ]
+       ],
+       [
+        0.0,
+        0.0,
+        [
+         [
+          1.6663853503184713,
+          0.0
+         ]
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "python_equals_native_verdicts": {
+  "accepted_path": true,
+  "rejected_path": true,
+  "reparameterization": true,
+  "trace_changing": true,
+  "state_in_wall": true
+ }
+}
