@@ -15,8 +15,18 @@ validated as the long raw line it is, never as the short way round.
 space) and claims nothing between them. #222 owns choosing a stronger policy; the report always says which one
 answered.
 
-**The planner uses this.** The default motion validator samples tree edges with the same rule, and a planned
-path is returned only after ``validate_path`` accepts it (``PlanResult.validation``). The native core has the
+**Timed trajectories** (``validate_trajectory``) are checked over their whole law, not their knots. A piece whose
+trace lies on the trajectory's source path (``Trajectory.path``), an exact reparameterization of part of it, is
+checked at that path's own states within its span: the evidence is reused only once the equivalence is
+established numerically. Every other piece is checked at uniform time steps short enough that no joint-space step
+exceeds the resolution under the trajectory's velocity limits, and position limits are checked exactly at every
+ramp's turning point. A trajectory that breaks its own invariants (continuity, limits, rest at both ends) is
+malformed: ``MalformedTrajectory``.
+
+**The planner uses this.** The default motion validator samples tree edges with the same rule, a planned path is
+returned only after ``validate_path`` accepts it (``PlanResult.validation``), the trajectory smoother accepts a
+shortcut only if every piece it creates passes the trajectory rule, and a timed trajectory is returned only after
+``validate_trajectory`` accepts it (``Trajectory.validation``). The native core has the
 same implementation (``sscbirrt::Validator``); ``Validator(..., backend="auto")`` runs it when every component
 has a native form.
 
@@ -26,6 +36,7 @@ change a later answer.
 
 from __future__ import annotations
 
+import dataclasses
 import math
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
@@ -35,7 +46,9 @@ import numpy as np
 
 from sscbirrt.space import JointSpace
 
-SUBJECTS = ("state", "motion", "path")
+SUBJECTS = ("state", "motion", "path", "trajectory")
+LAW = "piecewise_constant_acceleration"  # how a Trajectory's position evolves: quadratic on every ramp segment
+ON_PATH = 1e-8  # a trajectory point within this of the source path (relative, at least 1 joint unit) lies on it
 FAILURES = ("position_limits", "collision", "path_constraint", "unsupported")
 
 # A length within this relative tolerance of a whole number of resolutions counts as that number. The planner stores
@@ -85,7 +98,13 @@ class ValidationPolicy:
     @property
     def parameters(self) -> tuple[tuple[str, str], ...]:
         """Every other setting of the mechanism, as sorted ``(key, value)`` pairs."""
-        return (("endpoints", "checked"), ("interpolation", "raw_linear"), ("rounding", f"{ROUNDING:g}"))
+        return (
+            ("endpoints", "checked"),
+            ("interpolation", "raw_linear"),
+            ("rounding", f"{ROUNDING:g}"),
+            ("trajectory", "source_path_states_or_speed_bounded_time_steps"),
+            ("trajectory_limits", "exact"),
+        )
 
     @property
     def summary(self) -> str:
@@ -126,8 +145,10 @@ class InvalidWitness:
     Attributes:
         failure: One of ``FAILURES``.
         configuration: The invalid configuration.
-        segment: The interval it lies on, for a motion (always 0) or a path; None for a state.
-        fraction: Its position on that interval, ``i/n``, in [0, 1]; None for a state.
+        segment: The interval it lies on: 0 for a motion, the segment for a path, the piece for a trajectory; None
+            for a state.
+        fraction: Its position on that interval, ``i/n``, in [0, 1], for a motion or path.
+        time_s: Its time, for a trajectory.
         contacts: The disallowed contacts, when the collision checker can list them.
         constraint: For a path-constraint failure, the index of the first violated member of an ``AllOf`` path
             constraint (0 for any other constraint).
@@ -138,6 +159,7 @@ class InvalidWitness:
     configuration: tuple[float, ...]
     segment: int | None = None
     fraction: float | None = None
+    time_s: float | None = None
     contacts: tuple[Contact, ...] = ()
     constraint: int | None = None
     detail: str = ""
@@ -148,15 +170,18 @@ class ValidationReport:
     """One validator's answer for one subject.
 
     Attributes:
-        subject: ``state``, ``motion``, or ``path``.
+        subject: ``state``, ``motion``, ``path``, or ``trajectory``.
         valid: Whether the subject is valid under ``policy``.
-        intervals: Intervals in the subject: 0 for a state, 1 for a motion, waypoints minus one for a path.
+        intervals: Intervals in the subject: 0 for a state, 1 for a motion, waypoints minus one for a path, pieces
+            for a trajectory.
         checks: States checked, the invalid one included.
         policy: The policy applied.
         implementation: ``sscbirrt X.Y.Z``.
         backend: ``python`` or ``native``: which implementation of the one contract answered.
         witness: The first invalid state; present exactly when not valid.
-        interpolation: ``raw_linear`` for a motion or path; None for a state.
+        interpolation: ``raw_linear`` for a motion or path; None otherwise.
+        law: ``piecewise_constant_acceleration`` for a trajectory; None otherwise.
+        duration_s: A trajectory's duration; None otherwise.
         provenance: What the collision checker validated against (scene and snapshot hashes for the native
             MuJoCo scene), as sorted ``(key, value)`` pairs.
     """
@@ -170,6 +195,8 @@ class ValidationReport:
     backend: str
     witness: InvalidWitness | None = None
     interpolation: str | None = None
+    law: str | None = None
+    duration_s: float | None = None
     provenance: tuple[tuple[str, str], ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
@@ -181,6 +208,11 @@ class ValidationReport:
             out["witness"]["configuration"] = list(self.witness.configuration)
             out["witness"]["contacts"] = [asdict(c) for c in self.witness.contacts]
         return out
+
+
+class MalformedTrajectory(ValueError):
+    """A trajectory that breaks its own invariants: a shape, finiteness, duration, continuity, limit or rest
+    condition. It is refused, never validated more weakly."""
 
 
 def implementation() -> str:
@@ -292,8 +324,8 @@ class Validator:
         q = _config(q, self.space.dof, "q")
         if self._native is not None:
             return self._from_native(self._native.validate_state(q.tolist()))
-        witness = self._witness(q, None, None)
-        return self._report("state", 0, 1, witness)
+        checks, witness = self._search([(q, None, None, None)], first=True)
+        return self._report("state", 0, checks, witness)
 
     def validate_motion(self, q0, q1) -> ValidationReport:
         """Whether the raw-linear motion from ``q0`` to ``q1`` is valid, both endpoints included."""
@@ -301,43 +333,121 @@ class Validator:
         q1 = _config(q1, self.space.dof, "q1")
         if self._native is not None:
             return self._from_native(self._native.validate_motion(q0.tolist(), q1.tolist()))
-        witness = self._witness(q0, 0, 0.0)
-        checks = 1
-        if witness is None:
-            more, witness = self._segment(q0, q1, 0)
-            checks += more
+        checks, witness = self._search([(q0, 0, 0.0, None)] + self._segment_entries(q0, q1, 0), first=True)
         return self._report("motion", 1, checks, witness)
 
     def validate_path(self, path: Sequence) -> ValidationReport:
-        """Whether a path is valid: its first waypoint, then each raw-linear segment in order."""
+        """Whether a path is valid: its first waypoint and every raw-linear segment."""
         if len(path) == 0:
             raise ValueError("path: empty")
         qs = [_config(q, self.space.dof, f"path[{i}]") for i, q in enumerate(path)]
         if self._native is not None:
             return self._from_native(self._native.validate_path([q.tolist() for q in qs]))
-        witness = self._witness(qs[0], 0 if len(qs) > 1 else None, 0.0 if len(qs) > 1 else None)
-        checks = 1
+        many = len(qs) > 1
+        entries = [(qs[0], 0 if many else None, 0.0 if many else None, None)]
         for k in range(len(qs) - 1):
-            if witness is not None:
-                break
-            more, witness = self._segment(qs[k], qs[k + 1], k)
-            checks += more
+            entries += self._segment_entries(qs[k], qs[k + 1], k)
+        checks, witness = self._search(entries, first=True)
         return self._report("path", len(qs) - 1, checks, witness)
+
+    def validate_trajectory(self, trajectory) -> ValidationReport:
+        """Whether a timed trajectory is valid over its whole law: its start and every piece.
+
+        Raises ``MalformedTrajectory`` for a trajectory that breaks its own invariants (see the module docstring).
+        The witness of an invalid one gives its piece (``segment``) and ``time_s``.
+        """
+        vmax, amax = well_formed(trajectory, self.space.dof)
+        path = getattr(trajectory, "path", None)
+        if self._native is not None:
+            from sscbirrt.backends.native import trajectory_data
+
+            pieces = trajectory_data(trajectory)
+            native_path = None if path is None else [list(map(float, q)) for q in path]
+            return self._from_native(
+                self._native.validate_trajectory(pieces, vmax.tolist(), amax.tolist(), native_path)
+            )
+        evidence = None if path is None else PathEvidence(path, self.policy.resolution)
+        breaks = trajectory.breaks
+        entries = [(np.array([r.x0 for r in trajectory.pieces[0].ramps]), 0, None, 0.0)]
+        for k, piece in enumerate(trajectory.pieces):
+            entries += self._piece_entries(piece, k, float(breaks[k]), vmax, evidence)
+        checks, witness = self._search(entries, first=True)
+        return self._report("trajectory", len(trajectory.pieces), checks, witness, float(trajectory.duration))
+
+    def check_piece(
+        self, piece, index: int, t0: float, vmax: np.ndarray, evidence: PathEvidence | None, first: bool = True
+    ):
+        """Check the states of one piece after its start: (states checked, an invalid one or None).
+
+        A piece whose trace lies on the source path is checked at the path's states within its span and at its end;
+        any other piece at ``n = max(1, ceil(T |vmax| / resolution - ROUNDING))`` uniform time steps, with every
+        bounded joint's out-of-limits turning point added. The smoother accepts a shortcut only if each piece it
+        creates passes this (``first=False``: the whole verdict only), so a returned trajectory passes
+        ``validate_trajectory``. See ``_search`` for the order.
+        """
+        return self._search(self._piece_entries(piece, index, t0, vmax, evidence), first)
 
     # ----- the reference implementation ----------------------------------------------------------------------------
 
-    def _segment(self, q0: np.ndarray, q1: np.ndarray, segment: int) -> tuple[int, InvalidWitness | None]:
-        """Check the states after ``q0`` on the raw line to ``q1``: (states checked, the first invalid one)."""
+    def _search(self, entries: list, first: bool) -> tuple[int, InvalidWitness | None]:
+        """Check states in van der Corput order (``spread_order``), which reaches an obstacle sooner, stopping at the
+        first invalid one found: (states checked, the invalid one or None). The verdict does not depend on the order.
+
+        With ``first`` (every report), a failure is refined to the earliest invalid state: the states before it not
+        yet checked are checked in order. A valid subject costs the same either way.
+
+        An entry is ``(q, segment, fraction, time)``; ``time`` may be a function, called only for a witness.
+        """
+        checked = [False] * len(entries)
+        checks = 0
+        for k in spread_order(len(entries)):
+            checks += 1
+            witness = self._entry_witness(entries[k])
+            if witness is None:
+                checked[k] = True
+                continue
+            if first:
+                for i in range(k):
+                    if checked[i]:
+                        continue
+                    checks += 1
+                    earlier = self._entry_witness(entries[i])
+                    if earlier is not None:
+                        return checks, earlier
+            return checks, witness
+        return checks, None
+
+    def _entry_witness(self, entry) -> InvalidWitness | None:
+        q, segment, fraction, time_s = entry
+        witness = self._witness(q, segment, fraction, None)
+        if witness is not None and time_s is not None:
+            witness = dataclasses.replace(witness, time_s=time_s() if callable(time_s) else time_s)
+        return witness
+
+    def _segment_entries(self, q0: np.ndarray, q1: np.ndarray, segment: int) -> list:
+        """The states after ``q0`` on the raw line to ``q1``, as search entries."""
         d = q1 - q0
         n = subdivisions(float(np.linalg.norm(d)), self.policy.resolution)
-        for i in range(1, n + 1):
-            q = q1 if i == n else line_point(q0, d, i, n)
-            witness = self._witness(q, segment, i / n)
-            if witness is not None:
-                return i, witness
-        return n, None
+        return [(q1 if i == n else line_point(q0, d, i, n), segment, i / n, None) for i in range(1, n + 1)]
 
-    def _witness(self, q: np.ndarray, segment: int | None, fraction: float | None) -> InvalidWitness | None:
+    def _piece_entries(self, piece, index: int, t0: float, vmax: np.ndarray, evidence: PathEvidence | None) -> list:
+        """The states of one piece after its start, as search entries (see ``check_piece``)."""
+        T = piece.duration
+        on_path = None if evidence is None else evidence.straight_span(piece)
+        if on_path is not None:
+            states, ref = on_path
+            last = len(states) - 1
+            return [
+                (q, index, None, t0 + T if i == last else (lambda q=q: t0 + _time_at(piece.ramps[ref], q[ref], T)))
+                for i, (_, q) in enumerate(states)
+            ]
+        ts = _time_steps(piece, self.policy.resolution, vmax, self.space)
+        qs = np.stack([r.evaluate(ts)[0] for r in piece.ramps], axis=1)
+        return [(qs[i], index, None, t0 + float(ts[i])) for i in range(len(ts))]
+
+    def _witness(
+        self, q: np.ndarray, segment: int | None, fraction: float | None, time_s: float | None = None
+    ) -> InvalidWitness | None:
         why = classify(self.space, self.checker, self.path_constraint, q)
         if why is None:
             return None
@@ -357,12 +467,15 @@ class Validator:
             configuration=tuple(float(x) for x in q),
             segment=segment,
             fraction=fraction,
+            time_s=time_s,
             contacts=contacts,
             constraint=constraint,
             detail=detail,
         )
 
-    def _report(self, subject: str, intervals: int, checks: int, witness: InvalidWitness | None) -> ValidationReport:
+    def _report(
+        self, subject: str, intervals: int, checks: int, witness: InvalidWitness | None, duration: float | None = None
+    ) -> ValidationReport:
         return ValidationReport(
             subject=subject,
             valid=witness is None,
@@ -372,7 +485,9 @@ class Validator:
             implementation=implementation(),
             backend="python",
             witness=witness,
-            interpolation=None if subject == "state" else "raw_linear",
+            interpolation="raw_linear" if subject in ("motion", "path") else None,
+            law=LAW if subject == "trajectory" else None,
+            duration_s=duration,
             provenance=self.provenance,
         )
 
@@ -390,3 +505,199 @@ def _violated_member(path_constraint, q: np.ndarray) -> int:
             if not child.contains(q):
                 return i
     return 0
+
+
+# ----- trajectories ------------------------------------------------------------------------------------------------
+
+_REL = 1e-9  # relative slack on velocity and acceleration bounds, as the smoother's own ramp verification
+_TOL_X = 1e-9  # position continuity (joint units, relative to at least 1)
+_TOL_V = 1e-7  # velocity continuity and rest (relative to max(1, vmax))
+
+
+def well_formed(trajectory, dof: int) -> tuple[np.ndarray, np.ndarray]:
+    """The trajectory's velocity and acceleration limits, after checking its own invariants, or
+    ``MalformedTrajectory`` naming the first one broken: shapes and finiteness, every ramp of a piece lasting the
+    piece's duration, ``|v| <= vmax`` and ``|a| <= amax``, position and velocity continuous across pieces, and rest
+    at both ends."""
+    try:
+        vmax = np.asarray(trajectory.velocity_limits, dtype=float)
+        amax = np.asarray(trajectory.acceleration_limits, dtype=float)
+        pieces = list(trajectory.pieces)
+    except (AttributeError, TypeError, ValueError) as e:
+        raise MalformedTrajectory(f"not a trajectory: {e}") from None
+    for name, lim in (("velocity_limits", vmax), ("acceleration_limits", amax)):
+        if lim.shape != (dof,) or not np.all(np.isfinite(lim)) or not np.all(lim > 0):
+            raise MalformedTrajectory(f"{name} must be {dof} positive finite values, got {lim}")
+    if not pieces:
+        raise MalformedTrajectory("no pieces")
+    previous = None
+    for k, piece in enumerate(pieces):
+        if len(piece.ramps) != dof:
+            raise MalformedTrajectory(f"piece {k}: {len(piece.ramps)} ramps for {dof} joints")
+        T = piece.duration
+        for j, r in enumerate(piece.ramps):
+            values = [r.x0, r.v0] + [x for seg in r.pieces for x in seg]
+            if not all(math.isfinite(x) for x in values) or any(d < -1e-12 for d, _ in r.pieces):
+                raise MalformedTrajectory(f"piece {k}, joint {j}: non-finite values or a negative duration")
+            if abs(r.duration - T) > 1e-9 * max(1.0, T):
+                raise MalformedTrajectory(f"piece {k}, joint {j}: lasts {r.duration}, the piece {T}")
+            v = r.v0
+            if abs(v) > vmax[j] * (1 + _REL):
+                raise MalformedTrajectory(f"piece {k}, joint {j}: velocity {v} beyond {vmax[j]}")
+            for d, a in r.pieces:
+                if abs(a) > amax[j] * (1 + _REL):
+                    raise MalformedTrajectory(f"piece {k}, joint {j}: acceleration {a} beyond {amax[j]}")
+                v = v + a * d
+                if abs(v) > vmax[j] * (1 + _REL):
+                    raise MalformedTrajectory(f"piece {k}, joint {j}: velocity {v} beyond {vmax[j]}")
+        if previous is not None:
+            for j, r in enumerate(piece.ramps):
+                x, v = previous[j]
+                if abs(r.x0 - x) > _TOL_X * max(1.0, abs(x)) or abs(r.v0 - v) > _TOL_V * max(1.0, vmax[j]):
+                    raise MalformedTrajectory(f"piece {k}, joint {j}: discontinuous with the piece before")
+        previous = [r.end() for r in piece.ramps]
+    for j in range(dof):
+        if abs(pieces[0].ramps[j].v0) > _TOL_V * max(1.0, vmax[j]) or abs(previous[j][1]) > _TOL_V * max(1.0, vmax[j]):
+            raise MalformedTrajectory(f"joint {j}: not at rest at both ends")
+    return vmax, amax
+
+
+def spread_order(n: int) -> list[int]:
+    """The indices ``0..n-1`` of the states along a motion (position ``p`` is index ``p - 1``; position ``n`` is the
+    end) in van der Corput order: level by level, the positions ``ceil(j n / 2^L)`` for odd ``j``, so the middle comes
+    first, then the quarters, and so on; repeats are skipped and any position left is appended. Each index exactly
+    once, in integer arithmetic, as the native core computes it."""
+    seen = [False] * (n + 1)
+    out = []
+    level = 1
+    while len(out) < n and (1 << level) <= 4 * n:
+        for j in range(1, 1 << level, 2):
+            p = (j * n + (1 << level) - 1) >> level
+            if 1 <= p <= n and not seen[p]:
+                seen[p] = True
+                out.append(p - 1)
+        level += 1
+    out += [p - 1 for p in range(1, n + 1) if not seen[p]]
+    return out
+
+
+def _time_steps(piece, resolution: float, vmax: np.ndarray, space: JointSpace) -> np.ndarray:
+    """The times after a piece's start that are checked: uniform steps over which no joint-space step exceeds the
+    resolution (``|q(t + dt) - q(t)| <= dt |vmax|``), and every bounded joint's turning point that leaves its limits,
+    so position limits hold exactly along the law."""
+    T = piece.duration
+    n = max(1, math.ceil(T * float(np.linalg.norm(vmax)) / resolution - ROUNDING))
+    ts = list(np.linspace(0.0, T, n + 1)[1:])
+    bounded = np.ones(space.dof, dtype=bool) if space.continuous_joints is None else ~space.continuous_joints
+    extra = []
+    for j, r in enumerate(piece.ramps):
+        if not bounded[j]:
+            continue
+        start, x, v = 0.0, r.x0, r.v0
+        for d, a in r.pieces:
+            if a != 0.0:
+                tau = -v / a
+                if 0.0 < tau < d:
+                    peak = x + v * tau + 0.5 * a * tau * tau
+                    if not space.lower[j] <= peak <= space.upper[j]:
+                        extra.append(start + tau)
+            x, v, start = x + v * d + 0.5 * a * d * d, v + a * d, start + d
+    return np.array(sorted(ts + extra), dtype=float)
+
+
+def _time_at(ramp, x: float, T: float) -> float:
+    """The time a monotone ramp reaches position ``x``, by bisection (60 halvings of ``[0, T]``)."""
+    lo, hi = 0.0, T
+    x0 = float(ramp.evaluate(np.array([0.0]))[0][0])
+    x1 = float(ramp.evaluate(np.array([T]))[0][0])
+    rising = x1 >= x0
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        xm = float(ramp.evaluate(np.array([mid]))[0][0])
+        if (xm < x) == rising:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
+class PathEvidence:
+    """The states ``validate_path`` checks on a trajectory's source path, each with its path parameter
+    ``k + i/n``, and the test that a straight piece's trace lies on the path."""
+
+    def __init__(self, path: Sequence, resolution: float):
+        self.nodes = [np.asarray(q, dtype=float) for q in path]
+        if not self.nodes:
+            raise MalformedTrajectory("the source path is empty")
+        self.states: list[tuple[float, np.ndarray]] = [(0.0, self.nodes[0])]
+        for k in range(len(self.nodes) - 1):
+            q0, q1 = self.nodes[k], self.nodes[k + 1]
+            d = q1 - q0
+            n = subdivisions(float(np.linalg.norm(d)), resolution)
+            for i in range(1, n + 1):
+                self.states.append((k + i / n, q1 if i == n else line_point(q0, d, i, n)))
+
+    def locate(self, x: np.ndarray) -> float | None:
+        """The path parameter of the first point of the path within ``ON_PATH`` of ``x``, or None."""
+        tol = ON_PATH * max(1.0, float(np.max(np.abs(x))))
+        if len(self.nodes) == 1:
+            return 0.0 if float(np.linalg.norm(self.nodes[0] - x)) <= tol else None
+        for k in range(len(self.nodes) - 1):
+            p, s = self.nodes[k], self.nodes[k + 1] - self.nodes[k]
+            ss = float(np.dot(s, s))
+            f = 0.0 if ss == 0.0 else min(1.0, max(0.0, float(np.dot(x - p, s)) / ss))
+            if float(np.linalg.norm(p + f * s - x)) <= tol:
+                return k + f
+        return None
+
+    def straight_span(self, piece):
+        """For a piece that moves along a straight line lying on the path, forward: the states to check after its
+        start (the path's states strictly inside its span, then its end) and its reference joint. None otherwise."""
+        a = np.array([float(r.evaluate(np.array([0.0]))[0][0]) for r in piece.ramps])
+        b = np.array([float(r.evaluate(np.array([piece.duration]))[0][0]) for r in piece.ramps])
+        ref = straight_reference(piece, a, b)
+        if ref is None:
+            return None
+        la, lb = self.locate(a), self.locate(b)
+        if la is None or lb is None or lb < la:
+            return None
+        D = b - a
+        DD = float(np.dot(D, D))
+        tol = ON_PATH * max(1.0, float(np.max(np.abs(a))), float(np.max(np.abs(b))))
+        for k in range(math.floor(la) + 1, math.ceil(lb)):  # every node strictly inside the span lies on a -> b
+            p = self.nodes[k]
+            f = min(1.0, max(0.0, float(np.dot(p - a, D)) / DD))
+            if float(np.linalg.norm(a + f * D - p)) > tol:
+                return None
+        inside = [(lam, q) for lam, q in self.states if la < lam < lb]
+        return inside + [(lb, b)], ref
+
+
+def straight_reference(piece, a: np.ndarray, b: np.ndarray) -> int | None:
+    """The reference joint of a piece that moves monotonically along the straight line ``a -> b``: every joint's
+    ramp is the reference joint's scaled by ``(b_j - a_j) / (b_r - a_r)`` (same segment durations, proportional
+    start velocity and accelerations), and the reference never moves backwards. None otherwise."""
+    D = b - a
+    ref = int(np.argmax(np.abs(D)))
+    if D[ref] == 0.0:
+        return None
+    r0 = piece.ramps[ref]
+    durations = [d for d, _ in r0.pieces]
+    for j, r in enumerate(piece.ramps):
+        if [d for d, _ in r.pieces] != durations:
+            return None
+        ratio = D[j] / D[ref]
+        if abs(r.v0 - ratio * r0.v0) > 1e-9 * max(1.0, abs(r0.v0)):
+            return None
+        for (_, aj), (_, ar) in zip(r.pieces, r0.pieces):
+            if abs(aj - ratio * ar) > 1e-9 * max(1.0, abs(ar)):
+                return None
+    sign = 1.0 if D[ref] > 0 else -1.0
+    v = r0.v0
+    if sign * v < -1e-9 * max(1.0, abs(v)):
+        return None
+    for d, a in r0.pieces:
+        v = v + a * d
+        if sign * v < -1e-9 * max(1.0, abs(a * d)):
+            return None
+    return ref

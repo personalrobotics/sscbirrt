@@ -354,7 +354,7 @@ Trajectory Trajectory::splice(double t1, double t2, Piece piece) const {
   all.push_back(std::move(piece));
   all.push_back(pieces[i2].split(tau2).second);
   all.insert(all.end(), pieces.begin() + static_cast<long>(i2) + 1, pieces.end());
-  Trajectory out{{}, velocity_limits, acceleration_limits};
+  Trajectory out{{}, velocity_limits, acceleration_limits, path};
   for (Piece& p : all) {
     if (p.duration() > kEpsT) out.pieces.push_back(std::move(p));
   }
@@ -415,7 +415,7 @@ Piece straight_line(const Config& q0, const Config& q1, const std::vector<double
 Trajectory initial_trajectory(const std::vector<Config>& corners, const std::vector<double>& vmax,
                               const std::vector<double>& amax) {
   if (corners.empty()) throw std::invalid_argument("initial_trajectory needs at least one corner");
-  Trajectory traj{{}, vmax, amax};
+  Trajectory traj{{}, vmax, amax, {}};
   for (std::size_t i = 0; i + 1 < corners.size(); ++i) {
     Piece p = straight_line(corners[i], corners[i + 1], vmax, amax);
     if (p.duration() > kEpsT) traj.pieces.push_back(std::move(p));
@@ -458,8 +458,33 @@ std::optional<std::string> validate_samples(const std::vector<Config>& points, c
   return std::nullopt;
 }
 
+std::optional<std::string> accepts(const Trajectory& traj, double t1, double t2, const Piece& piece,
+                                   const Validator& validator, const PathEvidence* evidence) {
+  Config start(piece.ramps.size());
+  for (std::size_t j = 0; j < piece.ramps.size(); ++j) start[j] = piece.ramps[j].x0;
+  if (auto w = validator.check_state(start)) return "start: " + std::string(failure_name(w->failure)) + " (" + w->detail + ")";
+  const std::vector<double> br = traj.breaks();
+  const auto [i1, tau1] = locate(br, traj.pieces.size(), t1);
+  const auto [i2, tau2] = locate(br, traj.pieces.size(), t2);
+  const Piece before = traj.pieces[i1].split(tau1).first;
+  const Piece after = traj.pieces[i2].split(tau2).second;
+  // The new piece first: most candidates fail there. States in van der Corput order: it reaches an obstacle sooner, and
+  // the verdict does not depend on the order. A cut piece still on the source path is not re-checked: its
+  // states are the path's (valid when the path is) and the cut point, checked here as the new piece's start or end.
+  const std::pair<const char*, const Piece*> parts[] = {{"shortcut", &piece}, {"before", &before}, {"after", &after}};
+  for (const auto& [name, part] : parts) {
+    if (part->duration() <= kEpsT) continue;
+    if (part != &piece && evidence && evidence->straight_span(*part)) continue;
+    auto [checks, w] = validator.check_piece(*part, 0, 0.0, traj.velocity_limits, evidence, /*first=*/false);
+    (void)checks;
+    if (w) return std::string(name) + ": " + failure_name(w->failure) + " (" + w->detail + ")";
+  }
+  return std::nullopt;
+}
+
 Trajectory shortcut(Trajectory traj, const MotionValidator& motion, const WhyInadmissible& why, bool recheck_returned,
-                    double resolution, const ShortcutOptions& options, ShortcutReport* report) {
+                    double resolution, const ShortcutOptions& options, ShortcutReport* report,
+                    const Validator* validator) {
   using Clock = std::chrono::steady_clock;
   Rng rng(options.seed);
   const std::vector<double> vmax = traj.velocity_limits, amax = traj.acceleration_limits;
@@ -472,6 +497,8 @@ Trajectory shortcut(Trajectory traj, const MotionValidator& motion, const WhyIna
   rep.stopped = "iterations";
   std::vector<double> history{traj.duration()};  // duration after each number of attempts
   const int window = options.convergence_window.value_or(0);
+  std::optional<PathEvidence> evidence;
+  if (validator && !traj.path.empty()) evidence.emplace(traj.path, validator->policy().resolution);
   Config qa, va, qb, vb;
   for (int it = 0; it < options.iterations; ++it) {
     if (!rep.attempts.empty()) {
@@ -520,11 +547,17 @@ Trajectory shortcut(Trajectory traj, const MotionValidator& motion, const WhyIna
       rec.rejected = "not faster";
       continue;
     }
-    if (auto w = validate_samples(piece_samples(*piece, resolution, vmax), motion, why, recheck_returned)) {
-      rec.rejected = std::move(*w);
+    piece->validated = "shortcut";
+    std::optional<std::string> refused;
+    if (validator) {
+      refused = accepts(traj, rec.t1, rec.t2, *piece, *validator, evidence ? &*evidence : nullptr);
+    } else {
+      refused = validate_samples(piece_samples(*piece, resolution, vmax), motion, why, recheck_returned);
+    }
+    if (refused) {
+      rec.rejected = std::move(*refused);
       continue;
     }
-    piece->validated = "shortcut";
     traj = traj.splice(rec.t1, rec.t2, std::move(*piece));
     rec.accepted = true;
     ++rep.accepted;
@@ -551,10 +584,13 @@ Trajectory smooth_path_in_time(const Planner& planner, const PlanningProblem& pr
   const bool custom = static_cast<bool>(motion);
   if (!custom) motion = planner.default_motion_validator(problem);
   const WhyInadmissible why = [&problem](ConfigView q) { return Planner::why_inadmissible(problem, q); };
-  // The default validator's configurations passed this same predicate; a custom one's are re-checked, as the
-  // planner's edge rule does.
-  return shortcut(initial_trajectory(coalesce(path), vmax, amax), *motion, why, custom, planner.config().resolution(),
-                  options, report);
+  std::optional<Validator> validator;
+  if (!custom) validator.emplace(Validator::for_problem(problem, planner.config()));
+  Trajectory initial = initial_trajectory(coalesce(path), vmax, amax);
+  initial.path = path;
+  // A custom validator's configurations are re-checked, as the planner's edge rule does.
+  return shortcut(std::move(initial), *motion, why, custom, planner.config().resolution(), options, report,
+                  validator ? &*validator : nullptr);
 }
 
 }  // namespace sscbirrt::trajectory

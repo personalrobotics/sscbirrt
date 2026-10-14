@@ -8,6 +8,7 @@
 
 #include "harness.hpp"
 #include "sscbirrt/planner.hpp"
+#include "sscbirrt/trajectory.hpp"
 #include "sscbirrt/validation.hpp"
 
 using namespace sscbirrt;
@@ -102,6 +103,35 @@ TEST(a_path_the_validator_rejects_is_not_returned) {
   CHECK(r.status == Status::InvalidResult && r.path.empty());
   CHECK(r.reason.rfind("Returned path failed final validation: collision at segment", 0) == 0);
   CHECK(r.validation && r.validation->witness->configuration[0] > 3.25);
+}
+
+TEST(trajectory_pieces_on_the_source_path_reuse_its_states) {
+  const std::vector<double> vmax{1.0, 1.0}, amax{2.0, 2.0};
+  std::vector<Config> path{{-1.0, 0.0}};
+  for (int i = 1; i <= 40; ++i) path.push_back({-1.0 + 0.05 * i, 0.0});  // dense, as the planner stores it
+  trajectory::Trajectory traj = trajectory::initial_trajectory(trajectory::coalesce(path), vmax, amax);
+  traj.path = path;
+  Validator v(plane(), std::make_shared<AcceptAll>());
+  const ValidationReport r = v.validate_trajectory(traj);
+  CHECK(r.valid && r.subject == "trajectory" && r.intervals == 1 && r.duration_s);
+  CHECK(r.checks == v.validate_path(path).checks);  // the path's states, none new
+  traj.path.clear();                                  // without its path: speed-bounded time steps
+  CHECK(v.validate_trajectory(traj).checks == 1 + static_cast<long>(std::ceil(*r.duration_s * std::sqrt(2.0) / 0.05 - 1e-9)));
+  const ValidationReport hit = Validator(plane(), wall(0.3, 0.4)).validate_trajectory(traj);
+  CHECK(!hit.valid && hit.witness->time_s && *hit.witness->time_s > 0 && *hit.witness->segment == 0);
+}
+
+TEST(a_malformed_trajectory_throws) {
+  const std::vector<double> vmax{1.0, 1.0}, amax{2.0, 2.0};
+  trajectory::Trajectory traj = trajectory::initial_trajectory({{0.0, 0.0}, {1.0, 0.0}}, vmax, amax);
+  Validator v(plane(), std::make_shared<AcceptAll>());
+  trajectory::Trajectory slow = traj;
+  slow.velocity_limits = {0.1, 0.1};
+  CHECK_THROWS(v.validate_trajectory(slow), MalformedTrajectory);
+  trajectory::Trajectory cut = traj;
+  cut.pieces.front() = traj.pieces.front().split(traj.duration() / 2).first;  // ends moving
+  CHECK_THROWS(v.validate_trajectory(cut), MalformedTrajectory);
+  CHECK_THROWS(v.validate_trajectory(trajectory::Trajectory{{}, vmax, amax, {}}), MalformedTrajectory);
 }
 
 HARNESS_MAIN()

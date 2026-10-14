@@ -59,6 +59,37 @@ LocalMotion DiscreteMotionValidator::validate(ConfigView q_from, ConfigView q_to
   return out;
 }
 
+std::optional<std::vector<Config>> DiscreteMotionValidator::validate_whole(ConfigView q_from, ConfigView q_to) const {
+  auto configs = samples(q_from, q_to);
+  if (!configs) return std::nullopt;
+  for (const int k : spread_order(static_cast<int>(configs->size()))) {
+    if (!is_admissible_((*configs)[static_cast<std::size_t>(k)])) return std::nullopt;
+  }
+  return configs;
+}
+
+std::optional<std::vector<Config>> DiscreteMotionValidator::samples(ConfigView q_from, ConfigView q_to) const {
+  if (!space_->contains(q_to)) return std::nullopt;
+  const Config d = space_->direction(q_from, q_to);
+  double dist = 0.0;
+  for (double v : d) dist += v * v;
+  dist = std::sqrt(dist);
+  if (dist == 0.0) return std::vector<Config>{};
+  const int n = subdivisions(dist, resolution_);
+  std::vector<Config> configs(static_cast<std::size_t>(n));
+  for (int i = 1; i <= n; ++i) {
+    Config& q = configs[static_cast<std::size_t>(i) - 1];
+    if (i == n) {
+      q = to_config(q_to);
+    } else {
+      q.resize(d.size());
+      const double t = static_cast<double>(i) / static_cast<double>(n);
+      for (std::size_t k = 0; k < d.size(); ++k) q[k] = q_from[k] + t * d[k];
+    }
+  }
+  return configs;
+}
+
 RestrictedMotionValidator::RestrictedMotionValidator(std::shared_ptr<const MotionValidator> base,
                                                      std::function<bool(ConfigView, ConfigView)> accepts)
     : base_(std::move(base)), accepts_(std::move(accepts)) {
@@ -69,6 +100,11 @@ RestrictedMotionValidator::RestrictedMotionValidator(std::shared_ptr<const Motio
 LocalMotion RestrictedMotionValidator::validate(ConfigView q_from, ConfigView q_to) const {
   if (!accepts_(q_from, q_to)) return LocalMotion{};
   return base_->validate(q_from, q_to);
+}
+
+std::optional<std::vector<Config>> RestrictedMotionValidator::validate_whole(ConfigView q_from, ConfigView q_to) const {
+  if (!accepts_(q_from, q_to)) return std::nullopt;
+  return base_->validate_whole(q_from, q_to);
 }
 
 }  // namespace sscbirrt

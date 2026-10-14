@@ -1832,3 +1832,61 @@ implementations, held equal on every reference case.
   - It is not thread-safe, because a `SceneValidator` mutates its one `mjData`.
   - The Python `Validator(..., backend="auto")` lowers its checker with `fresh()`, so it owns its own `mjData`.
   - Its `validate_*` calls release the GIL, so use one `Validator` per thread.
+
+### Timed trajectories (#230, slice 2)
+
+`Validator::validate_trajectory` checks a `trajectory::Trajectory` over its whole law, its start first, then every
+piece in time order. The Python reference (`sscbirrt.validation`) matches it operation by operation.
+
+- **Pieces on the source path.** `Trajectory::path` (kept by `splice`) is the validated path the trajectory was
+  timed from. `PathEvidence` lists the states `validate_path` checks on it, each with its parameter `k + i/n`.
+  - A piece is checked at those states strictly inside its span, then at its end, when all of these hold:
+    - its ramps are one reference ramp scaled per joint (`straight_reference`: the same segment durations,
+      proportional start velocity and accelerations, never moving backwards);
+    - both its ends lie on the path within `kOnPath` (1e-8, relative to at least 1);
+    - every path node between them lies on its line.
+  - That is an exact reparameterization of part of the path, so it reuses the path's evidence.
+- **Why not `validate_motion` on such a piece.** A splice cuts pieces mid-way. A cut planned piece would then be
+  sampled on a new grid, at states nobody planned or checked. This is the door bug of slice 1 one level up: a
+  correct trajectory could fail its final check.
+- **Every other piece** is checked at `n = max(1, ceil(T |vmax| / resolution - 1e-9))` uniform time steps, since
+  `|q(t + dt) - q(t)| <= dt |vmax|` once velocities are within limits. Every bounded joint's turning point that
+  leaves its limits is added, so position limits are exact.
+- **The smoother.** `trajectory::accepts` checks a shortcut's start, then the cut piece before it, the new piece and
+  the cut piece after it, each with `Validator::check_piece`. Every piece of a smoothed trajectory has therefore
+  passed the rule as it stands, and the final `validate_trajectory` agrees by construction.
+  - A problem with a custom motion validator keeps the old chord-by-chord check and gets no report.
+- **Well-formedness.** `well_formed` throws `MalformedTrajectory`, which Python sees as a `ValueError`, for:
+  - wrong shapes, non-finite values, or negative durations;
+  - ramps of different durations;
+  - `|v| > vmax` or `|a| > amax`, beyond a 1e-9 relative slack;
+  - a jump between pieces;
+  - motion at either end.
+- **The witness** carries the piece as `segment` and `time_s`. For a path state inside a piece, the time is found
+  by bisection on the reference ramp (60 halvings).
+
+### Two modes of motion check (#230)
+
+Every motion check answers one of two questions, and the caller says which.
+- **Prefix.** `MotionValidator::validate` answers how far from the start a motion is valid. The prefix becomes tree
+  nodes, so it checks in order; nothing can do better.
+- **Whole.** `MotionValidator::validate_whole` answers whether the whole motion is valid, for callers that discard
+  the motion on a no:
+  - `Solve::grow(..., whole = true)` from `try_shortcut`, so path shortcuts and `unwind`;
+  - `trajectory::accepts`.
+
+  The default answers through `validate`. `DiscreteMotionValidator` checks the same samples in `spread_order` (van
+  der Corput: the middle first, then the quarters, and so on, in integer arithmetic) and returns the same
+  configurations on a yes. Nodes, paths and trajectories are therefore unchanged; the Python artifact still matches
+  bit for bit.
+- **Whole shortcuts without projection.** A path shortcut on a problem with no projector and the default motion
+  validator has no step that depends on validity. `Solve::grow_whole` (Python: `CBiRRT._grow_whole`) therefore
+  computes the walk first, by `grow`'s own rules: the step size, `contains`, the stall test and the final hop to the
+  exact target. Each edge holds the configurations `DiscreteMotionValidator::samples` gives. A walk that ends short
+  fails with no check, as `grow` would. Otherwise every sample is checked as one `spread_order` search, and on a yes
+  the same nodes are added. With projection, each step depends on the last projected one, so edges stay one by one.
+  `test_a_whole_shortcut_matches_the_step_by_step_walk` holds the verdict and the nodes equal to the step-by-step
+  walk over 800 random cases.
+- **Reports.** `Validator::search` visits all of a subject's states in `spread_order`. For a report (`first`), it
+  refines a failure to the earliest invalid state by checking, in order, the earlier states not yet checked. A valid
+  subject costs the same either way.

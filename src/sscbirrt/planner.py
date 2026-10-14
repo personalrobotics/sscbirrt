@@ -21,13 +21,13 @@ from sscbirrt.exceptions import (
 )
 from sscbirrt.interfaces import CollisionChecker, IKSolver, RobotModel
 from sscbirrt.legacy import legacy_index, legacy_problem
-from sscbirrt.motion import DiscreteMotionValidator, MotionValidator
+from sscbirrt.motion import DiscreteMotionValidator, LocalMotion, MotionValidator, validate_whole
 from sscbirrt.problem import PlanningProblem
 from sscbirrt.sets import Sample, SetProjector, SetSampler, StateSet, explicit_samples, is_finite, supports
 from sscbirrt.space import JointSpace
 from sscbirrt.trajectory import Trajectory, TrajectoryOptions, coalesce, initial_trajectory, limits, shortcut
 from sscbirrt.tree import RRTree
-from sscbirrt.validation import ValidationReport, Validator, classify
+from sscbirrt.validation import ValidationReport, Validator, classify, spread_order
 
 logger = logging.getLogger(__name__)
 
@@ -307,6 +307,14 @@ class CBiRRT:
             result.trajectory = self._smooth_trajectory(
                 problem, result.path, trajectory, smooth_seed, lowered, result.backend_reasons
             )
+            report = result.trajectory.validation
+            if report is not None and not report.valid:  # never by construction; refused, not returned, if it were
+                w = report.witness
+                result.success, result.path = False, None
+                result.failure_reason = (
+                    f"Returned trajectory failed final validation: {w.failure} in piece {w.segment} at "
+                    f"{w.time_s:.4g} s ({w.detail})"
+                )
         return result
 
     def smooth_trajectory(
@@ -316,11 +324,11 @@ class CBiRRT:
         limits (#214).
 
         It starts from the path at rest at every corner, then replaces random windows ``[t1, t2]`` with the
-        synchronized time-optimal motion between the states there whenever that is faster and admissible. Each
-        shortcut is validated through the problem's boundary: samples at most ``edge_resolution`` apart, each
-        admissible (joint space, validator, path constraint), every chord accepted by the problem's motion
-        validator. That is the planner's discrete edge guarantee, no stronger. Each piece of the result records how
-        it was validated. Never fails on a valid path: at worst the result is the path with a stop at every corner.
+        synchronized time-optimal motion between the states there whenever that is faster and every piece the splice
+        leaves passes ``Validator.for_problem(problem, config)``'s trajectory rule (#230). That is the planner's
+        discrete edge guarantee, no stronger; the result's ``validation`` is its whole-trajectory report. A problem
+        with a custom motion validator has its shortcuts checked chord by chord through it instead, and no report.
+        Never fails on a valid path: at worst the result is the path with a stop at every corner.
 
         Uses the backend selection of ``solve``: native when the problem lowers (with ``backend="auto"``), else the
         Python reference with the reasons on ``Trajectory.backend_reasons``.
@@ -350,16 +358,23 @@ class CBiRRT:
                 traj = native.smooth_trajectory(lowered, path, vmax, amax, options, seed, self.config.abort_fn)
                 traj.joint_names = self._joint_names()
                 return traj
+        validator = None
+        if problem.motion_validator is None:
+            validator = Validator.for_problem(problem, self.config, backend="python")
+        initial = initial_trajectory(coalesce(path), vmax, amax)
+        initial.path = [np.array(q, dtype=float) for q in path]
         traj = shortcut(
-            initial_trajectory(coalesce(path), vmax, amax),
+            initial,
             motion_validator=self._motion_validator(problem),
             admissible=lambda q: self._admissible(problem, q),
             resolution=self.config.edge_resolution or self.config.step_size,
             options=options,
             seed=seed,
             abort_fn=self.config.abort_fn,
+            validator=validator,
         )
         traj.joint_names, traj.backend, traj.backend_reasons = self._joint_names(), "python", reasons
+        traj.validation = None if validator is None else validator.validate_trajectory(traj)
         return traj
 
     def _joint_names(self) -> tuple[str, ...] | None:
@@ -764,8 +779,13 @@ class CBiRRT:
         tree: RRTree,
         q_target: np.ndarray,
         max_steps: int | None = None,
+        whole: bool = False,
     ) -> tuple[int, bool]:
         """Grow tree toward target using EXT or CON behavior.
+
+        ``whole`` (#230): only reaching the target matters, as for a shortcut on a throwaway tree, so each edge is
+        checked whole (``motion.validate_whole``) and a failing one adds nothing. The nodes of a success are the
+        same.
 
         Each new configuration is projected onto the path constraint if it
         supports projection, then connected by a checked edge that validates
@@ -795,6 +815,8 @@ class CBiRRT:
             return self._nearest_node(space, tree, q_target), False
 
         current_idx = self._nearest_node(space, tree, q_target)
+        if whole and projector is None and max_steps is None and problem.motion_validator is None:
+            return self._grow_whole(problem, tree, current_idx, q_target)
         steps_taken = 0
         prev_distance = float("inf")
 
@@ -809,7 +831,7 @@ class CBiRRT:
 
             if distance < self.config.connection_tolerance:
                 # Close enough to connect: validate the exact final segment and add the target
-                return self._extend_along_edge(problem, tree, current_idx, q_target)
+                return self._extend_along_edge(problem, tree, current_idx, q_target, whole)
 
             if prev_distance - distance < self.config.progress_tolerance:
                 break
@@ -832,12 +854,68 @@ class CBiRRT:
                 if not space.contains(q_new):
                     break  # a projector may move the point anywhere
 
-            current_idx, reached = self._extend_along_edge(problem, tree, current_idx, q_new)
+            current_idx, reached = self._extend_along_edge(problem, tree, current_idx, q_new, whole)
             steps_taken += 1
             if not reached:
                 break
 
         return current_idx, False
+
+    def _grow_whole(
+        self, problem: PlanningProblem, tree: RRTree, current_idx: int, q_target: np.ndarray
+    ) -> tuple[int, bool]:
+        """``_grow(whole=True)`` without projection, with the default motion validator, to the end (#230).
+
+        No step depends on validity then, so the walk is computed first by ``_grow``'s own rules (step size,
+        ``space.contains``, the stall test, the final hop to the exact target), each edge's configurations exactly
+        those ``DiscreteMotionValidator.validate`` would return. A walk that ends short fails with no check, as
+        ``_grow`` would. Otherwise every sample of every edge is checked as one van der Corput search
+        (``spread_order``), which reaches an obstacle sooner than edge after edge; on a yes the same nodes are added.
+        The verdict and the nodes are ``_grow``'s, whatever the order (a test holds them equal).
+        """
+        space = problem.space
+        mv = self.default_motion_validator(problem)
+        tol = self.config.connection_tolerance
+        edges: list[list[np.ndarray]] = []
+        q_current = tree.nodes[current_idx].config
+        prev_distance = float("inf")
+        while True:
+            direction = space.direction(q_current, q_target)
+            distance = float(np.linalg.norm(direction))
+            if distance == 0.0:
+                break
+            final = distance < tol
+            if final:
+                q_next = np.asarray(q_target, dtype=float)
+            else:
+                if prev_distance - distance < self.config.progress_tolerance:
+                    return current_idx, False
+                prev_distance = distance
+                q_next = q_current + direction / distance * min(distance, self.config.step_size)
+                if not space.contains(q_next):
+                    return current_idx, False
+            # _extend_along_edge: outside the space fails; a zero-length edge succeeds and adds nothing
+            if not space.contains(q_next):
+                return current_idx, False
+            if space.distance(q_current, q_next) != 0.0:
+                configs = mv.samples(q_current, q_next)
+                if configs is None:
+                    return current_idx, False
+                edges.append(configs)
+                q_current = configs[-1]
+            if final:
+                break
+        counts = getattr(self, "_counts", None)
+        if counts is not None:
+            counts["edge_checks"] += len(edges)
+        states = [q for configs in edges for q in configs]
+        for k in spread_order(len(states)):
+            if not mv.is_admissible(states[k]):
+                return current_idx, False
+        for configs in edges:
+            for q in configs:
+                current_idx = tree.add_node(q, current_idx)
+        return current_idx, True
 
     def _extend_along_edge(
         self,
@@ -845,8 +923,11 @@ class CBiRRT:
         tree: RRTree,
         start_idx: int,
         q_target: np.ndarray,
+        whole: bool = False,
     ) -> tuple[int, bool]:
         """Extend the tree along the local motion to ``q_target``.
+
+        With ``whole``, the motion is checked whole (``motion.validate_whole``): on a no nothing is stored.
 
         This is the single local-motion validation boundary, used for
         ordinary growth, the final connection between trees, and shortcut
@@ -892,7 +973,13 @@ class CBiRRT:
         counts = getattr(self, "_counts", None)
         if counts is not None:
             counts["edge_checks"] += 1
-        motion = validator.validate(q_from, q_target)
+        if whole:
+            whole_configs = validate_whole(validator, q_from, q_target)
+            if whole_configs is None:
+                return start_idx, False
+            motion = LocalMotion(configs=whole_configs, reached=True)
+        else:
+            motion = validator.validate(q_from, q_target)
         configs = [np.asarray(q, dtype=float) for q in motion.configs]
 
         if motion.reached:
@@ -1154,8 +1241,8 @@ class CBiRRT:
             consecutive pair validated, or None if the connection failed.
             ``q_from == q_to`` gives the single-element path ``[q_from]``.
         """
-        temp_tree = RRTree(q_from)
-        final_idx, reached = self._grow(problem, temp_tree, q_to, max_steps=None)
+        temp_tree = RRTree(q_from)  # discarded unless reached: every edge is checked whole (#230)
+        final_idx, reached = self._grow(problem, temp_tree, q_to, max_steps=None, whole=True)
         if not reached:
             return None
         return temp_tree.get_path_to_root(final_idx)

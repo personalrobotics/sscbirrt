@@ -153,8 +153,13 @@ class Solve {
   std::vector<Sample> roots(const StateSet& s, const std::string& role, RootReport& report);
   // One sampling draw: its admissible candidates, at most min(max_per_draw, room), skipping explicit seeds (#196).
   std::vector<Sample> draw_roots(const StateSet& s, const std::vector<Sample>& seeds, int room, RootReport* report);
-  std::pair<int, bool> grow(Tree& tree, ConfigView target, std::optional<int> max_steps);
-  std::pair<int, bool> extend_along_edge(Tree& tree, int start_idx, ConfigView target);
+  // whole (#230): only reaching the target matters (a shortcut's throwaway tree), so each edge is checked whole
+  // (MotionValidator::validate_whole) and a failing one adds nothing. The nodes of a success are the same.
+  std::pair<int, bool> grow(Tree& tree, ConfigView target, std::optional<int> max_steps, bool whole = false);
+  std::pair<int, bool> extend_along_edge(Tree& tree, int start_idx, ConfigView target, bool whole = false);
+  // grow(whole) to the end without projection and with the default motion validator: the walk first, by grow's own
+  // rules, then all its samples as one van der Corput search; the same verdict and nodes (CBiRRT._grow_whole).
+  std::pair<int, bool> grow_whole(Tree& tree, int current, ConfigView target);
   std::vector<Config> extract_path(const Tree& ts, const Tree& tg, bool a_is_start, int idx_a, int idx_b) const;
   std::vector<Config> smooth(const std::vector<Config>& path);
   std::optional<std::vector<Config>> try_shortcut(ConfigView from, ConfigView to);
@@ -272,13 +277,14 @@ std::vector<Sample> Solve::draw_roots(const StateSet& s, const std::vector<Sampl
   return out;
 }
 
-std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<int> max_steps) {
+std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<int> max_steps, bool whole) {
   const JointSpace& space = *p_.space;
   const SetProjector* projector = p_.path_constraint ? p_.path_constraint->projector() : nullptr;
 
   if (!space.contains(target)) return {tree.nearest(space, target), false};
 
   int current = tree.nearest(space, target);
+  if (whole && !projector && !max_steps && !p_.motion_validator) return grow_whole(tree, current, target);
   int steps = 0;
   double prev_distance = std::numeric_limits<double>::infinity();
 
@@ -290,7 +296,7 @@ std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<in
     distance = std::sqrt(distance);
 
     if (distance == 0.0) return {current, true};  // already there; no duplicate node
-    if (distance < cfg_.connection_tolerance) return extend_along_edge(tree, current, target);
+    if (distance < cfg_.connection_tolerance) return extend_along_edge(tree, current, target, whole);
     if (prev_distance - distance < cfg_.progress_tolerance) break;
     prev_distance = distance;
     if (max_steps && steps >= *max_steps) break;
@@ -307,7 +313,7 @@ std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<in
       if (!space.contains(q_new)) break;  // a projector may move the point anywhere
     }
 
-    const auto [idx, reached] = extend_along_edge(tree, current, q_new);
+    const auto [idx, reached] = extend_along_edge(tree, current, q_new, whole);
     current = idx;
     ++steps;
     if (!reached) break;
@@ -315,7 +321,63 @@ std::pair<int, bool> Solve::grow(Tree& tree, ConfigView target, std::optional<in
   return {current, false};
 }
 
-std::pair<int, bool> Solve::extend_along_edge(Tree& tree, int start_idx, ConfigView target) {
+std::pair<int, bool> Solve::grow_whole(Tree& tree, int current, ConfigView target) {
+  const JointSpace& space = *p_.space;
+  motion_validator();  // creates the default validator
+  const DiscreteMotionValidator& mv = *default_mv_;
+  std::vector<std::vector<Config>> edges;
+  Config q_current = tree.nodes()[static_cast<std::size_t>(current)].q;
+  double prev_distance = std::numeric_limits<double>::infinity();
+  while (true) {
+    const Config direction = space.direction(q_current, target);
+    double distance = 0.0;
+    for (double v : direction) distance += v * v;
+    distance = std::sqrt(distance);
+    if (distance == 0.0) break;
+    const bool final = distance < cfg_.connection_tolerance;
+    Config q_next;
+    if (final) {
+      q_next = to_config(target);
+    } else {
+      if (prev_distance - distance < cfg_.progress_tolerance) return {current, false};
+      prev_distance = distance;
+      const double scale = std::min(distance, cfg_.step_size) / distance;
+      q_next.resize(direction.size());
+      for (std::size_t i = 0; i < q_next.size(); ++i) q_next[i] = q_current[i] + scale * direction[i];
+      if (!space.contains(q_next)) return {current, false};
+    }
+    // extend_along_edge: outside the space fails; a zero-length edge succeeds and adds nothing
+    if (!space.contains(q_next)) return {current, false};
+    if (space.distance(q_current, q_next) != 0.0) {
+      auto configs = mv.samples(q_current, q_next);
+      if (!configs) return {current, false};
+      q_current = configs->back();
+      edges.push_back(std::move(*configs));
+    }
+    if (final) break;
+  }
+  const auto t_edge = Clock::now();
+  stats_.edge_checks += static_cast<long>(edges.size());
+  std::vector<const Config*> states;
+  for (const auto& e : edges) {
+    for (const auto& q : e) states.push_back(&q);
+  }
+  bool ok = true;
+  for (const int k : spread_order(static_cast<int>(states.size()))) {
+    if (!admissible(*states[static_cast<std::size_t>(k)])) {
+      ok = false;
+      break;
+    }
+  }
+  stats_.seconds_edge_checks += std::chrono::duration<double>(Clock::now() - t_edge).count();
+  if (!ok) return {current, false};
+  for (auto& e : edges) {
+    for (auto& q : e) current = tree.add(std::move(q), current);
+  }
+  return {current, true};
+}
+
+std::pair<int, bool> Solve::extend_along_edge(Tree& tree, int start_idx, ConfigView target, bool whole) {
   const JointSpace& space = *p_.space;
   if (!space.contains(target)) return {start_idx, false};
   const Config q_from = tree.nodes()[static_cast<std::size_t>(start_idx)].q;  // copy: tree may reallocate
@@ -323,7 +385,13 @@ std::pair<int, bool> Solve::extend_along_edge(Tree& tree, int start_idx, ConfigV
 
   const MotionValidator& validator = motion_validator();
   const auto t_edge = Clock::now();
-  LocalMotion motion = validator.validate(q_from, target);
+  LocalMotion motion;
+  if (whole) {
+    auto configs = validator.validate_whole(q_from, target);
+    if (configs) motion = LocalMotion{std::move(*configs), true};
+  } else {
+    motion = validator.validate(q_from, target);
+  }
   ++stats_.edge_checks;
   stats_.seconds_edge_checks += std::chrono::duration<double>(Clock::now() - t_edge).count();
 
@@ -503,7 +571,7 @@ std::vector<Config> Solve::windings(const Config& q, const Config& ref) const {
 
 std::optional<std::vector<Config>> Solve::try_shortcut(ConfigView from, ConfigView to) {
   Tree temp(std::vector<Config>{to_config(from)});
-  const auto [idx, reached] = grow(temp, to, std::nullopt);
+  const auto [idx, reached] = grow(temp, to, std::nullopt, /*whole=*/true);  // discarded unless reached (#230)
   if (!reached) return std::nullopt;
   return temp.path_to_root(idx);
 }

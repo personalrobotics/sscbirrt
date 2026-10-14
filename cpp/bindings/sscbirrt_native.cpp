@@ -62,6 +62,16 @@ RampData ramp_data(const trajectory::Ramp& r) {
   return {r.x0, r.v0, std::move(segs)};
 }
 
+trajectory::Piece piece_from_data(const PieceData& data) {
+  trajectory::Piece p{{}, data.first};
+  for (const auto& [x0, v0, segs] : data.second) {
+    trajectory::Ramp r{x0, v0, {}};
+    for (const auto& [d, a] : segs) r.segments.push_back({d, a});
+    p.ramps.push_back(std::move(r));
+  }
+  return p;
+}
+
 PieceData piece_data(const trajectory::Piece& p) {
   std::vector<RampData> ramps;
   ramps.reserve(p.ramps.size());
@@ -78,6 +88,7 @@ PYBIND11_MODULE(_native, m) {
   static py::exception<UnsupportedCapability> exc_unsupported(m, "UnsupportedCapability", PyExc_TypeError);
   static py::exception<ContractError> exc_contract(m, "ContractError", PyExc_ValueError);
   static py::exception<NoRoots> exc_noroots(m, "NoRoots", PyExc_RuntimeError);
+  static py::exception<MalformedTrajectory> exc_malformed(m, "MalformedTrajectory", PyExc_ValueError);
   py::register_exception_translator([](std::exception_ptr p) {
     try {
       if (p) std::rethrow_exception(p);
@@ -186,6 +197,7 @@ PYBIND11_MODULE(_native, m) {
 
   // ----- validation (#230) ---------------------------------------------------------------------
   m.attr("__version__") = version();
+  m.def("spread_order", &spread_order, py::arg("n"), "Van der Corput visiting order of n states (sscbirrt.validation).");
   py::class_<ValidationPolicy>(m, "ValidationPolicy")
       .def(py::init([](double resolution) {
              ValidationPolicy p{resolution};
@@ -201,6 +213,7 @@ PYBIND11_MODULE(_native, m) {
       .def_readonly("configuration", &InvalidWitness::configuration)
       .def_readonly("segment", &InvalidWitness::segment)
       .def_readonly("fraction", &InvalidWitness::fraction)
+      .def_readonly("time_s", &InvalidWitness::time_s)
       .def_readonly("contacts", &InvalidWitness::contacts)
       .def_readonly("constraint", &InvalidWitness::constraint)
       .def_readonly("detail", &InvalidWitness::detail);
@@ -211,7 +224,8 @@ PYBIND11_MODULE(_native, m) {
       .def_readonly("checks", &ValidationReport::checks)
       .def_readonly("policy", &ValidationReport::policy)
       .def_readonly("implementation", &ValidationReport::implementation)
-      .def_readonly("witness", &ValidationReport::witness);
+      .def_readonly("witness", &ValidationReport::witness)
+      .def_readonly("duration_s", &ValidationReport::duration_s);
   py::class_<Validator>(m, "Validator")
       .def(py::init<std::shared_ptr<const JointSpace>, std::shared_ptr<const StateValidator>,
                     std::shared_ptr<const StateSet>, ValidationPolicy>(),
@@ -223,6 +237,16 @@ PYBIND11_MODULE(_native, m) {
       .def("validate_motion", [](const Validator& v, const Config& a, const Config& b) { return v.validate_motion(a, b); },
            py::call_guard<py::gil_scoped_release>())
       .def("validate_path", &Validator::validate_path, py::call_guard<py::gil_scoped_release>())
+      .def(
+          "validate_trajectory",
+          [](const Validator& v, const std::vector<PieceData>& pieces, const std::vector<double>& vmax,
+             const std::vector<double>& amax, std::optional<std::vector<Config>> path) {
+            trajectory::Trajectory traj{{}, vmax, amax, path.value_or(std::vector<Config>{})};
+            for (const auto& p : pieces) traj.pieces.push_back(piece_from_data(p));
+            return v.validate_trajectory(traj);
+          },
+          py::arg("pieces"), py::arg("vmax"), py::arg("amax"), py::arg("path") = std::nullopt,
+          py::call_guard<py::gil_scoped_release>(), "Pieces as smooth_trajectory returns them; path: the source path.")
       .def_property_readonly("policy", &Validator::policy);
 
   // ----- problem, config, cancellation --------------------------------------------------------

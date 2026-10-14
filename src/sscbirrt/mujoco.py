@@ -38,7 +38,7 @@ from sscbirrt.planner import CBiRRT, PlanResult, as_configurations
 from sscbirrt.sets import StateSet
 from sscbirrt.trajectory import TrajectoryOptions
 
-__all__ = ["Arm", "plan"]
+__all__ = ["Arm", "plan", "validator"]
 
 
 def _pose(xpos: np.ndarray, xmat: np.ndarray) -> np.ndarray:
@@ -228,6 +228,40 @@ def plan(
         A ``PlanResult``: ``success``, ``path``, ``failure_reason``, which member of each set was used
         (``start_index``, ``goal_index``), ``backend``, and provenance.
     """
+    planner, problem = _setup(model, data, arm, start, goal, constraint, holding, config, backend, extra_arm_bodies)
+    result = planner.solve(problem, seed=seed, trajectory=trajectory)
+    if result.trajectory is not None:
+        result.trajectory.joint_names = tuple(arm.joints)
+    return result
+
+
+def validator(
+    model: mujoco.MjModel,
+    data: mujoco.MjData,
+    arm: Arm,
+    *,
+    constraint=None,
+    holding: str | Sequence[str] | dict | None = None,
+    config: CBiRRTConfig | None = None,
+    backend: str = "auto",
+    extra_arm_bodies: Sequence[str] = (),
+):
+    """The ``sscbirrt.Validator`` that ``plan`` with these arguments applies (#230), for checking a returned path or
+    trajectory: ``validator(...).validate_path(result.path)`` equals ``result.validation``, and
+    ``validate_trajectory(result.trajectory)`` equals ``result.trajectory.validation``.
+
+    The scene is the world ``data`` holds now, as for ``plan``; the report's provenance (``snapshot_sha256``) shows
+    whether it is the world the plan was made in.
+    """
+    from sscbirrt.validation import Validator
+
+    here = arm.configuration(data)
+    planner, problem = _setup(model, data, arm, here, here, constraint, holding, config, "python", extra_arm_bodies)
+    return Validator.for_problem(problem, planner.config, backend=backend)
+
+
+def _setup(model, data, arm, start, goal, constraint, holding, config, backend, extra_arm_bodies):
+    """The planner and problem ``plan`` solves: the native MuJoCo scene of ``data`` now, the arm's space, the roles."""
     if not isinstance(arm, Arm):
         raise TypeError(f"arm must be an sscbirrt.mujoco.Arm, got {type(arm).__name__}")
     if arm.model is not model:
@@ -256,7 +290,4 @@ def plan(
     )  # fmt: skip
     overrides = {"start": start_set, "goal": goal_set, "path_constraint": constraint_set}
     problem = dataclasses.replace(problem, **{k: v for k, v in overrides.items() if v is not None})
-    result = planner.solve(problem, seed=seed, trajectory=trajectory)
-    if result.trajectory is not None:
-        result.trajectory.joint_names = tuple(arm.joints)
-    return result
+    return planner, problem

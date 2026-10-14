@@ -24,9 +24,12 @@ does not make the whole trajectory globally time-optimal. Every ramp is verified
 that built it (endpoints, acceleration and velocity bounds), so a mistake in the algebra can only reject a
 shortcut, never admit an invalid one.
 
-Validation is a record. Each piece says how its geometry was checked: ``"planned"`` (the planner's own edge) or
-``"shortcut"`` (samples at most the planner's resolution apart, each admissible, every chord accepted by the
-problem's motion validator). Nothing is claimed about torque, contact, tracking error or jerk.
+Validation is the public validator's (#230). The smoother accepts a shortcut only if the new piece and every piece
+the splice cuts pass ``sscbirrt.validation.Validator``'s trajectory rule, so the trajectory it returns passes
+``validate_trajectory``, whose report is ``Trajectory.validation``. Each piece still records where it came from:
+``"planned"`` (along the path) or ``"shortcut"``. With a custom motion validator the problem owns its motions, so
+shortcuts go through it chord by chord, as before, and there is no report. Nothing is claimed about torque, contact,
+tracking error or jerk.
 """
 
 from __future__ import annotations
@@ -341,6 +344,9 @@ class Trajectory:
     backend: str = "python"  # which implementation smoothed it, "python" or "native"
     backend_reasons: tuple[str, ...] = ()  # with backend="auto", why native was not used
     stopped: str = ""  # "converged", "iterations", "patience", "time_budget" or "aborted"
+    # The validated path it was timed from (#230): pieces along it are validated at its own states.
+    path: list[np.ndarray] | None = field(default=None, repr=False)
+    validation: Any = field(default=None, repr=False)  # its ValidationReport (sscbirrt.validation)
 
     @property
     def start(self) -> tuple[np.ndarray, np.ndarray]:
@@ -391,7 +397,9 @@ class Trajectory:
         head = self.pieces[:i1] + [self.pieces[i1].split(tau1)[0]]
         tail = [self.pieces[i2].split(tau2)[1]] + self.pieces[i2 + 1 :]
         pieces = [p for p in head + [piece] + tail if p.duration > _EPS_T]
-        return Trajectory(pieces, self.velocity_limits, self.acceleration_limits, self.law, self.diagnostics)
+        out = Trajectory(pieces, self.velocity_limits, self.acceleration_limits, self.law, self.diagnostics)
+        out.path = self.path
+        return out
 
     def sample(self, dt_ns: int) -> tuple[list[int], np.ndarray]:
         """A runtime command: integer-nanosecond times from 0 every ``dt_ns``, ending exactly at the duration
@@ -493,6 +501,33 @@ def validate_samples(points: np.ndarray, motion_validator: Any, admissible: Admi
     return None
 
 
+def accepts(traj: Trajectory, t1: float, t2: float, piece: Piece, validator: Any, vmax, evidence) -> str | None:
+    """Why splicing ``piece`` into ``[t1, t2]`` is refused, or ``None``: its start state, the new piece, then the two
+    pieces the splice cuts, each through ``validator.check_piece``. Every piece of the result is then one the
+    trajectory rule accepted as it stands.
+
+    The new piece goes first because most candidates fail there, and its states are visited in van der Corput
+    order, which reaches an obstacle sooner; only the verdict is needed (``first=False``). A cut piece that
+    still lies on the source path is not re-checked: its states are the path's (valid when the path is) and the cut
+    point, which this call checks as the new piece's start or end. Any other cut piece gets a new time grid, so it is
+    checked."""
+    witness = validator._witness(piece.state(0.0)[0], None, None, None)
+    if witness is not None:
+        return f"start: {witness.failure} ({witness.detail})"
+    i1, tau1 = traj._locate(t1)
+    i2, tau2 = traj._locate(t2)
+    parts = (("shortcut", piece), ("before", traj.pieces[i1].split(tau1)[0]), ("after", traj.pieces[i2].split(tau2)[1]))
+    for name, part in parts:
+        if part.duration <= _EPS_T:
+            continue
+        if name != "shortcut" and evidence is not None and evidence.straight_span(part) is not None:
+            continue
+        _, witness = validator.check_piece(part, 0, 0.0, vmax, evidence, first=False)
+        if witness is not None:
+            return f"{name}: {witness.failure} ({witness.detail})"
+    return None
+
+
 def piece_samples(piece: Piece, resolution: float, vmax: np.ndarray) -> np.ndarray:
     """Positions along ``piece`` no farther apart than ``resolution`` in joint space: the joint-space speed is at
     most ``|vmax|``, so a time step of ``resolution / |vmax|`` bounds every chord."""
@@ -551,12 +586,22 @@ def shortcut(
     options: TrajectoryOptions,
     seed: int = 0,
     abort_fn: Callable[[], bool] | None = None,
+    validator: Any = None,
 ) -> Trajectory:
     """Randomized time-optimized shortcuts: replace ``[t1, t2]`` by the synchronized time-optimal interpolant between
     the states there when it is faster and admissible under the planning problem's boundary. Deterministic for a
-    seed unless a ``time_budget`` or ``abort_fn`` stops it. The reference for the native core."""
+    seed unless a ``time_budget`` or ``abort_fn`` stops it. The reference for the native core.
+
+    With ``validator`` (``sscbirrt.validation.Validator``), a shortcut is accepted only if its start state and every
+    piece the splice creates pass the validator's trajectory rule (``accepts``); otherwise its samples go through
+    ``motion_validator`` and ``admissible``, the rule for a problem with a custom motion validator."""
     rng = np.random.default_rng(seed)
     vmax, amax = traj.velocity_limits, traj.acceleration_limits
+    evidence = None
+    if validator is not None and traj.path is not None:
+        from sscbirrt.validation import PathEvidence
+
+        evidence = PathEvidence(traj.path, validator.policy.resolution)
     attempts: list[dict[str, Any]] = []
     history = [traj.duration]  # duration after each number of attempts
     started, since_gain, stopped = time.perf_counter(), 0, "iterations"
@@ -596,7 +641,10 @@ def shortcut(
         if gain <= 1e-9:
             record["rejected"] = "not faster"
             continue
-        why = validate_samples(piece_samples(piece, resolution, vmax), motion_validator, admissible)
+        if validator is not None:
+            why = accepts(traj, float(t1), float(t2), Piece(piece.ramps, "shortcut"), validator, vmax, evidence)
+        else:
+            why = validate_samples(piece_samples(piece, resolution, vmax), motion_validator, admissible)
         if why is not None:
             record["rejected"] = why
             continue

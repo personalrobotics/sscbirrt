@@ -305,6 +305,27 @@ if not report.valid:
 - **Malformed input raises.** A wrong-length or non-finite configuration, or
   an empty path, raises `ValueError` rather than being checked more weakly.
 
+**Timed trajectories.** `validator.validate_trajectory(result.trajectory)`
+checks a trajectory's whole law, not its knots, and equals
+`result.trajectory.validation`.
+- **Pieces along the source path.** A piece whose trace lies on the path the
+  trajectory was timed from (`Trajectory.path`) is checked at that path's
+  own states within its span. That is the one place earlier evidence is
+  reused, and only once the piece is shown numerically to retrace the path.
+- **Every other piece** is checked at time steps short enough that no
+  joint-space step exceeds the resolution under the trajectory's velocity
+  limits.
+- **Position limits** are checked exactly, at every ramp's turning point.
+- **The witness** gives the piece (`segment`) and `time_s`.
+- **Malformed trajectories raise.** A trajectory that breaks its own
+  invariants (continuity, its velocity or acceleration limits, rest at both
+  ends) raises `MalformedTrajectory`, a `ValueError`.
+
+**For a MuJoCo plan,** `sscbirrt.mujoco.validator(model, data, arm,
+holding=..., constraint=..., config=...)`, called with `plan`'s arguments, is
+the plan's own validator. The report's `snapshot_sha256` shows whether
+`data` still holds the world the plan was made in.
+
 ## Timed trajectories for execution
 
 A planned path is a polyline. A robot executing it under finite acceleration
@@ -335,7 +356,7 @@ times a path you already have.
   `evaluate` gives `q`, `qdot` and `qddot` exactly. It records:
   - `joint_names`, `start` and `goal`;
   - the limits it used;
-  - the `resolution` it was validated at;
+  - the `resolution` it was validated at, and its `validation` report;
   - `seed`, `backend` and why it `stopped`;
   - a per-attempt log in `diagnostics`.
 - **A command** (`traj.sample(dt_ns)`): positions every `dt_ns` nanoseconds.
@@ -347,14 +368,13 @@ times a path you already have.
 exactly the planned geometry. It then repeatedly picks two times `t1 < t2`.
 It replaces the motion between them with the fastest motion between the two
 states that respects every joint's limits, with all joints finishing
-together. A replacement is kept only if it is faster and passes the planning
-problem's own checks: samples at most `edge_resolution` apart, each in the
-joint limits, collision-free and inside the path constraint, with the motion
-validator accepting every chord between them. That is the planner's own
-guarantee for an edge, no stronger. Every piece records how it was checked:
-`"planned"` (the planner's edge) or `"shortcut"`. Smoothing never fails: at
-worst you get the path with a stop at every corner. After Hauser and
-Ng-Thow-Hing (ICRA 2010).
+together. A replacement is kept only if it is faster and every piece the splice leaves
+passes the [public validator](#validating-a-path)'s trajectory rule: the new
+motion, and the two pieces it cuts. That is the planner's own guarantee for an
+edge, no stronger, and the returned trajectory is validated whole
+(`traj.validation`). Every piece records where it came from: `"planned"`
+(along the path) or `"shortcut"`. Smoothing never fails: at worst you get the
+path with a stop at every corner. After Hauser and Ng-Thow-Hing (ICRA 2010).
 
 **When it stops.** These are `TrajectoryOptions` defaults, each easy to
 change:
