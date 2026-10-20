@@ -1318,10 +1318,14 @@ class Scene {
 The `mjModel` is shared read-only by every validator built on the scene and
 never written after construction. The Python model that produced the MJB
 may be destroyed or changed afterward; the scene does not observe it
-(#93's first criterion). Any change to the world, structural (a body
-added) or numeric (a geom resized in place), is a new MJB and a new scene;
-the Python side keys its scene cache on the SHA-256 of the MJB bytes and
-reconstructs. `mjModel.signature` is recorded as provenance but is not the
+(#93's first criterion). The Python side caches scenes per model object,
+held by weak reference, and across objects by the SHA-256 of the MJB bytes.
+The first `from_model` on a model object exports and hashes its MJB; a
+repeated call returns the cached scene without inspecting the model (#243),
+so the model is treated as immutable after first use. A change to the world,
+structural (a body added) or numeric (a geom resized in place), reaches the
+planner through `refresh=True` or a new model object, which is a new MJB and
+a new scene. `mjModel.signature` is recorded as provenance but is not a
 key: it hashes structure only, and a geom resized in place keeps its
 signature (verified on 3.14.0). Limits follow the rule of
 #107: an unlimited joint is `±infinity` and the planner's `JointSpace`
@@ -1431,7 +1435,7 @@ bounded by `step_size / edge_resolution` collision queries.
 ```python
 from sscbirrt.backends.native_mujoco import NativeScene, Snapshot, NativeCollisionChecker, plan_native
 
-scene = NativeScene.from_model(model, joint_names, extra_arm_bodies=[...])     # exports MJB once; caches by signature
+scene = NativeScene.from_model(model, joint_names, extra_arm_bodies=[...])     # exports MJB once per model object; caches by MJB hash
 snap = Snapshot.capture(scene, data, attachments={obj: (gripper_body, T)})    # on the MuJoCo owner thread
 checker = NativeCollisionChecker(scene, snap)                                 # a sscbirrt CollisionChecker
 ```

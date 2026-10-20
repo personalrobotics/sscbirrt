@@ -6,6 +6,15 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- `NativeScene.from_model` caches per model object (#243). A repeated call with the same model object, joints and
+  extra bodies returns the cached scene without exporting or hashing the model, so a cache hit no longer costs
+  a full MJB export and SHA-256 per call.
+  - The model is captured on first use and later in-place edits are not seen. After an intentional edit, pass
+    `refresh=True` (new) or a new model object. `sscbirrt.mujoco.plan` and `validator` inherit this.
+  - The cache holds models by weak reference, so an entry dies with its model. A new model object is still
+    exported and hashed in full, and objects with the same content share a scene; `mjb_sha256` is unchanged.
+
 ## [3.9.0] - 2026-10-14
 
 `planner.validator(constraint_tsrs=...)` returns the validator a

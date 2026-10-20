@@ -821,7 +821,7 @@ the planner owns:
 ```python
 from sscbirrt.backends.native_mujoco import NativeScene, Snapshot, NativeCollisionChecker
 
-scene = NativeScene.from_model(model, joint_names)              # an owned mjModel from the compiled model's MJB bytes
+scene = NativeScene.from_model(model, joint_names)              # an owned mjModel from the compiled model's MJB bytes, cached per model
 snap = Snapshot.capture(scene, data, attachments={"can": ("robot/gripper/base", T_gripper_can)})
 checker = NativeCollisionChecker(scene, snap)                   # a CollisionChecker for either backend
 ```
@@ -829,6 +829,12 @@ checker = NativeCollisionChecker(scene, snap)                   # a CollisionChe
 `sscbirrt.mujoco.plan` builds the scene, the snapshot, and the checker for
 you. `plan_native(model, data, joint_names, ...)` in this module did the same
 before 3.1.0 and is deprecated.
+
+The scene captures the model on first use and does not see later in-place
+edits: treat an `MjModel` as immutable once a scene is built from it, and
+after an intentional edit call `NativeScene.from_model(..., refresh=True)` or
+pass a new model object. A repeated call with the same model object returns
+the cached scene without exporting the model.
 
 The snapshot is a value: `qpos`, mocap poses, and attachments copied at capture,
 so later changes to `data` do not reach a running solve. Downstream integration

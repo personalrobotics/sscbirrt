@@ -13,7 +13,7 @@ caller must keep.
 
 | Today, in `Arm.create_planner` | On the boundary |
 |---|---|
-| `self.env.fork()` for an isolated `MjData` | `NativeScene.from_model(model, joint_names, extra_arm_bodies)`: an `mjModel` sscbirrt owns, built once from the compiled model's MJB bytes and cached by their hash; nothing borrows the live model. |
+| `self.env.fork()` for an isolated `MjData` | `NativeScene.from_model(model, joint_names, extra_arm_bodies)`: an `mjModel` sscbirrt owns, built once from the compiled model's MJB bytes and cached per model object and by their hash; nothing borrows the live model. |
 | `ContextRobotModel(model, data, ...)` | `MuJoCoRobotModel(model, data, ee_site, joint_names)`, or nothing: `sscbirrt.mujoco.Arm(model, joint_names, ee_site, mjcf=...)` builds it, with the SSIK solver. Its forward kinematics must agree with the SSIK model's; lowering checks that at the start configurations and refuses with a reason if they differ by more than 1e-6. |
 | `CollisionChecker(model, data, joint_names, grasped_objects=..., attachments=..., extra_arm_body_names=...)` in snapshot mode | `Snapshot.capture(scene, data, attachments={object: (gripper_body, T_gripper_object)})` on the owner thread, then `NativeCollisionChecker(scene, snapshot)`. The gripper-base rule (`<prefix>/base` when it exists, else the attachment body) is resolved to body ids at capture. |
 | `continuous_joints(model, joint_names)` | Unchanged: `CBiRRTConfig(continuous_joints=...)`. Unlimited joints are reported as ±∞ by both robot models and the space demands the declaration. |
@@ -48,11 +48,13 @@ first criterion), and it does not own the simulator or its threads.
 1. **Capture on the owner thread.** `Snapshot.capture` reads `qpos`, mocap
    poses, and computes attachment transforms from `data`; it must see a
    consistent world. After capture the solve is independent of `data`.
-2. **Rebuild the scene after a structural change.** `NativeScene.from_model`
-   caches by the MJB hash, so any change to the model, structural or numeric,
-   yields a new scene on the next call; a cached scene never goes stale
-   silently. `mjModel.signature` alone is not a safe key (it hashes structure
-   only).
+2. **Treat the model as immutable after first use.** `NativeScene.from_model`
+   captures the model the first time it sees that object and returns the
+   cached scene for it afterward without inspecting it, so an in-place edit,
+   structural or numeric, is not seen. After an intentional edit, pass
+   `refresh=True` or a new model object; either exports and hashes the MJB
+   again. A new model object with the same content shares the scene.
+   `mjModel.signature` is not a safe key (it hashes structure only).
 3. **Revalidate before executing.** The path was valid against the snapshot.
    Capture a fresh snapshot before execution and compare `sha256`; if it
    differs, run the path (or at least its executable prefix) through a

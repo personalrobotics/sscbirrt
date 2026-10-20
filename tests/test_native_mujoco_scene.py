@@ -56,21 +56,53 @@ class TestScene:
         lo, hi = scene.joint_limits
         assert (lo[0], hi[0]) == (-2.0, 2.0) and lo[1] == -np.inf and hi[1] == np.inf
 
-    def test_scene_is_cached_by_content_and_survives_the_source_model(self, model):
+    def test_scene_is_captured_per_model_and_survives_it(self, model):
+        def valid(scene, q=(0.0, 0.0)):
+            data = mujoco.MjData(mujoco.MjModel.from_xml_string(XML))
+            data.qpos[:2] = q
+            snap = native_mujoco.Snapshot.capture(scene, data)
+            return native_mujoco.NativeCollisionChecker(scene, snap).is_valid(np.array(q))
+
         a = native_mujoco.NativeScene.from_model(model, JOINTS)
-        b = native_mujoco.NativeScene.from_model(model, JOINTS)
-        assert a is b
+        assert native_mujoco.NativeScene.from_model(model, JOINTS) is a and valid(a)
         sig = model.signature
-        # A numeric change in place: MuJoCo's signature does not see it, the MJB hash does.
-        model.geom_size[model.body_geomadr[model.body("can").id]][0] = 0.04
+        # A numeric change in place that grows the can into the gripper (with the bounds MuJoCo's broad phase
+        # reads). MuJoCo's signature does not see it.
+        can = model.body_geomadr[model.body("can").id]
+        model.geom_size[can], model.geom_aabb[can] = [0.2, 0.12, 0], [0, 0, 0, 0.2, 0.2, 0.12]
+        model.geom_rbound[can] = np.hypot(0.2, 0.12)
         assert model.signature == sig
-        c = native_mujoco.NativeScene.from_model(model, JOINTS)
-        assert c is not a and c.provenance["mjb_sha256"] != a.provenance["mjb_sha256"]
+        # The model was captured on first use: without refresh the edit is not seen.
+        assert native_mujoco.NativeScene.from_model(model, JOINTS) is a and valid(a)
+        c = native_mujoco.NativeScene.from_model(model, JOINTS, refresh=True)
+        assert c is not a and c.provenance["mjb_sha256"] != a.provenance["mjb_sha256"] and not valid(c)
+        assert native_mujoco.NativeScene.from_model(model, JOINTS) is c  # the refreshed scene is the cached one
+        # Scene parameters never alias, for the same model or across models.
+        assert native_mujoco.NativeScene.from_model(model, ["j0"]) is not c
+        assert native_mujoco.NativeScene.from_model(model, JOINTS, ["can"]) is not c
+        # A new model object is hashed in full: same content shares the scene, different content never does.
+        assert native_mujoco.NativeScene.from_model(mujoco.MjModel.from_xml_string(XML), JOINTS) is a
         del model
         gc.collect()
         assert a.native.body_id("can") >= 0 and a.provenance["model_signature"] == sig
         other = mujoco.MjModel.from_xml_string(XML.replace('name="can"', 'name="tin"'))  # structural: renamed body
         assert native_mujoco.NativeScene.from_model(other, JOINTS) is not a
+
+    def test_a_dead_models_entry_is_not_inherited_through_id_reuse(self):
+        # CPython reuses a freed object's address, so id(model) repeats; the cache must not. Every model here has
+        # different content, so a reused id must still get a different scene.
+        dead = {}
+        for i in range(50):
+            model = mujoco.MjModel.from_xml_string(XML.replace('pos="0.8 0 0.2"', f'pos="{0.8 + i / 1000} 0 0.2"'))
+            scene = native_mujoco.NativeScene.from_model(model, JOINTS)
+            if id(model) in dead:
+                assert scene is not dead[id(model)]
+                assert scene.provenance["mjb_sha256"] != dead[id(model)].provenance["mjb_sha256"]
+                return
+            dead[id(model)] = scene
+            del model
+            gc.collect()
+        pytest.skip("the interpreter never reused a model's id")
 
     def test_rejections(self, model):
         mod = native_mujoco._load()
