@@ -6,6 +6,11 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.10.0] - 2026-10-20
+
+A repeated `NativeScene.from_model` on the same model object is a cache hit that no longer exports or hashes
+the model (#243): 43.1 ms to 0.0005 ms median on Geodude's 91.5 MB model.
+
 ### Changed
 - `NativeScene.from_model` caches per model object (#243). A repeated call with the same model object, joints and
   extra bodies returns the cached scene without exporting or hashing the model, so a cache hit no longer costs
