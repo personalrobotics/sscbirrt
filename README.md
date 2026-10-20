@@ -13,8 +13,9 @@ follow.
   whole path must stay inside, and a validity predicate. A solution is a path
   that begins in the start set, ends in the goal set, and stays inside the
   path set with every configuration valid. A set is anything that answers
-  `contains(q)`. The algorithm is CBiRRT (Berenson et al., 2009), a
-  bidirectional RRT that grows trees from many roots and projects onto
+  `contains(q)`. The algorithm is CBiRRT
+  ([Berenson, Srinivasa, and Kuffner, 2011](https://personalrobotics.cs.washington.edu/publications/berenson2011task/)),
+  a bidirectional RRT that grows trees from many roots and projects onto
   constraints. Task Space Regions are one representation of a set; the
   planner does not depend on it, and sets you define yourself take the same
   roles.
@@ -966,10 +967,25 @@ The demos are the MuJoCo examples to read: each scenario in
 [`src/sscbirrt/demo/scenarios/`](src/sscbirrt/demo/scenarios/) is one file
 built on `sscbirrt.mujoco`, and `sscbirrt-demo` runs them.
 
-## References
+## Citation
 
-- Berenson, D., Srinivasa, S., Ferguson, D., & Kuffner, J. (2009). [Manipulation planning on constraint manifolds](https://www.ri.cmu.edu/pub_files/2009/5/berenson_icra09_cbirrt.pdf). *ICRA*.
-- Berenson, D., Srinivasa, S., & Kuffner, J. (2011). [Task Space Regions: A framework for pose-constrained manipulation planning](https://www.ri.cmu.edu/pub_files/2011/10/pedestrian_ijrr.pdf). *IJRR*.
+sscbirrt implements the CBiRRT and Task Space Region formulation described in
+[Task Space Regions: A Framework for Pose-Constrained Manipulation
+Planning](https://personalrobotics.cs.washington.edu/publications/berenson2011task/).
+If you use sscbirrt in academic work, please cite:
+
+```bibtex
+@article{berenson2011task,
+  author = {Berenson, D. and Srinivasa, S.S. and Kuffner, J.},
+  title = {{T}ask {S}pace {R}egions: A Framework for Pose-Constrained Manipulation Planning},
+  journal = {The International Journal of Robotics Research},
+  volume = {30},
+  number = {12},
+  pages = {1435--1460},
+  year = {2011},
+  publisher = {SAGE Publications}
+}
+```
 
 ## License
 
