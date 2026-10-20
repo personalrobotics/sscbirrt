@@ -208,6 +208,9 @@ def plan(
 ) -> PlanResult:
     """Plan a collision-free path for ``arm`` in the world ``data`` holds now.
 
+    The collision scene is built from ``model`` on its first use and reused after; treat ``model`` as immutable
+    from then on, and after an intentional edit pass a new model object (see ``NativeScene.from_model``).
+
     Args:
         goal: Where to go: a configuration, configurations, a TSR, TSRs (any of them), or a set.
         start: Where to start, in the same forms; default: the arm's configuration in ``data``.

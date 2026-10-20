@@ -10,6 +10,7 @@ turns a missing module or a version mismatch into ``NativeUnsupported`` with a r
 from __future__ import annotations
 
 import hashlib
+import weakref
 from typing import Any
 
 import numpy as np
@@ -80,14 +81,18 @@ def export_mjb(model) -> bytes:
 class NativeScene:
     """An owned native ``mjModel`` for the controlled joints, built once from a Python model.
 
-    The Python model may be destroyed or mutated afterward; the scene does not observe it. ``from_model``
-    caches by the SHA-256 of the model's MJB bytes, the joint list, and the extra bodies, so any change to
-    the source model, structural or numeric, yields a new scene on the next call. MuJoCo's ``signature``
-    is not the key: it hashes structure only (a geom resized in place keeps its signature), and is
-    recorded as provenance.
+    ``from_model`` captures the compiled model on first use and does not observe later in-place edits:
+    treat an ``MjModel`` as immutable after first use. A repeated call with the same model object, joints
+    and extra bodies returns the same scene without inspecting the model; the cache holds the model by weak
+    reference, so an entry dies with its model and cannot be inherited through object-ID reuse. A model
+    object seen for the first time is exported and its MJB hashed in full, and that SHA-256 is the
+    cross-object key, so two model objects with the same content share a scene. After an intentional edit,
+    pass ``refresh=True`` or a new model object. MuJoCo's ``signature`` is not a key: it hashes structure
+    only (a geom resized in place keeps its signature), and is recorded as provenance.
     """
 
     _cache: dict[tuple, "NativeScene"] = {}
+    _by_model: "weakref.WeakKeyDictionary[Any, dict[tuple, NativeScene]]" = weakref.WeakKeyDictionary()
 
     def __init__(self, native, joint_names: tuple[str, ...], extra_arm_bodies: tuple[str, ...]):
         self.native = native
@@ -95,15 +100,21 @@ class NativeScene:
         self.extra_arm_bodies = extra_arm_bodies
 
     @classmethod
-    def from_model(cls, model, joint_names, extra_arm_bodies=()) -> "NativeScene":
+    def from_model(cls, model, joint_names, extra_arm_bodies=(), *, refresh: bool = False) -> "NativeScene":
+        """The scene for ``model``. ``refresh=True`` re-exports and rehashes the model after an in-place edit."""
         mod = _load()
-        mjb = export_mjb(model)
-        key = (hashlib.sha256(mjb).hexdigest(), tuple(joint_names), tuple(extra_arm_bodies))
-        scene = cls._cache.get(key)
+        params = (tuple(joint_names), tuple(extra_arm_bodies))
+        per_model = cls._by_model.setdefault(model, {})
+        scene = None if refresh else per_model.get(params)
         if scene is None:
-            native = mod.Scene(mjb, list(joint_names), list(extra_arm_bodies), int(model.signature))
-            scene = cls(native, tuple(joint_names), tuple(extra_arm_bodies))
-            cls._cache[key] = scene
+            mjb = export_mjb(model)
+            key = (hashlib.sha256(mjb).hexdigest(), *params)
+            scene = cls._cache.get(key)
+            if scene is None:
+                native = mod.Scene(mjb, list(params[0]), list(params[1]), int(model.signature))
+                scene = cls(native, *params)
+                cls._cache[key] = scene
+            per_model[params] = scene
         return scene
 
     @property
