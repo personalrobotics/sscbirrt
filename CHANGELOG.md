@@ -6,6 +6,18 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- An attachment's allowed bodies now apply against the environment too (#247). A held object's contact with an
+  allowed fixture, or an allowed robot body outside the planned group, is no longer a `robot_environment` collision.
+  - The rule: a contact is ignored iff exactly one contacted body is in attachment A's object subtree and the other
+    is that exact body in A's allowed bodies. Each id is one body; a caller who means a subtree lists it.
+  - Unchanged: the arm's own contacts, the derived gripper-subtree default, the classification of every remaining
+    contact, and fixed `<exclude>` pairs, which stay in the model.
+  - One tightening: a contact between two held objects is now always checked. Before, it was allowed when one
+    object was listed in the other's allowed bodies, which only the private snapshot constructor could express.
+  - Allowances live in the snapshot, so one native scene serves every allowance set; each set has its own
+    `Snapshot.sha256`. Evidence: the `allowances` section of `tests/reference/validation_evidence.json`.
+
 ## [3.10.0] - 2026-10-20
 
 A repeated `NativeScene.from_model` on the same model object is a cache hit that no longer exports or hashes

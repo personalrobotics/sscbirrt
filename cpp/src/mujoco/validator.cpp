@@ -81,18 +81,16 @@ std::vector<InvalidContact> SceneValidator::invalid_contacts(ConfigView q) const
     const int att2 = b2 >= 0 ? attachment_of_body_[static_cast<std::size_t>(b2)] : -1;
     const bool robot1 = arm1 || att1 >= 0, robot2 = arm2 || att2 >= 0;
     if (!robot1 && !robot2) continue;  // environment against environment: ignored
-    if (robot1 && robot2) {
-      // 7. a grasped object touching a body its attachment allows is the grasp itself, not a collision
-      auto allowed = [&](int att, int other) {
-        if (att < 0) return false;
-        const std::vector<int>& ok = snapshot_.attachments[static_cast<std::size_t>(att)].allowed_bodies;
-        return std::binary_search(ok.begin(), ok.end(), other);
-      };
-      if (allowed(att1, b2) || allowed(att2, b1)) continue;
-      out.push_back({b1, b2, g1, g2, c.dist, InvalidContact::Kind::SelfCollision});
-      continue;
-    }
-    out.push_back({b1, b2, g1, g2, c.dist, InvalidContact::Kind::RobotEnvironment});
+    // 7. a held object touching a body its attachment allows (the grasp, a support, a container) is not a collision:
+    // exactly one side is held, and the other side is that exact body, arm or environment. Two held objects are
+    // always checked.
+    auto allowed = [&](int att, int other) {
+      const std::vector<int>& ok = snapshot_.attachments[static_cast<std::size_t>(att)].allowed_bodies;
+      return std::binary_search(ok.begin(), ok.end(), other);
+    };
+    if ((att1 >= 0 && att2 < 0 && allowed(att1, b2)) || (att2 >= 0 && att1 < 0 && allowed(att2, b1))) continue;
+    out.push_back({b1, b2, g1, g2, c.dist,
+                   robot1 && robot2 ? InvalidContact::Kind::SelfCollision : InvalidContact::Kind::RobotEnvironment});
   }
   return out;
 }

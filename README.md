@@ -842,7 +842,13 @@ so later changes to `data` do not reach a running solve. Downstream integration
 is described in [docs/migration-mj-manipulator.md](docs/migration-mj-manipulator.md). The contact policy is
 mj_manipulator's (a grasped object may touch its gripper; everything else that
 touches the robot is a collision) and is checked against it on a checked-in
-corpus. `PlanResult.provenance` records the scene's MJB hash and the snapshot
+corpus. An attachment's allowed bodies may also name environment bodies, such
+as the support a held object is lifted from, the surface it is lowered onto, or
+a container: a held object's contact with an allowed body is ignored whether
+that body is in the arm or the environment. Each allowed body is that exact
+body, not its subtree. The arm's own contacts and contacts between two held
+objects are always checked. Allowances belong to the snapshot, so changing
+them never rebuilds the scene; fixed `<exclude>` pairs stay in the model. `PlanResult.provenance` records the scene's MJB hash and the snapshot
 hash alongside the dependency versions; `PlanResult.stats` breaks the solve's
 cost down by component on both backends.
 
