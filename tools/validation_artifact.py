@@ -102,17 +102,15 @@ ALLOWANCE_CASES = {
 
 def _allowance_snapshot(scene, qpos, held, extra):
     """A snapshot of ``qpos`` holding ``held`` with the gripper's subtree plus ``extra`` allowed."""
-    from sscbirrt.backends import native_mujoco as nm
+    from sscbirrt.backends.native_mujoco import Attachment, Snapshot, gripper_allowed_bodies
 
-    mod, native = nm._load(), scene.native
-    default = nm.gripper_allowed_bodies(scene, GRIPPER)
+    default = gripper_allowed_bodies(scene, GRIPPER)
     attachments = []
     for obj, offset in held.items():
         T = np.eye(4)
         T[:3, 3] = offset
-        allowed = default + [native.body_id(b) for b in extra.get(obj, [])]
-        attachments.append(mod.Attachment(native.body_id(obj), native.body_id(GRIPPER), T.tolist(), allowed))
-    return nm.Snapshot(mod.Snapshot(native, list(map(float, qpos)), [], [], attachments), scene)
+        attachments.append(Attachment(obj, GRIPPER, T, allowed_bodies=[*default, *extra.get(obj, [])]))
+    return Snapshot.from_state(scene, qpos, attachments=attachments)
 
 
 def _allowances() -> dict[str, Any]:

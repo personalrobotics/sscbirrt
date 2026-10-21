@@ -55,6 +55,16 @@ first criterion), and it does not own the simulator or its threads.
    `refresh=True` or a new model object; either exports and hashes the MJB
    again. A new model object with the same content shares the scene.
    `mjModel.signature` is not a safe key (it hashes structure only).
+   Dynamic allowances (a support, a placement surface, a container for one
+   motion phase) belong to the snapshot, not the model: build them with the
+   public `Attachment(object_body, gripper_body, T_gripper_object,
+   allowed_bodies=...)` and `Snapshot.capture(scene, data, [attachment])` or
+   `Snapshot.from_state(scene, qpos, mocap_pos, mocap_quat, [attachment])`
+   (#206). Code that built `sscbirrt._native_mujoco.Attachment` and
+   `_native_mujoco.Snapshot` through `native_mujoco._load()` should switch to
+   these: pass the same body ids (or names) as `allowed_bodies`, and the
+   snapshot and its `sha256` are the same. Each body is exact; list a subtree
+   to allow it.
 3. **Revalidate before executing.** The path was valid against the snapshot.
    Capture a fresh snapshot before execution and compare `sha256`; if it
    differs, run the path (or at least its executable prefix) through a
