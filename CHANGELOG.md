@@ -6,6 +6,12 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.11.0] - 2026-10-20
+
+Dynamic contact allowances belong to the snapshot: an attachment's allowed bodies apply against fixtures and
+stationary robot bodies too (#247), and a public `Attachment` and `Snapshot.from_state` declare them exactly (#206).
+One model and native scene can then serve every allowance set.
+
 ### Added
 - Public snapshot construction with explicit allowed bodies (#206), so integrations need no `_native_mujoco` or
   `native_mujoco._load()`.
