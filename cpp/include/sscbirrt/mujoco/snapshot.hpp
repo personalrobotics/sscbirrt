@@ -10,13 +10,15 @@
 
 namespace sscbirrt::mujoco {
 
-// A grasped object: its body (whose first joint is free) rides on the gripper body at a fixed offset,
-// and contacts between its subtree and allowed_bodies are not collisions.
+// A grasped object: its body (whose first joint is free) rides on the gripper body at a fixed offset.
+// A contact between its subtree and a body in allowed_bodies is not a collision, whether that body is in the arm
+// or the environment (a support, a surface, a container), unless it is another held object. Each id is that exact
+// body, not its subtree. Allowances belong to the snapshot; the scene's model keeps its fixed <exclude> pairs.
 struct Attachment {
   int object_body = -1;
   int gripper_body = -1;
   Transform T_gripper_object = Transform::identity();
-  std::vector<int> allowed_bodies;  // resolved in Python from mj_manipulator's gripper-base rule; sorted, unique
+  std::vector<int> allowed_bodies;  // exact body ids; sorted and deduplicated by Snapshot::validate
 };
 
 // Everything a geometric query reads from the live world at one instant, by value. No velocities,

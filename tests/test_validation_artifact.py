@@ -51,3 +51,35 @@ def test_the_geodude_edge_evidence_is_consistent():
     assert rec["this_validator"]["native"]["trajectory"]["valid"]  # ... and so does this one: the policy (#222)
     planned = e["planned_with_this_sscbirrt"]
     assert planned["planning_equals_public"] and planned["smoother_rerun_reproduces_trajectory"]
+
+
+# #247's rule, stated per case: whether each snapshot's state is valid, and the disallowed pairs in MuJoCo's order.
+# The pairs cover both orderings: the held can first against the box table, second against the sphere post.
+TABLE = [("can", "table", "robot_environment")]
+POST = [("post", "can", "robot_environment")]
+OTHER = [("can", "other/link", "robot_environment")]
+EXPECTED_247 = {
+    "can_on_table": {"strict": TABLE, "table": [], "strict_again": TABLE},
+    "can_on_post": {"strict": POST, "table": POST, "post": []},  # allowing the table does not allow the post
+    "can_on_stationary_robot": {"strict": OTHER, "other": []},
+    "arm_on_table": {k: [("table", "arm/gripper/base", "robot_environment")] for k in ("strict", "table")},
+    "held_on_held": {k: [("can", "box2", "self_collision")] for k in ("strict", "each_other")},
+    "excluded_pair": {"strict": [], "bin": []},
+    "crate_not_excluded": {k: [("arm/link", "crate", "robot_environment")] for k in ("strict", "crate")},
+}
+
+
+def test_the_evidence_shows_what_247_asks():
+    a = json.loads(tool.ARTIFACT.read_text())
+    view = tool._allowance_view(a["allowances"])
+    assert view["one_scene_provenance"]  # every snapshot is checked against one native scene
+    for name, expected in EXPECTED_247.items():
+        verdicts = view[name]["verdicts"]
+        assert list(verdicts) == list(expected), name
+        for label, pairs in expected.items():
+            for backend in ("python", "native"):
+                got = verdicts[label][backend]
+                assert got == {"valid": not pairs, "contacts": [list(p) for p in pairs]}, (name, label, backend)
+    # Snapshots that differ only in their allowances differ in hash; the same allowances give the same hash.
+    assert view["can_on_table"]["same_hash"] == [["strict", "strict_again"], ["table"]]
+    assert all(len(group) == 1 for name in EXPECTED_247 if name != "can_on_table" for group in view[name]["same_hash"])

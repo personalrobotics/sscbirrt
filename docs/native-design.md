@@ -1338,7 +1338,7 @@ struct Attachment {
   int object_body;                 // must have a free joint (mjJNT_FREE) as its first joint
   int gripper_body;                // the body the object is attached to
   Transform T_gripper_object;      // recorded at grasp time
-  std::vector<int> allowed_bodies; // bodies whose contacts with the object's subtree are allowed
+  std::vector<int> allowed_bodies; // exact bodies whose contacts with the object's subtree are allowed (#247)
 };
 
 struct Snapshot {
@@ -1368,6 +1368,20 @@ attachment body itself. That name rule stays in Python, in
 `Snapshot.capture`, which resolves it to body ids; the native side applies
 sets, not names. The rule is therefore in one place and can change without
 touching C++.
+
+An allowed body need not be in the arm (#247): a held object may be allowed
+to touch a fixture, or a robot body outside the planned group, for one motion
+phase (the support it is lifted from, the surface it is lowered onto, the
+container it is moved into). Each id denotes that exact body; a caller that
+means a subtree lists the subtree. Static geoms declared directly in
+`<worldbody>` all belong to body 0, so allowing body 0 allows every one of
+them; a fixture that should be allowed on its own needs its own body.
+
+Ownership is split by lifetime. The compiled model, and therefore the
+scene, owns geometry and the fixed description-level `<exclude>` pairs; a
+snapshot owns joint and mocap state, attachments, and each attachment's
+allowed bodies. A new allowance set is a new snapshot with a new `sha256`
+over the same scene, never a new model.
 
 ## Validation semantics
 
@@ -1401,9 +1415,11 @@ step (#84's pipeline):
    (`geom_bodyid`). Let *arm* be the scene's arm bodies and *grasped* the
    union of the attachments' object subtrees; *robot* is either.
    - Neither body robot: ignored.
-   - Both robot: allowed if one is grasped and the other is in that
-     attachment's `allowed_bodies`; otherwise a **self-collision**.
-   - Exactly one robot: a **robot-environment** collision.
+   - Exactly one body grasped (in attachment *A*'s object subtree) and the
+     other body, arm or environment, in *A*'s `allowed_bodies`: allowed
+     (#247). Two grasped bodies are always checked, whatever the lists say.
+   - Otherwise, both robot: a **self-collision**; exactly one robot: a
+     **robot-environment** collision.
    The configuration is valid iff no contact is invalid.
 
 Every contact MuJoCo generates counts, including margin-inflated ones with
