@@ -3509,7 +3509,7 @@
  "versions": {
   "numpy": "2.4.6",
   "python": "3.12.12",
-  "sscbirrt": "3.10.0",
+  "sscbirrt": "3.11.0",
   "sstsr": "3.5.0"
  }
 }
