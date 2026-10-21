@@ -167,6 +167,114 @@ class TestSnapshot:
         assert native_mujoco.Snapshot.capture(scene, d2).sha256 != a.sha256
 
 
+FINGER, BASE = "robot/gripper/finger", "robot/gripper/base"
+
+
+class TestPublicConstruction:
+    """#206: snapshots with explicit allowed bodies through the public API; malformed input is refused at ingress."""
+
+    @pytest.fixture
+    def scene(self, model):
+        return native_mujoco.NativeScene.from_model(model, JOINTS)
+
+    @staticmethod
+    def _state(model):
+        data = mujoco.MjData(model)
+        data.qpos[:2] = [0.4, -0.3]
+        data.mocap_pos[0] = [0.5, 0.5, 0.5]
+        return data
+
+    def _snap(self, scene, model, allowed, **kw):
+        data = self._state(model)
+        att = native_mujoco.Attachment("can", FINGER, np.eye(4), allowed_bodies=allowed)  # the can on the finger
+        return native_mujoco.Snapshot.from_state(scene, data.qpos, data.mocap_pos, data.mocap_quat, [att], **kw)
+
+    def test_none_empty_and_explicit_allowed_bodies_mean_three_things(self, scene, model):
+        # The can, held on the finger, contains the finger (no contact) and touches the gripper base and link1's end.
+        q = np.array([0.4, -0.3])
+
+        def touching(snapshot):
+            contacts = native_mujoco.NativeCollisionChecker(scene, snapshot).invalid_contacts(q)
+            assert {c["kind"] for c in contacts} <= {"self_collision"}
+            return {c["body1"] if c["body2"] == "can" else c["body2"] for c in contacts}
+
+        derived = self._snap(scene, model, None)
+        legacy = native_mujoco.Snapshot.capture(scene, self._state(model), {"can": (FINGER, np.eye(4))})
+        assert derived.sha256 == legacy.sha256  # None is the existing derived gripper-subtree rule
+        assert touching(derived) == {"robot/link1"}
+        assert touching(self._snap(scene, model, ())) == {"robot/link1", BASE}  # () allows nothing
+        # Exact bodies, not subtrees: link1 alone leaves the base; link1 and the base make the state valid.
+        assert touching(self._snap(scene, model, ["robot/link1"])) == {BASE}
+        assert touching(self._snap(scene, model, ["robot/link1", BASE])) == set()
+        assert self._snap(scene, model, [FINGER, BASE]).sha256 == derived.sha256
+
+    @settings(max_examples=25, deadline=None)
+    @given(st.permutations([FINGER, BASE, "robot/link1", "world"]), st.lists(st.booleans(), min_size=4, max_size=4))
+    def test_names_ids_order_and_duplicates_give_one_snapshot(self, order, as_id):
+        model = mujoco.MjModel.from_xml_string(XML)
+        scene = native_mujoco.NativeScene.from_model(model, JOINTS)
+        refs = [scene.native.body_id(b) if i else b for b, i in zip(order, as_id)]
+        canonical = self._snap(scene, model, [BASE, FINGER, "robot/link1", "world"])
+        assert self._snap(scene, model, refs + refs[:2]).sha256 == canonical.sha256
+        assert self._snap(scene, model, refs[:3]).sha256 != canonical.sha256
+
+    def test_capture_and_from_state_give_the_same_snapshot_and_decisions(self, scene, model):
+        data = self._state(model)
+        atts = [native_mujoco.Attachment("can", FINGER, np.eye(4), allowed_bodies=[FINGER])]
+        a = native_mujoco.Snapshot.capture(scene, data, atts)
+        b = native_mujoco.Snapshot.from_state(
+            scene, data.qpos.copy(), data.mocap_pos.copy(), data.mocap_quat.copy(), atts
+        )
+        assert a.sha256 == b.sha256
+        ca, cb = native_mujoco.NativeCollisionChecker(scene, a), native_mujoco.NativeCollisionChecker(scene, b)
+        for q in ([0.4, -0.3], [0.0, 0.0], [1.5, 1.0], [-1.0, -2.5]):
+            assert ca.is_valid(np.array(q)) == cb.is_valid(np.array(q))
+            assert ca.invalid_contacts(np.array(q)) == cb.invalid_contacts(np.array(q))
+
+    def test_malformed_input_is_refused_naming_the_field(self, scene, model):
+        A, eye = native_mujoco.Attachment, np.eye(4)
+        data = self._state(model)
+
+        def snap(atts=None, qpos=data.qpos, mocap_pos=data.mocap_pos, mocap_quat=data.mocap_quat):
+            return native_mujoco.Snapshot.from_state(scene, qpos, mocap_pos, mocap_quat, atts)
+
+        scaled = np.diag([2.0, 1.0, 1.0, 1.0])
+        cases = [
+            (lambda: A("can", FINGER, eye, allowed_bodies=BASE), TypeError, "allowed_bodies"),
+            (lambda: A("can", FINGER, eye, allowed_bodies={BASE: 1}), TypeError, "allowed_bodies"),
+            (lambda: A("can", FINGER, eye, allowed_bodies=[BASE, True]), TypeError, r"allowed_bodies\[1\]"),
+            (lambda: A("can", FINGER, eye, allowed_bodies=[1.0]), TypeError, r"allowed_bodies\[0\]"),
+            (lambda: A(None, FINGER, eye), TypeError, "object_body"),
+            (lambda: A("can", False, eye), TypeError, "gripper_body"),
+            (lambda: A("can", FINGER, np.eye(3)), ValueError, "T_gripper_object"),
+            (lambda: A("can", FINGER, np.full((4, 4), np.nan)), ValueError, "T_gripper_object"),
+            (lambda: A("can", FINGER, np.eye(4, dtype=bool)), TypeError, "T_gripper_object"),
+            (lambda: snap([A("can", FINGER, eye, allowed_bodies=[BASE, "nope"])]), ValueError,
+             r"attachments\[0\]\.allowed_bodies\[1\]: body 'nope' not found"),
+            (lambda: snap([A("can", FINGER, eye, allowed_bodies=[-1])]), ValueError, "out of range"),
+            (lambda: snap([A("can", FINGER, eye, allowed_bodies=[10_000])]), ValueError, "out of range"),
+            (lambda: snap([A("nope", FINGER, eye)]), ValueError, r"attachments\[0\]\.object_body"),
+            (lambda: snap([A("robot/link1", FINGER, eye)]), ValueError, r"object_body: .*free joint"),
+            (lambda: snap([A("can", "target", eye)]), ValueError, r"gripper_body: .*not part of the arm"),
+            (lambda: snap([A("can", FINGER, scaled)]), ValueError, "T_gripper_object"),
+            (lambda: snap([A("can", FINGER, eye), A(scene.native.body_id("can"), BASE, eye)]), ValueError,
+             "attached twice"),
+            (lambda: snap([("can", FINGER, eye)]), TypeError, r"attachments\[0\]"),
+            (lambda: snap("can"), TypeError, "attachments"),
+            (lambda: snap(qpos=data.qpos[:-1]), ValueError, "qpos"),
+            (lambda: snap(qpos=["0"] * model.nq), TypeError, "qpos"),
+            (lambda: snap(qpos=np.zeros(model.nq, dtype=bool)), TypeError, "qpos"),
+            (lambda: snap(qpos=np.full(model.nq, np.inf)), ValueError, "qpos"),
+            (lambda: snap(mocap_pos=None), ValueError, "mocap_pos"),
+            (lambda: snap(mocap_quat=np.ones((1, 3))), ValueError, "mocap_quat"),
+            (lambda: snap(mocap_quat=np.full((1, 4), 0.9)), ValueError, "mocap_quat"),
+        ]  # fmt: skip
+        for i, (build, error, match) in enumerate(cases):
+            with pytest.raises(error, match=match):
+                build()
+                pytest.fail(f"case {i} was accepted")
+
+
 def test_unavailable_reason_is_a_string_when_the_module_is_missing(monkeypatch):
     import importlib
 

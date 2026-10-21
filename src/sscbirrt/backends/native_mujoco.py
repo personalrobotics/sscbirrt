@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import hashlib
 import weakref
-from typing import Any
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from typing import Any, Union
 
 import numpy as np
 
@@ -146,38 +148,147 @@ def gripper_allowed_bodies(scene: NativeScene, gripper_body_name: str) -> list[i
     return list(native.subtree(root))
 
 
+BodyRef = Union[str, int]
+"""A body of the scene: its name, or its body id. Either denotes that exact body, not its subtree."""
+
+
+def _check_ref(ref, field: str):
+    if isinstance(ref, (bool, np.bool_)) or not isinstance(ref, (str, int, np.integer)):
+        raise TypeError(f"{field}: expected a body name or body id, got {type(ref).__name__}")
+    return ref if isinstance(ref, str) else int(ref)
+
+
+def _real_array(value, field: str, shape: tuple[int, ...]) -> np.ndarray:
+    """``value`` as a float array of ``shape``; booleans, strings and objects are refused, not converted."""
+    a = np.asarray(value)
+    if a.dtype.kind not in "iuf":
+        raise TypeError(f"{field}: expected real numbers, got an array of dtype {a.dtype}")
+    if a.shape != shape:
+        raise ValueError(f"{field}: expected shape {shape}, got {a.shape}")
+    return a.astype(float)
+
+
+@dataclass(frozen=True)
+class Attachment:
+    """An object held by the arm for a snapshot: it rides on ``gripper_body`` at ``T_gripper_object``.
+
+    ``allowed_bodies`` are the bodies the object may touch, in the arm or the environment (the grasp, a support it
+    is lifted from, a surface it is lowered onto, a container):
+
+    - ``None``: the gripper's subtree, by mj_manipulator's rule (``gripper_allowed_bodies``);
+    - ``()``: nothing;
+    - otherwise exactly those bodies.
+
+    Each name or id denotes that exact body; to allow a subtree, list it (``scene.native.subtree(id)``). Contacts
+    between two held objects are always checked. Body references are resolved against the scene when a snapshot is
+    built; a reference that is not a name or an id, or a malformed transform, is refused here.
+    """
+
+    object_body: BodyRef
+    gripper_body: BodyRef
+    T_gripper_object: Any
+    allowed_bodies: Sequence[BodyRef] | None = None
+
+    def __post_init__(self):
+        object.__setattr__(self, "object_body", _check_ref(self.object_body, "object_body"))
+        object.__setattr__(self, "gripper_body", _check_ref(self.gripper_body, "gripper_body"))
+        T = _real_array(self.T_gripper_object, "T_gripper_object", (4, 4))
+        if not np.all(np.isfinite(T)):
+            raise ValueError("T_gripper_object: has a non-finite entry")
+        object.__setattr__(self, "T_gripper_object", tuple(map(tuple, T.tolist())))
+        allowed = self.allowed_bodies
+        if allowed is not None:
+            if isinstance(allowed, (str, bytes, Mapping)) or not hasattr(allowed, "__iter__"):
+                raise TypeError(
+                    f"allowed_bodies: expected None or a sequence of body names or ids, got {type(allowed).__name__}"
+                )
+            allowed = tuple(_check_ref(b, f"allowed_bodies[{j}]") for j, b in enumerate(allowed))
+        object.__setattr__(self, "allowed_bodies", allowed)
+
+
+def _resolve_body(native, ref: BodyRef, field: str) -> int:
+    if isinstance(ref, str):
+        b = native.body_id(ref)
+        if b < 0:
+            raise ValueError(f"{field}: body '{ref}' not found in the scene")
+        return b
+    if not 0 <= ref < native.nbody:
+        raise ValueError(f"{field}: body id {ref} is out of range [0, {native.nbody})")
+    return ref
+
+
+def _native_attachments(scene: "NativeScene", attachments) -> list:
+    """Public attachments, or the legacy ``{object: (gripper, T_gripper_object)}`` mapping, as native values."""
+    mod, native = _load(), scene.native
+    if attachments is None:
+        return []
+    if isinstance(attachments, Mapping):  # legacy: the gripper's subtree is allowed
+        items = []
+        for obj, value in attachments.items():
+            if not (isinstance(value, Sequence) and len(value) == 2):
+                raise TypeError(f"attachments[{obj!r}]: expected (gripper_body, T_gripper_object)")
+            items.append((f"attachments[{obj!r}]", Attachment(obj, value[0], value[1])))
+    elif isinstance(attachments, (str, bytes)) or not hasattr(attachments, "__iter__"):
+        raise TypeError(f"attachments: expected a sequence of Attachment, got {type(attachments).__name__}")
+    else:
+        items = []
+        for i, a in enumerate(attachments):
+            if not isinstance(a, Attachment):
+                raise TypeError(f"attachments[{i}]: expected an Attachment, got {type(a).__name__}")
+            items.append((f"attachments[{i}]", a))
+    out = []
+    for where, a in items:
+        ob = _resolve_body(native, a.object_body, f"{where}.object_body")
+        if not native.body_has_free_joint(ob):
+            raise ValueError(f"{where}.object_body: '{native.body_name(ob)}' has no free joint as its first joint")
+        gb = _resolve_body(native, a.gripper_body, f"{where}.gripper_body")
+        if not native.is_arm_body(gb):
+            raise ValueError(f"{where}.gripper_body: '{native.body_name(gb)}' is not part of the arm")
+        if a.allowed_bodies is None:
+            allowed = gripper_allowed_bodies(scene, native.body_name(gb))
+        else:
+            allowed = [_resolve_body(native, b, f"{where}.allowed_bodies[{j}]") for j, b in enumerate(a.allowed_bodies)]
+        # The frame check (rotation, homogeneous row) and duplicate objects are the snapshot's own validation.
+        out.append(mod.Attachment(ob, gb, [list(r) for r in a.T_gripper_object], allowed))
+    return out
+
+
 class Snapshot:
-    """An immutable copy of what a geometric query reads from a live ``MjData``: qpos, mocap poses, attachments."""
+    """An immutable copy of what a geometric query reads: qpos, mocap poses, and attachments.
+
+    Build one with ``capture`` from a live ``MjData``, or with ``from_state`` from state the caller already owns;
+    the same state gives the same snapshot and ``sha256``. Each attachment's allowed bodies are part of the snapshot
+    (and its hash), so a new allowance set is a new snapshot over the same ``NativeScene``.
+    """
 
     def __init__(self, native, scene: NativeScene):
         self.native = native
         self.scene = scene
 
     @classmethod
-    def capture(
-        cls, scene: NativeScene, data, attachments: dict[str, tuple[str, np.ndarray]] | None = None
-    ) -> "Snapshot":
-        """Copy the live state now. ``attachments`` is mj_manipulator's ``{object: (gripper_body, T_gripper_object)}``.
-        Call on the thread that owns ``data``."""
-        mod = _load()
+    def capture(cls, scene: NativeScene, data, attachments=None) -> "Snapshot":
+        """Copy the live state of ``data`` now. Call on the thread that owns ``data``.
+
+        ``attachments`` is a sequence of ``Attachment``, or mj_manipulator's ``{object: (gripper_body,
+        T_gripper_object)}``, which allows the gripper's subtree (``allowed_bodies=None``)."""
+        return cls.from_state(scene, data.qpos, data.mocap_pos, data.mocap_quat, attachments)
+
+    @classmethod
+    def from_state(cls, scene: NativeScene, qpos, mocap_pos=None, mocap_quat=None, attachments=None) -> "Snapshot":
+        """A snapshot of explicit state: ``qpos`` of shape ``(nq,)``, ``mocap_pos`` ``(nmocap, 3)`` and
+        ``mocap_quat`` ``(nmocap, 4)`` as in ``MjData`` (omitted only when the scene has no mocap bodies), and
+        ``attachments`` as for ``capture``. Malformed input is refused with an error naming the field."""
         native = scene.native
-        atts = []
-        for obj, (gripper, T) in (attachments or {}).items():
-            ob, gb = native.body_id(obj), native.body_id(gripper)
-            if ob < 0:
-                raise ValueError(f"attached object body '{obj}' not found in the scene")
-            if gb < 0:
-                raise ValueError(f"gripper body '{gripper}' not found in the scene")
-            atts.append(
-                mod.Attachment(ob, gb, np.asarray(T, dtype=float).tolist(), gripper_allowed_bodies(scene, gripper))
-            )
-        snap = mod.Snapshot(
-            native,
-            np.asarray(data.qpos, dtype=float).tolist(),
-            np.asarray(data.mocap_pos, dtype=float).reshape(-1).tolist(),
-            np.asarray(data.mocap_quat, dtype=float).reshape(-1).tolist(),
-            atts,
-        )
+        nmocap = native.nmocap
+        q = _real_array(qpos, "qpos", (native.nq,))
+        mocap = []
+        for field, value, width in (("mocap_pos", mocap_pos, 3), ("mocap_quat", mocap_quat, 4)):
+            if value is None:
+                if nmocap:
+                    raise ValueError(f"{field}: the scene has {nmocap} mocap bodies; pass their poses")
+                value = np.zeros((0, width))
+            mocap.append(_real_array(value, field, (nmocap, width)).reshape(-1).tolist())
+        snap = _load().Snapshot(native, q.tolist(), mocap[0], mocap[1], _native_attachments(scene, attachments))
         return cls(snap, scene)
 
     @property

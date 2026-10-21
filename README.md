@@ -837,6 +837,24 @@ after an intentional edit call `NativeScene.from_model(..., refresh=True)` or
 pass a new model object. A repeated call with the same model object returns
 the cached scene without exporting the model.
 
+An attachment can also declare exactly which bodies the held object may touch,
+and a snapshot can be built from state the caller already owns:
+
+```python
+from sscbirrt.backends.native_mujoco import Attachment, Snapshot
+
+lift = Attachment("can", "robot/gripper/base", T_gripper_can,
+                  allowed_bodies=[*scene.native.subtree(scene.native.body_id("robot/gripper/base")), "table"])
+snap = Snapshot.from_state(scene, qpos, mocap_pos, mocap_quat, attachments=[lift])  # or Snapshot.capture(scene, data, [lift])
+```
+
+`allowed_bodies=None` (the default) is the derived gripper-subtree rule the
+mapping form uses; `()` allows nothing; any other sequence allows exactly those
+bodies, by name or body id. Malformed input (an unknown body, an out-of-range
+id, a transform that is not a rigid 4x4 frame, an object without a free joint,
+a gripper outside the arm, arrays of the wrong shape) raises an error naming
+the field.
+
 The snapshot is a value: `qpos`, mocap poses, and attachments copied at capture,
 so later changes to `data` do not reach a running solve. Downstream integration
 is described in [docs/migration-mj-manipulator.md](docs/migration-mj-manipulator.md). The contact policy is

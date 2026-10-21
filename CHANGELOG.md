@@ -6,6 +6,20 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Public snapshot construction with explicit allowed bodies (#206), so integrations need no `_native_mujoco` or
+  `native_mujoco._load()`.
+  - `Attachment(object_body, gripper_body, T_gripper_object, allowed_bodies=None)` in
+    `sscbirrt.backends.native_mujoco`. Bodies are names or ids, each one exact body. `allowed_bodies=None` is the
+    derived gripper-subtree rule, `()` allows nothing, and any other sequence is used exactly.
+  - `Snapshot.capture(scene, data, attachments)` also accepts a sequence of `Attachment`; the
+    `{object: (gripper_body, T_gripper_object)}` mapping keeps its meaning.
+  - `Snapshot.from_state(scene, qpos, mocap_pos, mocap_quat, attachments)` builds the same snapshot from state the
+    caller owns: the same state gives the same `sha256` and the same decisions as `capture`.
+  - Malformed input is refused with an error naming the field: an unknown body, an out-of-range or boolean id, a
+    string or mapping as `allowed_bodies`, a transform that is not a finite rigid 4x4 frame, an object without a
+    free joint, a gripper outside the arm, a duplicate object, or arrays of the wrong shape or type.
+
 ### Changed
 - An attachment's allowed bodies now apply against the environment too (#247). A held object's contact with an
   allowed fixture, or an allowed robot body outside the planned group, is no longer a `robot_environment` collision.

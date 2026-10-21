@@ -1366,7 +1366,12 @@ subtree of the gripper **base**, found by name: for an attachment body
 `prefix/part` it is `prefix/base` when that body exists, else the
 attachment body itself. That name rule stays in Python, in
 `Snapshot.capture`, which resolves it to body ids; the native side applies
-sets, not names. The rule is therefore in one place and can change without
+sets, not names. The public `Attachment` value (#206) takes the object and
+gripper bodies, `T_gripper_object`, and `allowed_bodies` by name or id:
+`None` is this derived rule, `()` allows nothing, and any other sequence is
+used exactly. `Snapshot.capture` (from `MjData`) and `Snapshot.from_state`
+(from explicit `qpos` and mocap arrays) resolve and check it in Python,
+naming the bad field, before the native snapshot's own validation. The rule is therefore in one place and can change without
 touching C++.
 
 An allowed body need not be in the arm (#247): a held object may be allowed
