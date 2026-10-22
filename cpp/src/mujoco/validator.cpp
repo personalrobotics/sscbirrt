@@ -10,13 +10,32 @@
 
 namespace sscbirrt::mujoco {
 
-SceneValidator::SceneValidator(std::shared_ptr<const Scene> scene, Snapshot snapshot)
+SceneValidator::SceneValidator(std::shared_ptr<const Scene> scene, Snapshot snapshot, bool filter_passive_pairs)
     : scene_(std::move(scene)), snapshot_(std::move(snapshot)), data_(nullptr) {
   if (!scene_) throw std::invalid_argument("SceneValidator needs a scene");
   snapshot_.validate(*scene_);
   attachment_of_body_.assign(static_cast<std::size_t>(scene_->nbody()), -1);
   for (std::size_t i = 0; i < snapshot_.attachments.size(); ++i) {
     for (int b : scene_->subtree(snapshot_.attachments[i].object_body)) attachment_of_body_[static_cast<std::size_t>(b)] = static_cast<int>(i);
+  }
+  if (filter_passive_pairs) {
+    // mj_collision reads body_contype/body_conaffinity only to admit a body to the broadphase and to prefilter a
+    // body pair; each geom pair is then filtered by its own geom masks. A body that could collide keeps contype ~0;
+    // a moving one also keeps conaffinity ~0, a passive one gets 0: passive against passive fails the body-level
+    // bitmask, anything against a moving body passes it and MuJoCo's geom-level filter decides as before.
+    const mjModel* m = scene_->model();
+    body_contype_.assign(m->body_contype, m->body_contype + m->nbody);
+    body_conaffinity_.assign(m->body_conaffinity, m->body_conaffinity + m->nbody);
+    for (int b = 0; b < m->nbody; ++b) {
+      const auto i = static_cast<std::size_t>(b);
+      if (!body_contype_[i] && !body_conaffinity_[i]) continue;  // collides with nothing, as before
+      const bool moving = scene_->is_arm_body(b) || attachment_of_body_[i] >= 0;
+      body_contype_[i] = ~0;
+      body_conaffinity_[i] = moving ? ~0 : 0;
+    }
+    collision_view_ = std::make_unique<mjModel>(*m);  // the struct only; every array is the scene's, read-only
+    collision_view_->body_contype = body_contype_.data();
+    collision_view_->body_conaffinity = body_conaffinity_.data();
   }
   data_ = mj_makeData(scene_->model());
   if (!data_) throw std::runtime_error("mj_makeData failed");
@@ -63,8 +82,8 @@ void SceneValidator::pose(ConfigView q) const {
   }
   // 5. kinematics again only if attachments moved anything
   if (!snapshot_.attachments.empty()) mj_kinematics(m, data_);
-  // 6. collision
-  mj_collision(m, data_);
+  // 6. collision, of the pairs that involve the arm or a held object unless the validator is unfiltered
+  mj_collision(collision_view_ ? collision_view_.get() : m, data_);
 }
 
 std::vector<InvalidContact> SceneValidator::invalid_contacts(ConfigView q) const {
@@ -96,6 +115,11 @@ std::vector<InvalidContact> SceneValidator::invalid_contacts(ConfigView q) const
 }
 
 bool SceneValidator::is_valid(ConfigView q) const { return invalid_contacts(q).empty(); }
+
+int SceneValidator::raw_contact_count(ConfigView q) const {
+  pose(q);
+  return data_->ncon;
+}
 
 std::vector<Contact> SceneValidator::contacts(ConfigView q) const {
   std::vector<Contact> out;

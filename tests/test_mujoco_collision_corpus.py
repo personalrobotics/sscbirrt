@@ -146,3 +146,70 @@ class TestProperties:
             assert (not a or b) and (not b or c), (a, b, c)
             seen_difference = seen_difference or (a != b)
         assert seen_difference  # the grasp itself is an allowed contact somewhere in the corpus
+
+
+class TestOnlyPairsThatCanChange:
+    """#254: the validator collides only pairs involving the arm or a held object. Its answers must be exactly those
+    of a full ``mj_collision`` (``filter_passive_pairs=False``, the reference path): every contact that counts, with
+    its bodies, geoms, distance, kind and order, on every corpus world, with and without a 5 mm margin on every
+    non-arm geom, with and without the held can."""
+
+    @staticmethod
+    def _validators(scenario, margin, attached):
+        model = mujoco.MjModel.from_xml_string(scenario["xml"])
+        if margin:
+            for g in range(model.ngeom):
+                if not model.body(model.geom_bodyid[g]).name.startswith("arm/"):
+                    model.geom_margin[g] = margin
+        scene = native_mujoco.NativeScene.from_model(model, scenario["joints"])
+        data = mujoco.MjData(model)
+        data.qpos[:] = scenario["qpos"]
+        if model.nmocap:
+            data.mocap_pos[:] = np.array(scenario["mocap_pos"]).reshape(-1, 3)
+            data.mocap_quat[:] = np.array(scenario["mocap_quat"]).reshape(-1, 4)
+        held = {k: (v[0], np.array(v[1])) for k, v in scenario["attachments"].items()} if attached else None
+        snap = native_mujoco.Snapshot.capture(scene, data, attachments=held)
+        mod = native_mujoco._load()
+        return (
+            scene,
+            mod.SceneValidator(scene.native, snap.native, filter_passive_pairs=True),
+            mod.SceneValidator(scene.native, snap.native, filter_passive_pairs=False),
+        )
+
+    @staticmethod
+    def _contacts(validator, q):
+        return [(c.body1, c.body2, c.geom1, c.geom2, c.dist, c.kind) for c in validator.invalid_contacts(q)]
+
+    def test_filtered_contacts_equal_a_full_collision_on_the_corpus(self, corpus):
+        compared, kinds, held_contacts, fewer_raw = 0, set(), 0, 0
+        for scenario in corpus["scenarios"]:
+            for margin in (0.0, 0.005):
+                for attached in {False, bool(scenario["attachments"])}:
+                    scene, filtered, full = self._validators(scenario, margin, attached)
+                    can = scene.native.body_id("can")
+                    for rec in scenario["configurations"]:
+                        q = list(map(float, rec["q"]))
+                        got, want = self._contacts(filtered, q), self._contacts(full, q)
+                        assert got == want, (scenario["name"], margin, attached, q)
+                        assert filtered.is_valid(q) == full.is_valid(q)
+                        kinds |= {c[5] for c in want}
+                        held_contacts += attached and any(can in c[:2] for c in want)
+                        fewer_raw += filtered.raw_contact_count(q) < full.raw_contact_count(q)
+                        compared += 1
+        # every configuration, at both margins, with the can held and free where the world holds it
+        assert compared == sum(2 * (1 + bool(s["attachments"])) * len(s["configurations"]) for s in corpus["scenarios"])
+        assert kinds == {"self_collision", "robot_environment"}  # both kinds of contact were compared
+        assert held_contacts > 0  # and contacts of the held can
+        assert fewer_raw > 0  # the filter skipped environment pairs somewhere: the comparison is not vacuous
+
+    @settings(max_examples=60, deadline=None)
+    @given(
+        q=st.lists(st.floats(-2.5, 2.5, allow_nan=False), min_size=3, max_size=3),
+        which=st.integers(0, 4),
+        margin=st.sampled_from([0.0, 0.005]),
+        attached=st.booleans(),
+    )
+    def test_filtered_contacts_equal_a_full_collision_anywhere(self, q, which, margin, attached, corpus):
+        scenario = corpus["scenarios"][which % len(corpus["scenarios"])]
+        _, filtered, full = self._validators(scenario, margin, attached)
+        assert self._contacts(filtered, q) == self._contacts(full, q)
