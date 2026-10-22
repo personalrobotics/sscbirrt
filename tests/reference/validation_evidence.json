@@ -2,7 +2,7 @@
  "artifact": "sscbirrt public validation evidence",
  "issue": "https://github.com/personalrobotics/sscbirrt/issues/230",
  "versions": {
-  "sscbirrt": "3.11.0",
+  "sscbirrt": "3.12.0",
   "mujoco": "3.14.0",
   "numpy": "2.4.6"
  },
@@ -481,7 +481,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "python",
      "witness": null,
      "interpolation": "raw_linear",
@@ -537,7 +537,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "python",
      "witness": null,
      "interpolation": null,
@@ -595,7 +595,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "python",
      "witness": null,
      "interpolation": "raw_linear",
@@ -651,7 +651,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "python",
      "witness": {
       "failure": "collision",
@@ -728,7 +728,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "python",
      "witness": null,
      "interpolation": null,
@@ -784,7 +784,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "python",
      "witness": {
       "failure": "collision",
@@ -861,7 +861,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "python",
      "witness": {
       "failure": "collision",
@@ -1488,7 +1488,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "native",
      "witness": null,
      "interpolation": "raw_linear",
@@ -1544,7 +1544,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "native",
      "witness": null,
      "interpolation": null,
@@ -1602,7 +1602,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "native",
      "witness": null,
      "interpolation": "raw_linear",
@@ -1658,7 +1658,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "native",
      "witness": {
       "failure": "collision",
@@ -1735,7 +1735,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "native",
      "witness": null,
      "interpolation": null,
@@ -1791,7 +1791,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "native",
      "witness": {
       "failure": "collision",
@@ -1868,7 +1868,7 @@
       ],
       "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
      },
-     "implementation": "sscbirrt 3.11.0",
+     "implementation": "sscbirrt 3.12.0",
      "backend": "native",
      "witness": {
       "failure": "collision",
@@ -2056,7 +2056,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -2141,7 +2141,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",
@@ -2241,7 +2241,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": null,
         "interpolation": null,
@@ -2297,7 +2297,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": null,
         "interpolation": null,
@@ -2364,7 +2364,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -2449,7 +2449,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",
@@ -2560,7 +2560,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -2637,7 +2637,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",
@@ -2729,7 +2729,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -2806,7 +2806,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",
@@ -2898,7 +2898,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": null,
         "interpolation": null,
@@ -2954,7 +2954,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": null,
         "interpolation": null,
@@ -3036,7 +3036,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -3121,7 +3121,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",
@@ -3221,7 +3221,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": null,
         "interpolation": null,
@@ -3277,7 +3277,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": null,
         "interpolation": null,
@@ -3359,7 +3359,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -3460,7 +3460,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",
@@ -3576,7 +3576,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -3677,7 +3677,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",
@@ -3809,7 +3809,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -3894,7 +3894,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",
@@ -3997,7 +3997,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -4082,7 +4082,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",
@@ -4193,7 +4193,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": null,
         "interpolation": null,
@@ -4249,7 +4249,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": null,
         "interpolation": null,
@@ -4320,7 +4320,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": null,
         "interpolation": null,
@@ -4376,7 +4376,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": null,
         "interpolation": null,
@@ -4458,7 +4458,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -4535,7 +4535,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",
@@ -4627,7 +4627,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "python",
         "witness": {
          "failure": "collision",
@@ -4704,7 +4704,7 @@
          ],
          "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
         },
-        "implementation": "sscbirrt 3.11.0",
+        "implementation": "sscbirrt 3.12.0",
         "backend": "native",
         "witness": {
          "failure": "collision",

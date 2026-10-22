@@ -6,6 +6,11 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.12.0] - 2026-10-22
+
+A planning clearance is affordable: the native MuJoCo validator collides only the pairs that can change a decision
+(#254), so margins on an environment full of resting objects no longer multiply the cost of a check.
+
 ### Changed
 - The native MuJoCo validator collides only the pairs that can change a decision (#254): pairs involving the arm or
   a held object. Resting objects are no longer collided against their supports or each other, so a planning margin
