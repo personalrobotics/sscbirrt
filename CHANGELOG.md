@@ -6,6 +6,15 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- The native MuJoCo validator collides only the pairs that can change a decision (#254): pairs involving the arm or
+  a held object. Resting objects are no longer collided against their supports or each other, so a planning margin
+  on the environment stays cheap.
+  - Decisions and contact lists are unchanged: the corpus test compares every contact (bodies, geoms, distance,
+    kind, order) with a full `mj_collision`, at margin 0 and 5 mm, with and without a held object.
+  - `tools/collision_benchmark.py` reports the per-check time, all pairs against the filtered pairs, at 0 and
+    5 mm on a table of resting cans.
+
 ## [3.11.0] - 2026-10-20
 
 Dynamic contact allowances belong to the snapshot: an attachment's allowed bodies apply against fixtures and

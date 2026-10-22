@@ -866,7 +866,11 @@ a container: a held object's contact with an allowed body is ignored whether
 that body is in the arm or the environment. Each allowed body is that exact
 body, not its subtree. The arm's own contacts and contacts between two held
 objects are always checked. Allowances belong to the snapshot, so changing
-them never rebuilds the scene; fixed `<exclude>` pairs stay in the model. `PlanResult.provenance` records the scene's MJB hash and the snapshot
+them never rebuilds the scene; fixed `<exclude>` pairs stay in the model.
+Only pairs involving the arm or a held object are collided, so a planning
+margin on the environment stays cheap however many objects rest in it; the
+answers are those of a full collision (`tools/collision_benchmark.py`).
+`PlanResult.provenance` records the scene's MJB hash and the snapshot
 hash alongside the dependency versions; `PlanResult.stats` breaks the solve's
 cost down by component on both backends.
 

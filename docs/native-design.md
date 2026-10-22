@@ -1415,7 +1415,21 @@ step (#84's pipeline):
    `T_world_object = T_world_gripper * T_gripper_object`, and write the
    object's free-joint `qpos` (position, then quaternion by `mju_mat2Quat`).
 5. `mj_kinematics` again if there was any attachment.
-6. `mj_collision`.
+6. `mj_collision`, of the pairs that can count (#254). A pair of bodies
+   that are neither arm bodies nor in a held object's subtree is skipped,
+   since step 7 ignores its contacts. The validator keeps a private copy of
+   the scene's `mjModel` struct (the arrays are shared, read-only) whose
+   body-level `body_contype`/`body_conaffinity` give a body that can collide
+   `contype = ~0`, and `conaffinity = ~0` when it moves, `0` when it is
+   passive. In MuJoCo 3.14 those body masks are read only to admit a body to
+   the broadphase and to prefilter a body pair; every remaining geom pair is
+   filtered by its own geom masks, and predefined `<pair>`s and flexes are
+   untouched. So passive-passive pairs fail the prefilter, and every pair
+   with a moving body is decided by MuJoCo as before: the contacts that
+   count, their distances and their order are those of a full
+   `mj_collision`. The corpus test compares the two contact for contact,
+   with and without margins and attachments; the assumption is tied to the
+   pinned MuJoCo and that gate catches a change.
 7. Classify every contact by the bodies of its two geoms
    (`geom_bodyid`). Let *arm* be the scene's arm bodies and *grasped* the
    union of the attachments' object subtrees; *robot* is either.

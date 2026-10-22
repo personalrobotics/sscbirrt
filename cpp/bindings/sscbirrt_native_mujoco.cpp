@@ -126,10 +126,15 @@ PYBIND11_MODULE(_native_mujoco, m) {
 
   // Derives from the StateValidator registered by sscbirrt._native, so a native PlanningProblem accepts it.
   py::class_<SceneValidator, StateValidator, std::shared_ptr<SceneValidator>>(m, "SceneValidator")
-      .def(py::init([](std::shared_ptr<const Scene> scene, const Snapshot& snapshot) { return std::make_shared<SceneValidator>(std::move(scene), snapshot); }),
-           py::arg("scene"), py::arg("snapshot"), "One private mjData per validator; use one validator per solve.")
+      .def(py::init([](std::shared_ptr<const Scene> scene, const Snapshot& snapshot, bool filter_passive_pairs) {
+             return std::make_shared<SceneValidator>(std::move(scene), snapshot, filter_passive_pairs);
+           }),
+           py::arg("scene"), py::arg("snapshot"), py::arg("filter_passive_pairs") = true,
+           "One private mjData per validator; use one validator per solve. filter_passive_pairs=False collides every "
+           "pair, the reference the filtered validator must equal.")
       .def("is_valid", [](const SceneValidator& v, const Config& q) { return v.is_valid(q); })
       .def("full_turn_invariant", &SceneValidator::full_turn_invariant)
       .def("invalid_contacts", [](const SceneValidator& v, const Config& q) { return v.invalid_contacts(q); })
+      .def("raw_contact_count", [](const SceneValidator& v, const Config& q) { return v.raw_contact_count(q); })
       .def_property_readonly("snapshot", &SceneValidator::snapshot);
 }
