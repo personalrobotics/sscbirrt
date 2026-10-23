@@ -72,6 +72,7 @@ PYBIND11_MODULE(_native_mujoco, m) {
       .def_property_readonly("nmocap", &Scene::nmocap)
       .def_property_readonly("ngeom", &Scene::ngeom)
       .def_property_readonly("provenance", &Scene::provenance)
+      .def("current_mjb_sha256", &Scene::current_mjb_sha256, "SHA-256 of the scene's model as it is now (a mutation check)")
       .def("body_id", &Scene::body_id)
       .def("site_id", &Scene::site_id)
       .def("geom_id", &Scene::geom_id)
@@ -126,14 +127,20 @@ PYBIND11_MODULE(_native_mujoco, m) {
 
   // Derives from the StateValidator registered by sscbirrt._native, so a native PlanningProblem accepts it.
   py::class_<SceneValidator, StateValidator, std::shared_ptr<SceneValidator>>(m, "SceneValidator")
-      .def(py::init([](std::shared_ptr<const Scene> scene, const Snapshot& snapshot, bool filter_passive_pairs) {
-             return std::make_shared<SceneValidator>(std::move(scene), snapshot, filter_passive_pairs);
+      .def(py::init([](std::shared_ptr<const Scene> scene, const Snapshot& snapshot, bool filter_passive_pairs,
+                       double clearance) {
+             return std::make_shared<SceneValidator>(std::move(scene), snapshot,
+                                                     sscbirrt::mujoco::CollisionOptions{clearance, filter_passive_pairs});
            }),
-           py::arg("scene"), py::arg("snapshot"), py::arg("filter_passive_pairs") = true,
+           py::arg("scene"), py::arg("snapshot"), py::arg("filter_passive_pairs") = true, py::arg("clearance") = 0.0,
            "One private mjData per validator; use one validator per solve. filter_passive_pairs=False collides every "
            "pair, the reference the filtered validator must equal.")
       .def("is_valid", [](const SceneValidator& v, const Config& q) { return v.is_valid(q); })
       .def("full_turn_invariant", &SceneValidator::full_turn_invariant)
+      .def_property_readonly("clearance", &SceneValidator::clearance)
+      .def("moving_bodies", &SceneValidator::moving_bodies)
+      .def("geom_margins", &SceneValidator::geom_margins)
+      .def("pair_margins", &SceneValidator::pair_margins)
       .def("invalid_contacts", [](const SceneValidator& v, const Config& q) { return v.invalid_contacts(q); })
       .def("raw_contact_count", [](const SceneValidator& v, const Config& q) { return v.raw_contact_count(q); })
       .def_property_readonly("snapshot", &SceneValidator::snapshot);

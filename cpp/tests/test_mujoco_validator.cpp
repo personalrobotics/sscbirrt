@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 
 #include "harness.hpp"
@@ -14,6 +15,7 @@
 
 using namespace sscbirrt;
 using sscbirrt::mujoco::Attachment;
+using sscbirrt::mujoco::CollisionOptions;
 using sscbirrt::mujoco::Scene;
 using sscbirrt::mujoco::SceneValidator;
 using sscbirrt::mujoco::Snapshot;
@@ -138,6 +140,39 @@ TEST(repeated_queries_and_two_validators_agree_and_leak_nothing) {
       CHECK(a.is_valid(q) == a.is_valid(q));
     }
   }
+}
+
+TEST(validators_at_two_clearances_share_one_scene_and_run_concurrently) {
+  // #256: each validator owns its margins; the scene is shared read-only, so two clearances can run at once.
+  auto s = scene();
+  const std::string before = s->current_mjb_sha256();
+  std::vector<Config> qs;
+  for (int i = 0; i < 200; ++i) qs.push_back(Config{-1.5 + 0.015 * i, -0.6 + 0.004 * (i % 50)});
+  auto answers = [&](double clearance) {
+    SceneValidator v(s, rest(*s), CollisionOptions{clearance});
+    std::vector<int> out;
+    for (const Config& q : qs) out.push_back(v.is_valid(q) ? 1 : 0);
+    return out;
+  };
+  const std::vector<int> zero = answers(0.0), wide = answers(0.05);
+  CHECK(zero != wide);  // the clearance changes some answers, so independence is observable
+  for (int round = 0; round < 4; ++round) {
+    std::vector<int> got_zero, got_wide;
+    std::thread a([&] { got_zero = answers(0.0); });
+    std::thread b([&] { got_wide = answers(0.05); });
+    a.join();
+    b.join();
+    CHECK(got_zero == zero);
+    CHECK(got_wide == wide);
+  }
+  CHECK(s->current_mjb_sha256() == before && before == s->provenance().mjb_sha256);
+  bool refused = false;
+  try {
+    SceneValidator bad(s, rest(*s), CollisionOptions{-0.001});
+  } catch (const std::invalid_argument&) {
+    refused = true;
+  }
+  CHECK(refused);
 }
 
 HARNESS_MAIN()

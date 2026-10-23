@@ -19,6 +19,14 @@ in MuJoCo's order and their kinds. A held object's contact with a fixture or a s
 when that exact body is allowed; the arm's contacts and two held objects' contacts stay checked; a fixed ``<exclude>``
 pair stays excluded.
 
+For #256 it records, on a third world with one native scene, checkers at clearance 0 and 5 mm: each case's verdict on
+both backends, just inside and just outside the clearance (a primitive, a two-geom mesh body that only BVH
+traversal reaches, a stationary robot body, a held object near the environment), a held object near its own arm, an
+allowed contact, and a predefined ``<pair>``; which bodies each validator moves and the margins it collides with;
+the override and flex refusals; that the caller's model and the scene are unchanged; that the two checkers interleave
+without affecting each other; that with no attachment the 5 mm checker equals a model compiled with 5 mm margins,
+contact for contact; and the policies and provenance of plans at both clearances.
+
 ``tests/reference/geodude_132_evidence.json`` is the reduced Geodude edge of ssrobot#132, made by
 ``tools/geodude_132_evidence.py`` inside ssrobot.
 
@@ -29,6 +37,7 @@ pair stays excluded.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.metadata
 import json
 import sys
@@ -171,6 +180,243 @@ def _allowance_view(section: dict[str, Any]) -> dict[str, Any]:
     return view
 
 
+# #256: a gantry tip (jx, jy) at z = 0.5 whose body has two geoms, so every pair it is in is traversed by BVH. Near
+# faces at x = 0.47: a box, a stationary robot body, and (at y = -0.3) a two-geom body with a mesh plate at x = 0.5;
+# a sphere post (y = 0.6) whose pair with the tip is predefined with margin 0.
+CLEARANCE = 0.005
+_PLATE = " ".join(f"{x} {y} {z}" for x in (0, 0.02) for y in (-0.1, 0.1) for z in (-0.1, 0.1))
+CLEARANCE_WORLD = f"""
+<mujoco><compiler angle="radian"/>
+  <asset><mesh name="plate" vertex="{_PLATE}"/></asset>
+  <contact><pair geom1="tip" geom2="post_geom" margin="0"/></contact>
+  <worldbody>
+    <body name="block" pos="0.5 0.3 0.5"><geom name="block_geom" type="box" size="0.03 0.05 0.05"/></body>
+    <body name="shelf" pos="0.5 -0.3 0.5"><geom name="shelf_plate" type="mesh" mesh="plate"/>
+      <geom name="shelf_back" type="box" pos="0.12 0 0" size="0.01 0.01 0.01"/></body>
+    <body name="other/link" pos="0.5 0 0.5"><joint name="other/j" type="hinge" axis="0 0 1"/>
+      <geom name="other_geom" type="box" size="0.03 0.05 0.05"/></body>
+    <body name="post" pos="0.5 0.6 0.5"><geom name="post_geom" type="sphere" size="0.03"/></body>
+    <body name="arm" pos="0 0 0.5"><joint name="jx" type="slide" axis="1 0 0" range="-1 1"/>
+      <joint name="jy" type="slide" axis="0 1 0" range="-1 1"/>
+      <geom name="link" type="capsule" fromto="-0.2 0 0 -0.1 0 0" size="0.01"/>
+      <geom name="tip" type="sphere" size="0.02"/><site name="tip_site"/></body>
+    <body name="can" pos="2 2 0.5"><freejoint/><geom name="can_geom" type="cylinder" size="0.02 0.03"/></body>
+  </worldbody>
+</mujoco>"""
+CLEARANCE_JOINTS = ["jx", "jy"]
+_FACE = 0.47
+_AHEAD = [0.045, 0.0, 0.0]  # a held can 5 mm ahead of the tip
+_BESIDE = [0.0, 0.043, 0.0]  # a held can 3 mm beside the tip
+_IN, _OUT = 0.0049, 0.0051  # just inside and just outside 5 mm
+# name: (configuration, held can offset or None, its allowed bodies: None = the derived rule)
+CLEARANCE_CASES = {
+    "primitive_inside": ([_FACE - 0.02 - _IN, 0.3], None, None),
+    "primitive_outside": ([_FACE - 0.02 - _OUT, 0.3], None, None),
+    "mesh_inside": ([0.5 - 0.02 - _IN, -0.3], None, None),
+    "mesh_outside": ([0.5 - 0.02 - _OUT, -0.3], None, None),
+    "stationary_robot_inside": ([_FACE - 0.02 - _IN, 0.0], None, None),
+    "stationary_robot_outside": ([_FACE - 0.02 - _OUT, 0.0], None, None),
+    "held_near_environment_inside": ([_FACE - 0.065 - _IN, 0.3], _AHEAD, None),
+    "held_near_environment_outside": ([_FACE - 0.065 - _OUT, 0.3], _AHEAD, None),
+    "held_near_own_arm": ([0.0, -0.6], _BESIDE, ()),
+    "held_on_allowed_body": ([_FACE - 0.065 + 0.001, 0.3], _AHEAD, ["block"]),
+    "held_on_body_not_allowed": ([_FACE - 0.065 + 0.001, 0.3], _AHEAD, ()),
+    "predefined_pair_inside": ([0.5 - 0.03 - 0.02 - _IN, 0.6], None, None),
+    "predefined_pair_outside": ([0.5 - 0.03 - 0.02 - _OUT, 0.6], None, None),
+}
+_OVERRIDE_WORLD = CLEARANCE_WORLD.replace(
+    '<compiler angle="radian"/>', '<compiler angle="radian"/><option><flag override="enable"/></option>'
+)
+_FLEX = (
+    '<flexcomp name="rope" type="grid" count="3 1 1" spacing="0.05 0.05 0.05" pos="-0.5 -0.8 0.2" dim="1" '
+    'radius="0.01"{}'
+)
+_FLEX_WORLD = CLEARANCE_WORLD.replace("  </worldbody>", "    " + _FLEX.format("/>") + "\n  </worldbody>")
+_INERT_FLEX_WORLD = CLEARANCE_WORLD.replace(
+    "  </worldbody>", "    " + _FLEX.format('><contact contype="0" conaffinity="0"/></flexcomp>') + "\n  </worldbody>"
+)
+
+
+def _clearance_snapshot(scene, model, held, allowed):
+    import mujoco
+
+    from sscbirrt.backends.native_mujoco import Attachment, Snapshot
+
+    attachments = []
+    if held is not None:
+        T = np.eye(4)
+        T[:3, 3] = held
+        attachments = [Attachment("can", "arm", T, allowed_bodies=allowed)]
+    return Snapshot.from_state(scene, mujoco.MjData(model).qpos, attachments=attachments)
+
+
+def _refusal(xml: str) -> dict[str, Any]:
+    """Whether a positive clearance is refused on ``xml``, and clearance 0 accepted."""
+    import mujoco
+
+    from sscbirrt.backends.native_mujoco import NativeCollisionChecker, NativeScene, Snapshot
+
+    model = mujoco.MjModel.from_xml_string(xml)
+    scene = NativeScene.from_model(model, CLEARANCE_JOINTS)
+    snap = Snapshot.capture(scene, mujoco.MjData(model))
+    NativeCollisionChecker(scene, snap)  # clearance 0 is accepted
+    try:
+        NativeCollisionChecker(scene, snap, clearance=CLEARANCE)
+    except ValueError as e:
+        return {"zero_accepted": True, "positive_refused": True, "error": str(e)}
+    return {"zero_accepted": True, "positive_refused": False, "error": None}
+
+
+def _contacts_key(validator, q) -> list:
+    return [[c.body1, c.body2, c.geom1, c.geom2, c.dist, c.kind] for c in validator.invalid_contacts(q)]
+
+
+def _clearances() -> dict[str, Any]:
+    import mujoco
+
+    from sscbirrt import CBiRRT, CBiRRTConfig
+    from sscbirrt.backends.mujoco import MuJoCoRobotModel
+    from sscbirrt.backends.native_mujoco import NativeCollisionChecker, NativeScene, _NoIK, export_mjb
+    from sscbirrt.mujoco import Arm, plan
+
+    model = mujoco.MjModel.from_xml_string(CLEARANCE_WORLD)
+    data = mujoco.MjData(model)
+    model_before = hashlib.sha256(export_mjb(model)).hexdigest()
+    scene = NativeScene.from_model(model, CLEARANCE_JOINTS)
+    robot = MuJoCoRobotModel(model, data, "tip_site", CLEARANCE_JOINTS)
+    clearances = (0.0, CLEARANCE)
+    out: dict[str, Any] = {
+        "mjcf": CLEARANCE_WORLD.strip(),
+        "clearances_m": list(clearances),
+        "scene": scene.provenance,
+        "cases": {},
+    }
+    nat = scene.native
+    for name, (q, held, allowed) in CLEARANCE_CASES.items():
+        snap = _clearance_snapshot(scene, model, held, allowed)
+        case: dict[str, Any] = {"q": q, "held": held, "allowed": allowed, "snapshot_sha256": snap.sha256, "checks": {}}
+        for c in clearances:
+            checker = NativeCollisionChecker(scene, snap, clearance=c)
+            reports = {}
+            for backend in ("python", "native"):
+                planner = CBiRRT(robot, _NoIK(), checker, CBiRRTConfig(), backend=backend)
+                reports[backend] = _report(planner.validator().validate_state(q))
+            case["checks"][f"{c:g}"] = reports
+        out["cases"][name] = case
+
+    # What each validator moves and the margins it collides with, empty-handed and holding the can.
+    out["classification"] = {}
+    for label, held in (("empty_hand", None), ("holding_can", _AHEAD)):
+        snap = _clearance_snapshot(scene, model, held, None)
+        views = {f"{c:g}": NativeCollisionChecker(scene, snap, clearance=c).native for c in clearances}
+        v0 = views["0"]
+        out["classification"][label] = {
+            "moving_bodies": [nat.body_name(b) for b in v0.moving_bodies()],
+            "geoms": [
+                {
+                    "geom": mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, g),
+                    "body": nat.body_name(int(model.geom_bodyid[g])),
+                    "authored_margin": float(model.geom_margin[g]),
+                    "margin": {k: float(v.geom_margins()[g]) for k, v in views.items()},
+                }
+                for g in range(model.ngeom)
+            ],
+            "pair_margin": {k: [float(x) for x in v.pair_margins()] for k, v in views.items()},
+        }
+
+    out["refusals"] = {
+        "override": _refusal(_OVERRIDE_WORLD),
+        "flex_that_can_touch_the_moving_set": _refusal(_FLEX_WORLD),
+        "flex_with_collisions_off": _refusal(_INERT_FLEX_WORLD),
+    }
+
+    # Two checkers over one scene, interleaved query by query, answer as each does alone.
+    snap = _clearance_snapshot(scene, model, None, None)
+    alone = {c: NativeCollisionChecker(scene, snap, clearance=c) for c in clearances}
+    paired = {c: NativeCollisionChecker(scene, snap, clearance=c) for c in clearances}
+    qs = [q for q, _, _ in CLEARANCE_CASES.values()]
+    expected = {c: [_contacts_key(alone[c].native, q) for q in qs] for c in clearances}
+    interleaved = {c: [] for c in clearances}
+    for q in qs:
+        for c in clearances:
+            interleaved[c].append(_contacts_key(paired[c].native, q))
+    out["interleaved_equal_alone"] = all(interleaved[c] == expected[c] for c in clearances)
+
+    # With no attachment and no arm margin, 5 mm equals a model compiled with 5 mm on every environment geom.
+    oracle_xml = CLEARANCE_WORLD.replace('  <contact><pair geom1="tip" geom2="post_geom" margin="0"/></contact>\n', "")
+    arm_geoms = ('name="link"', 'name="tip"')
+    margined = "\n".join(
+        line if any(a in line for a in arm_geoms) else line.replace("<geom ", f'<geom margin="{CLEARANCE:g}" ')
+        for line in oracle_xml.splitlines()
+    )
+    m_first, m_compiled = mujoco.MjModel.from_xml_string(oracle_xml), mujoco.MjModel.from_xml_string(margined)
+    s_first, s_compiled = (
+        NativeScene.from_model(m_first, CLEARANCE_JOINTS),
+        NativeScene.from_model(m_compiled, CLEARANCE_JOINTS),
+    )
+    first = NativeCollisionChecker(s_first, _clearance_snapshot(s_first, m_first, None, None), clearance=CLEARANCE)
+    compiled = NativeCollisionChecker(s_compiled, _clearance_snapshot(s_compiled, m_compiled, None, None))
+    rng = np.random.default_rng(256)
+    oracle_qs = [list(map(float, q)) for q in rng.uniform([-0.2, -0.75], [0.55, 0.75], size=(2000, 2))]
+    agree = sum(_contacts_key(first.native, q) == _contacts_key(compiled.native, q) for q in oracle_qs)
+    out["model_margin_oracle"] = {
+        "configurations": len(oracle_qs),
+        "identical_contact_lists": int(agree),
+        "invalid_configurations": int(sum(not compiled.is_valid(np.array(q)) for q in oracle_qs)),
+        "compiled_margin_m": CLEARANCE,
+    }
+
+    # Plans at both clearances: their policies and provenance.
+    arm = Arm(model, CLEARANCE_JOINTS, "tip_site")
+    out["plans"] = {}
+    for backend in ("python", "native"):
+        for c in clearances:
+            result = plan(model, data, arm, start=[-0.3, 0.0], goal=[-0.3, 0.45], seed=0, backend=backend, clearance=c)
+            out["plans"][f"{backend}_{c:g}"] = {
+                "success": result.success,
+                "backend": result.backend,
+                "policy": result.validation.policy.to_dict(),
+                "provenance": {
+                    k: result.provenance.get(k) for k in ("clearance_m", "scene_mjb_sha256", "snapshot_sha256")
+                },
+            }
+
+    out["mutation"] = {
+        "caller_model_unchanged": hashlib.sha256(export_mjb(model)).hexdigest() == model_before,
+        "scene_model_unchanged": nat.current_mjb_sha256() == scene.provenance["mjb_sha256"],
+    }
+    return out
+
+
+def _clearance_view(section: dict[str, Any]) -> dict[str, Any]:
+    """The comparable part of the #256 section."""
+    cases = {
+        name: {c: {b: _allowance_verdict(r) for b, r in reports.items()} for c, reports in case["checks"].items()}
+        for name, case in section["cases"].items()
+    }
+    plans = section["plans"]
+    return {
+        "cases": cases,
+        "classification": {
+            label: {
+                "moving_bodies": cls["moving_bodies"],
+                "geoms": [(g["geom"], g["body"], g["margin"]) for g in cls["geoms"]],
+                "pair_margin": cls["pair_margin"],
+            }
+            for label, cls in section["classification"].items()
+        },
+        "refusals": {k: (v["zero_accepted"], v["positive_refused"]) for k, v in section["refusals"].items()},
+        "interleaved_equal_alone": section["interleaved_equal_alone"],
+        "oracle_agrees": section["model_margin_oracle"]["identical_contact_lists"]
+        == section["model_margin_oracle"]["configurations"],
+        "plans": {
+            k: (p["success"], p["policy"]["parameters"], p["provenance"]["clearance_m"]) for k, p in plans.items()
+        },
+        "one_scene_for_every_plan": len({p["provenance"]["scene_mjb_sha256"] for p in plans.values()}) == 1,
+        "mutation": section["mutation"],
+    }
+
+
 def _report(r) -> dict[str, Any]:
     return r.to_dict()
 
@@ -240,6 +486,7 @@ def generate() -> dict[str, Any]:
     py, nat = out["backends"]["python"]["public"], out["backends"]["native"]["public"]
     out["python_equals_native_verdicts"] = {name: _verdict(py[name]) == _verdict(nat[name]) for name in py}
     out["allowances"] = _allowances()
+    out["clearance"] = _clearances()
     return out
 
 
@@ -267,6 +514,7 @@ def semantic_view(artifact: dict[str, Any]) -> dict[str, Any]:
     view: dict[str, Any] = {
         "python_equals_native_verdicts": artifact["python_equals_native_verdicts"],
         "allowances": _allowance_view(artifact["allowances"]),
+        "clearance": _clearance_view(artifact["clearance"]),
     }
     for backend, b in artifact["backends"].items():
         view[backend] = {
@@ -296,7 +544,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         print(
             "validation evidence matches (verdicts, planning = public, repeats and reorders, python = native, "
-            "attachment allowances)"
+            "attachment allowances, clearance)"
         )
         return 0
     args.output.write_text(json.dumps(fresh, indent=1) + "\n")
