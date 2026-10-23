@@ -53,12 +53,13 @@ uploaded. Check a tag locally with `python3 tools/release_check.py version --tag
 
 1. **Release candidate.** Merge a PR that sets `version = "X.Y.Zrc1"` in `pyproject.toml`, `project(... VERSION X.Y.Z)`
    in `cpp/CMakeLists.txt`, and the `## [X.Y.Z]` CHANGELOG section. Tag the merge commit `vX.Y.Zrc1` and push the
-   tag. The run builds, verifies, uploads to TestPyPI (approve the `testpypi-release` environment), downloads the
+   tag. The run builds, verifies, uploads to TestPyPI (no approval: `testpypi-release` only admits `v*` tags), downloads the
    files back, confirms their hashes, and reruns the clean wheel checks on the downloaded files. Its
    `release-report` artifact records the result. Nothing goes to PyPI.
 2. **Final.** Merge a PR that sets `version = "X.Y.Z"` and dates the CHANGELOG section. Tag the merge commit
    `vX.Y.Z` and push the tag. The run builds the final files once, verifies them, uploads them to TestPyPI and
-   confirms them there, uploads the same files to PyPI (approve the `release` environment) and confirms them there,
+   confirms them there, uploads the same files to PyPI (the `release` environment admits only `v*` tags and waits for a maintainer's
+   approval in the run's page) and confirms them there,
    installs from PyPI and runs the quick start, and creates the GitHub release from the CHANGELOG section with the
    distributions, `SHA256SUMS`, `manifest.json` and `release-report.json` attached.
 

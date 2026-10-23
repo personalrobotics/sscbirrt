@@ -6,7 +6,7 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [3.13.0]
+## [3.13.0] - 2026-10-23
 
 Planning clearance is a first-class, per-validator argument (#256): `clearance=` keeps the moving set at least that
 far from the environment, one scene serves every clearance, and the clearance is recorded in the validation policy
