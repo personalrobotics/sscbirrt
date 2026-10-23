@@ -6,6 +6,17 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- The release workflow builds, verifies and publishes one immutable artifact set (#260). Each wheel and the sdist is
+  built once and gathered with `SHA256SUMS` and a manifest. The gathered files are verified in clean environments
+  (`tools/release_check.py`: clean wheel and sdist installs, demos, reference and validation artifacts, README
+  examples, public API checks). The same bytes are then uploaded to TestPyPI and PyPI, confirmed by download at each
+  index, and attached with `SHA256SUMS` to the GitHub release, with hashes re-checked at every hand-off. A release
+  report records the tag, commit, hashes and every check. Actions are pinned to commit SHAs, and publishing
+  credentials are confined to the publishing jobs.
+- A release candidate carries its own version: `vX.Y.ZrcN` builds package version `X.Y.ZrcN`, and the native core's
+  `__version__` reports the full package version. The tag and the package version must agree exactly.
+
 ## [3.12.0] - 2026-10-22
 
 A planning clearance is affordable: the native MuJoCo validator collides only the pairs that can change a decision

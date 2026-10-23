@@ -39,6 +39,38 @@ uv run pytest tests/integration -v
   `main` advances, and on scheduled nightly runs.
 - Review is by [@siddhss5](https://github.com/siddhss5) (enforced via CODEOWNERS).
 
+## Releasing
+
+Releases are tag-driven (`.github/workflows/release.yml`). Each run builds every wheel and the sdist once, gathers
+them with `SHA256SUMS` and a manifest, verifies those files in clean environments (`tools/release_check.py`), and
+publishes the same bytes, re-checking their hashes at every step. Nothing is rebuilt after verification.
+
+**The tagged commit's version is the tag's version, exactly.** `vX.Y.ZrcN` is cut from a commit whose
+`pyproject.toml` version is `X.Y.ZrcN`; `vX.Y.Z` from one whose version is `X.Y.Z`. `project(VERSION X.Y.Z)` in
+`cpp/CMakeLists.txt` is always the numeric release, since CMake cannot hold an rc suffix; the wheel's native core
+reports the full package version. The workflow's first job refuses any disagreement before anything is built or
+uploaded. Check a tag locally with `python3 tools/release_check.py version --tag vX.Y.ZrcN`.
+
+1. **Release candidate.** Merge a PR that sets `version = "X.Y.Zrc1"` in `pyproject.toml`, `project(... VERSION X.Y.Z)`
+   in `cpp/CMakeLists.txt`, and the `## [X.Y.Z]` CHANGELOG section. Tag the merge commit `vX.Y.Zrc1` and push the
+   tag. The run builds, verifies, uploads to TestPyPI (approve the `testpypi-release` environment), downloads the
+   files back, confirms their hashes, and reruns the clean wheel checks on the downloaded files. Its
+   `release-report` artifact records the result. Nothing goes to PyPI.
+2. **Final.** Merge a PR that sets `version = "X.Y.Z"` and dates the CHANGELOG section. Tag the merge commit
+   `vX.Y.Z` and push the tag. The run builds the final files once, verifies them, uploads them to TestPyPI and
+   confirms them there, uploads the same files to PyPI (approve the `release` environment) and confirms them there,
+   installs from PyPI and runs the quick start, and creates the GitHub release from the CHANGELOG section with the
+   distributions, `SHA256SUMS`, `manifest.json` and `release-report.json` attached.
+
+A failure anywhere before the PyPI upload leaves PyPI untouched. A transient failure (an index slow to serve the
+files, a runner fault) is retried with "Re-run failed jobs" on the same run, which reuses the gathered files. A
+failure in the files themselves needs a new build: before TestPyPI the tag can be pushed again at the fixed commit, but once
+TestPyPI holds a version's files it refuses different files under the same names, so the fix ships as the next rc or
+patch version. `workflow_dispatch` builds, gathers, verifies and writes the report on any branch without publishing,
+which is how to rehearse a change to the pipeline.
+To check gathered files by hand, download the run's `release-dist` artifact and run
+`python3 tools/release_check.py dist release-dist/dist --version X.Y.Z --sums release-dist/SHA256SUMS --python 3.12`.
+
 ## Package manager: uv only
 
 We use [uv](https://docs.astral.sh/uv/) exclusively. **Do not use pip.**
