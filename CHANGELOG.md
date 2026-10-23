@@ -6,7 +6,31 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- A first-class planning clearance (#256): `NativeCollisionChecker(scene, snapshot, clearance=...)`, and
+  `clearance=` on `sscbirrt.mujoco.plan` and `validator`, keep the moving set (the planned arm and its held objects)
+  at least that many metres from the environment (every other body, including stationary robot bodies outside the
+  planned joints).
+  - The checker's private view of the scene gives each environment geom `max(authored margin, clearance)`, with
+    `body_margin` and moving-environment predefined `pair_margin`s raised to match. MuJoCo adds a pair's two
+    margins, so the distance kept is at least the clearance; contacts within the moving set get none, and allowed
+    bodies stay allowed.
+  - One scene serves every clearance; checkers at different clearances run concurrently, and neither the scene
+    nor the caller's model is written. Clearance 0 is exactly 3.12.0.
+  - Refused for a positive clearance: MuJoCo's margin override, and a collision-enabled flex that can touch the
+    moving set. A malformed clearance (a boolean, NaN, an infinity, a negative, a non-number) is refused.
+  - `ValidationPolicy.clearance_m`, in its parameters and summary; `PlanResult.provenance["clearance_m"]` on both
+    backends. A `Validator` takes the clearance from its checker and refuses a policy that states another.
+  - Evidence: the `clearance` section of `tests/reference/validation_evidence.json`, including a model-margin
+    oracle (with no held object, 5 mm equals a model compiled with 5 mm environment margins, contact for contact).
+
 ### Changed
+- Python-backend `PlanResult.provenance` includes the checker's provenance (scene and snapshot hashes), as the
+  native backend's always has.
+- `tools/collision_benchmark.py` measures the first-class clearance at 0 and 5 mm against a model-margin reference.
+  Its 3.12.0 version wrote `geom_margin` into the compiled model without updating `body_margin`, which on its scene
+  changed 12 of 20,000 decisions at 5 mm; the reference now recomputes `body_margin` as the compiler does. It no
+  longer prints git errors when run outside a checkout.
 - The release workflow builds, verifies and publishes one immutable artifact set (#260). Each wheel and the sdist is
   built once and gathered with `SHA256SUMS` and a manifest. The gathered files are verified in clean environments
   (`tools/release_check.py`: clean wheel and sdist installs, demos, reference and validation artifacts, README

@@ -5,39 +5,102 @@
 #include <mujoco/mujoco.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <stdexcept>
+#include <string>
 
 namespace sscbirrt::mujoco {
 
-SceneValidator::SceneValidator(std::shared_ptr<const Scene> scene, Snapshot snapshot, bool filter_passive_pairs)
-    : scene_(std::move(scene)), snapshot_(std::move(snapshot)), data_(nullptr) {
+namespace {
+std::string geom_label(const mjModel* m, int g) {
+  const char* name = mj_id2name(m, mjOBJ_GEOM, g);
+  return name ? "'" + std::string(name) + "'" : std::to_string(g);
+}
+}  // namespace
+
+SceneValidator::SceneValidator(std::shared_ptr<const Scene> scene, Snapshot snapshot, CollisionOptions options)
+    : scene_(std::move(scene)), snapshot_(std::move(snapshot)), data_(nullptr), clearance_(options.clearance) {
   if (!scene_) throw std::invalid_argument("SceneValidator needs a scene");
+  if (!std::isfinite(clearance_) || clearance_ < 0.0) {
+    throw std::invalid_argument("clearance must be a finite number of metres >= 0, got " + std::to_string(clearance_));
+  }
   snapshot_.validate(*scene_);
   attachment_of_body_.assign(static_cast<std::size_t>(scene_->nbody()), -1);
   for (std::size_t i = 0; i < snapshot_.attachments.size(); ++i) {
     for (int b : scene_->subtree(snapshot_.attachments[i].object_body)) attachment_of_body_[static_cast<std::size_t>(b)] = static_cast<int>(i);
   }
-  if (filter_passive_pairs) {
+  const mjModel* m = scene_->model();
+  auto moving = [&](int b) { return b >= 0 && (scene_->is_arm_body(b) || attachment_of_body_[static_cast<std::size_t>(b)] >= 0); };
+  if (clearance_ > 0.0) {
+    if (m->opt.enableflags & mjENBL_OVERRIDE) {
+      throw std::invalid_argument(
+          "clearance > 0 needs the model's own contact margins, but the model enables MuJoCo's margin override "
+          "(<option><flag override=\"enable\"/>), which replaces every margin with opt.o_margin");
+    }
+    for (int f = 0; f < m->nflex; ++f) {
+      const int ct = m->flex_contype[f], ca = m->flex_conaffinity[f];
+      if (!ct && !ca) continue;
+      for (int g = 0; g < m->ngeom; ++g) {
+        if (moving(m->geom_bodyid[g]) && ((ct & m->geom_conaffinity[g]) || (m->geom_contype[g] & ca))) {
+          const char* name = mj_id2name(m, mjOBJ_FLEX, f);
+          throw std::invalid_argument("clearance > 0 is not implemented for flex contacts: flex " +
+                                      (name ? "'" + std::string(name) + "'" : std::to_string(f)) +
+                                      " can collide with moving geom " + geom_label(m, g));
+        }
+      }
+    }
+  }
+  if (!options.filter_passive_pairs && clearance_ == 0.0) {
+    data_ = mj_makeData(m);
+    if (!data_) throw std::runtime_error("mj_makeData failed");
+    return;  // the full mj_collision on the scene's model as authored: the reference path
+  }
+  collision_view_ = std::make_unique<mjModel>(*m);  // the struct only; every array is the scene's, read-only
+  if (options.filter_passive_pairs) {
     // mj_collision reads body_contype/body_conaffinity only to admit a body to the broadphase and to prefilter a
     // body pair; each geom pair is then filtered by its own geom masks. A body that could collide keeps contype ~0;
     // a moving one also keeps conaffinity ~0, a passive one gets 0: passive against passive fails the body-level
     // bitmask, anything against a moving body passes it and MuJoCo's geom-level filter decides as before.
-    const mjModel* m = scene_->model();
     body_contype_.assign(m->body_contype, m->body_contype + m->nbody);
     body_conaffinity_.assign(m->body_conaffinity, m->body_conaffinity + m->nbody);
     for (int b = 0; b < m->nbody; ++b) {
       const auto i = static_cast<std::size_t>(b);
       if (!body_contype_[i] && !body_conaffinity_[i]) continue;  // collides with nothing, as before
-      const bool moving = scene_->is_arm_body(b) || attachment_of_body_[i] >= 0;
       body_contype_[i] = ~0;
-      body_conaffinity_[i] = moving ? ~0 : 0;
+      body_conaffinity_[i] = moving(b) ? ~0 : 0;
     }
-    collision_view_ = std::make_unique<mjModel>(*m);  // the struct only; every array is the scene's, read-only
     collision_view_->body_contype = body_contype_.data();
     collision_view_->body_conaffinity = body_conaffinity_.data();
   }
-  data_ = mj_makeData(scene_->model());
+  if (clearance_ > 0.0) {
+    // In MuJoCo 3.14 margins are read only by the collision driver: a geom pair's margin is the sum of its geoms'
+    // (or its pair_margin when predefined), the broadphase inflates each geom by margin + gap, and the BVH midphase
+    // prunes by the sum of the bodies' body_margin, the maximum over a body's geoms of margin + gap.
+    geom_margin_.assign(m->geom_margin, m->geom_margin + m->ngeom);
+    body_margin_.assign(m->body_margin, m->body_margin + m->nbody);
+    for (int g = 0; g < m->ngeom; ++g) {
+      const int b = m->geom_bodyid[g];
+      if (moving(b)) continue;  // the moving set keeps its authored margins
+      auto& margin = geom_margin_[static_cast<std::size_t>(g)];
+      margin = std::max(margin, clearance_);
+      auto& bm = body_margin_[static_cast<std::size_t>(b)];
+      bm = std::max(bm, margin + m->geom_gap[g]);
+    }
+    collision_view_->geom_margin = geom_margin_.data();
+    collision_view_->body_margin = body_margin_.data();
+    if (m->npair > 0) {
+      pair_margin_.assign(m->pair_margin, m->pair_margin + m->npair);
+      for (int p = 0; p < m->npair; ++p) {
+        if (moving(m->geom_bodyid[m->pair_geom1[p]]) != moving(m->geom_bodyid[m->pair_geom2[p]])) {
+          auto& pm = pair_margin_[static_cast<std::size_t>(p)];
+          pm = std::max(pm, clearance_);
+        }
+      }
+      collision_view_->pair_margin = pair_margin_.data();
+    }
+  }
+  data_ = mj_makeData(m);
   if (!data_) throw std::runtime_error("mj_makeData failed");
 }
 
@@ -115,6 +178,24 @@ std::vector<InvalidContact> SceneValidator::invalid_contacts(ConfigView q) const
 }
 
 bool SceneValidator::is_valid(ConfigView q) const { return invalid_contacts(q).empty(); }
+
+std::vector<int> SceneValidator::moving_bodies() const {
+  std::vector<int> out;
+  for (int b = 0; b < scene_->nbody(); ++b) {
+    if (scene_->is_arm_body(b) || attachment_of_body_[static_cast<std::size_t>(b)] >= 0) out.push_back(b);
+  }
+  return out;
+}
+
+std::vector<double> SceneValidator::geom_margins() const {
+  const mjModel* m = collision_view_ ? collision_view_.get() : scene_->model();
+  return {m->geom_margin, m->geom_margin + m->ngeom};
+}
+
+std::vector<double> SceneValidator::pair_margins() const {
+  const mjModel* m = collision_view_ ? collision_view_.get() : scene_->model();
+  return {m->pair_margin, m->pair_margin + m->npair};
+}
 
 int SceneValidator::raw_contact_count(ConfigView q) const {
   pose(q);

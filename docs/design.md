@@ -446,3 +446,15 @@ attempt cap, patience) depends only on the trajectory. A seed therefore
 gives the same trajectory on any machine. The native core and the Python
 reference implement the same contract, and only their random streams differ
 ([native-design.md](native-design.md)).
+
+## Collision clearance (#256)
+
+A collision checker may enforce a clearance: the minimum distance every valid
+state keeps between the moving set and the environment. The checker owns it
+(`NativeCollisionChecker(..., clearance=...)` for the MuJoCo scene, whose
+mechanism `docs/native-design.md` specifies); the `ValidationPolicy` of every
+report records it as `clearance_m`, in its parameters and summary, and
+`PlanResult.provenance` records it on both backends. A `Validator` takes the
+clearance from its checker and refuses a policy that states a different one,
+so a planner and its public validator cannot disagree about it. A checker
+without a clearance records 0.

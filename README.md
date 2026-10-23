@@ -868,8 +868,26 @@ body, not its subtree. The arm's own contacts and contacts between two held
 objects are always checked. Allowances belong to the snapshot, so changing
 them never rebuilds the scene; fixed `<exclude>` pairs stay in the model.
 Only pairs involving the arm or a held object are collided, so a planning
-margin on the environment stays cheap however many objects rest in it; the
-answers are those of a full collision (`tools/collision_benchmark.py`).
+clearance stays cheap however many objects rest in the world; the answers are
+those of a full collision.
+
+A planning clearance is an argument, not a model edit:
+`NativeCollisionChecker(scene, snapshot, clearance=0.005)`, or `clearance=` on
+`sscbirrt.mujoco.plan` and `validator`, keeps the moving set (the planned arm
+and what it holds) at least that many metres from the environment (everything
+else, including resting objects and robot bodies outside the planned joints).
+Checkers at different clearances share one scene and may run concurrently;
+neither the scene nor your `MjModel` is written. MuJoCo adds the two geoms'
+margins of a pair, so the distance kept is at least the clearance, exactly the
+clearance where the arm's own margin is 0. Contacts within the moving set (a
+held object and its gripper) get no added clearance, and allowed bodies stay
+allowed. A positive clearance is refused on a model with MuJoCo's margin
+override enabled, or with a collision-enabled flex that can touch the moving
+set. The clearance is recorded in the validation policy (`clearance_m`) and in
+`PlanResult.provenance`. `tools/collision_benchmark.py` reports its cost on a
+table of resting cans; set a clearance this way rather than by writing
+`geom_margin` into a compiled model, which leaves MuJoCo's per-body margins
+stale.
 `PlanResult.provenance` records the scene's MJB hash and the snapshot
 hash alongside the dependency versions; `PlanResult.stats` breaks the solve's
 cost down by component on both backends.

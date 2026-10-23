@@ -139,6 +139,12 @@ bool Scene::body_has_free_joint(int body) const {
 
 int Scene::nq() const { return model_->nq; }
 int Scene::nbody() const { return model_->nbody; }
+
+std::string Scene::current_mjb_sha256() const {
+  std::vector<std::byte> buf(static_cast<std::size_t>(mj_sizeModel(model_)));
+  mj_saveModel(model_, nullptr, buf.data(), static_cast<int>(buf.size()));
+  return detail::Sha256::hex(buf);
+}
 int Scene::nmocap() const { return model_->nmocap; }
 int Scene::ngeom() const { return model_->ngeom; }
 

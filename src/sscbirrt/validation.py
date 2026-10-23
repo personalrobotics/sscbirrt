@@ -68,17 +68,34 @@ def line_point(q0: np.ndarray, d: np.ndarray, i: int, n: int) -> np.ndarray:
     return q0 + (i / n) * d
 
 
+def check_clearance(value) -> float:
+    """A clearance in metres as a float: a finite real number >= 0. Booleans and other types are refused."""
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, float, np.integer, np.floating)):
+        raise TypeError(f"clearance must be a number of metres, got {type(value).__name__}")
+    if not (math.isfinite(value) and value >= 0):
+        raise ValueError(f"clearance must be a finite number of metres >= 0, got {value!r}")
+    return float(value)
+
+
+def checker_clearance(checker) -> float:
+    """The clearance a collision checker enforces (its ``clearance_m``), 0 for a checker that adds none."""
+    return check_clearance(getattr(checker, "clearance_m", 0.0))
+
+
 @dataclass(frozen=True)
 class ValidationPolicy:
     """What a validator checks and what a valid answer guarantees.
 
     Today's policy is the planner's edge rule: states along each raw-linear motion at most ``resolution`` apart
     in joint space (``n = max(1, ceil(|q1 - q0| / resolution))`` intervals), both endpoints included. The
-    guarantee is discrete: nothing is claimed between the checked states. There is no hidden setting; every
-    parameter is on this object and in every report.
+    guarantee is discrete: nothing is claimed between the checked states. ``clearance_m`` is the collision
+    checker's clearance (#256): the minimum distance its states keep between the moving set and the environment,
+    0 when it adds none. A ``Validator`` takes it from its checker. There is no hidden setting; every parameter is
+    on this object and in every report.
     """
 
     resolution: float = 0.05
+    clearance_m: float = 0.0
 
     name: str = field(default="joint_l2_subdivision", init=False)
     mechanism: str = field(default="joint_subdivision", init=False)
@@ -89,16 +106,18 @@ class ValidationPolicy:
         if not (isinstance(self.resolution, (int, float)) and math.isfinite(self.resolution) and self.resolution > 0):
             raise ValueError(f"resolution must be a positive finite number, got {self.resolution!r}")
         object.__setattr__(self, "resolution", float(self.resolution))
+        object.__setattr__(self, "clearance_m", check_clearance(self.clearance_m))
 
     @classmethod
-    def from_config(cls, config) -> ValidationPolicy:
+    def from_config(cls, config, clearance_m: float = 0.0) -> ValidationPolicy:
         """The policy a planner with this ``CBiRRTConfig`` applies: ``edge_resolution``, else ``step_size``."""
-        return cls(resolution=config.edge_resolution or config.step_size)
+        return cls(resolution=config.edge_resolution or config.step_size, clearance_m=clearance_m)
 
     @property
     def parameters(self) -> tuple[tuple[str, str], ...]:
         """Every other setting of the mechanism, as sorted ``(key, value)`` pairs."""
         return (
+            ("clearance_m", f"{self.clearance_m:g}"),
             ("endpoints", "checked"),
             ("interpolation", "raw_linear"),
             ("rounding", f"{ROUNDING:g}"),
@@ -110,7 +129,12 @@ class ValidationPolicy:
     def summary(self) -> str:
         return (
             f"Valid at states at most {self.resolution:g} apart (Euclidean, joint space, to a relative "
-            f"{ROUNDING:g}) along each raw-linear motion, endpoints included; nothing is claimed between them."
+            f"{ROUNDING:g}) along each raw-linear motion, endpoints included; nothing is claimed between them. "
+            + (
+                f"Each state keeps the moving set at least {self.clearance_m:g} m from the environment."
+                if self.clearance_m
+                else "No collision clearance is added."
+            )
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -261,7 +285,8 @@ class Validator:
         space: The joint space (limits and topology).
         checker: The collision checker (``is_valid(q)``; ``invalid_contacts(q)`` too, for contact witnesses).
         path_constraint: A set every state must be a member of, or None.
-        policy: The ``ValidationPolicy``; default ``ValidationPolicy()``.
+        policy: The ``ValidationPolicy``; default ``ValidationPolicy()`` at the checker's clearance. A supplied policy
+            must state the checker's clearance exactly (``ValidationPolicy.clearance_m``), or it is refused.
         backend: ``"auto"``: the native core when every component has a native form, else this Python
             reference; ``"native"``: the native core or ``NativeUnsupported``; ``"python"``: the reference.
 
@@ -283,7 +308,16 @@ class Validator:
         self.space = space
         self.checker = checker
         self.path_constraint = path_constraint
-        self.policy = policy or ValidationPolicy()
+        # The checker enforces the clearance and the policy records it: with no policy, the default policy at the
+        # checker's clearance; a supplied policy must state exactly that clearance, 0 included, or it is refused.
+        clearance = checker_clearance(checker)
+        if policy is None:
+            policy = ValidationPolicy(clearance_m=clearance)
+        elif policy.clearance_m != clearance:
+            raise ValueError(
+                f"the policy states a clearance of {policy.clearance_m:g} m but the checker enforces {clearance:g} m"
+            )
+        self.policy = policy
         self.backend = "python"
         self.backend_reasons: tuple[str, ...] = ()
         self._native = None
@@ -314,7 +348,9 @@ class Validator:
             problem.space,
             problem.validator,
             problem.path_constraint,
-            policy=ValidationPolicy.from_config(config or CBiRRTConfig()),
+            policy=ValidationPolicy.from_config(
+                config or CBiRRTConfig(), clearance_m=checker_clearance(problem.validator)
+            ),
             backend=backend,
         )
 
@@ -495,7 +531,7 @@ class Validator:
     def _from_native(self, r) -> ValidationReport:
         from sscbirrt.backends.native import report_from_native
 
-        return report_from_native(r, self.provenance)
+        return report_from_native(r, self.provenance, self.policy.clearance_m)
 
 
 def _violated_member(path_constraint, q: np.ndarray) -> int:

@@ -1430,6 +1430,32 @@ step (#84's pipeline):
    `mj_collision`. The corpus test compares the two contact for contact,
    with and without margins and attachments; the assumption is tied to the
    pinned MuJoCo and that gate catches a change.
+
+   With a clearance (#256) the same view also carries the validator's own
+   margins. Each environment geom (a geom whose body is not moving) gets
+   `max(authored margin, clearance)`; moving geoms keep theirs. MuJoCo 3.14
+   reads margins only in the collision driver: a geom pair's margin is the
+   **sum** of its geoms' margins (a predefined `<pair>` uses `pair_margin`),
+   the broadphase inflates each geom by margin + gap, and the BVH midphase
+   prunes by the sum of the two bodies' `body_margin`, the maximum over a
+   body's geoms of margin + gap. So the view also raises every environment
+   body's `body_margin` to match (a view that changed `geom_margin` alone would
+   prune mesh and multi-geom bodies with the old margin; the evidence's mesh
+   case fails without it), and raises the `pair_margin` of each predefined pair
+   between a moving and an environment geom to at least the clearance; other
+   predefined pairs keep theirs. The separation kept between the moving set and
+   the environment is therefore at least the clearance, exactly the clearance
+   where the moving geom's authored margin is 0, and nothing is added within
+   the moving set. Clearance 0 leaves every margin as authored: the decisions
+   and ordered contacts of 3.12. Two cases are refused for a positive
+   clearance, before any check: `mjENBL_OVERRIDE`, which replaces every margin
+   with `opt.o_margin`, and a collision-enabled flex whose
+   `flex_contype`/`flex_conaffinity` passes MuJoCo's bitmask test against a
+   moving geom (flex margins are not changed). The clearance belongs to the
+   validator: one scene serves every clearance, each validator owns its
+   margins and `mjData`, and the scene's identity does not depend on it. It is
+   recorded in the `ValidationPolicy` (`clearance_m`, in its parameters and
+   summary) and in `PlanResult.provenance`.
 7. Classify every contact by the bodies of its two geoms
    (`geom_bodyid`). Let *arm* be the scene's arm bodies and *grasped* the
    union of the attachments' object subtrees; *robot* is either.

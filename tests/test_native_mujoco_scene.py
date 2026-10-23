@@ -302,3 +302,55 @@ def test_version_mismatch_is_refused_with_all_three_versions(monkeypatch):
     monkeypatch.undo()
     monkeypatch.setattr(native_mujoco, "_module", None)
     assert native_mujoco.available()
+
+
+class TestClearanceIngress:
+    """#256: a clearance is a finite real number of metres >= 0; anything else is refused where it enters."""
+
+    @pytest.fixture
+    def parts(self, model):
+        scene = native_mujoco.NativeScene.from_model(model, JOINTS)
+        return scene, native_mujoco.Snapshot.capture(scene, mujoco.MjData(model))
+
+    @pytest.mark.parametrize(
+        "bad, error",
+        [
+            (True, TypeError),
+            (np.bool_(False), TypeError),
+            ("0.005", TypeError),
+            (None, TypeError),
+            ([0.005], TypeError),
+            (float("nan"), ValueError),
+            (float("inf"), ValueError),
+            (-0.001, ValueError),
+            (-0.0 - 1e-12, ValueError),
+        ],
+    )
+    def test_malformed_clearance_is_refused(self, parts, bad, error):
+        from sscbirrt import ValidationPolicy
+
+        scene, snap = parts
+        with pytest.raises(error, match="clearance"):
+            native_mujoco.NativeCollisionChecker(scene, snap, clearance=bad)
+        with pytest.raises(error, match="clearance"):
+            ValidationPolicy(clearance_m=bad)
+
+    def test_numbers_are_accepted_as_metres(self, parts):
+        scene, snap = parts
+        for good, want in ((0, 0.0), (np.float32(0.005), float(np.float32(0.005))), (np.int64(0), 0.0), (0.01, 0.01)):
+            assert native_mujoco.NativeCollisionChecker(scene, snap, clearance=good).clearance_m == want
+
+    def test_a_policy_must_state_its_checkers_clearance_exactly(self, parts):
+        from sscbirrt import JointSpace, ValidationPolicy, Validator
+
+        scene, snap = parts
+        space = JointSpace(np.array([-2.0, -3.0]), np.array([2.0, 3.0]))
+        five, zero = (native_mujoco.NativeCollisionChecker(scene, snap, clearance=c) for c in (0.005, 0.0))
+        # No policy: the default policy at the checker's clearance.
+        assert Validator(space, five).policy == ValidationPolicy(clearance_m=0.005)
+        assert Validator(space, zero).policy == ValidationPolicy()
+        # A supplied policy is kept only when it states the checker's clearance exactly.
+        assert Validator(space, five, policy=ValidationPolicy(0.1, clearance_m=0.005)).policy.resolution == 0.1
+        for checker, stated in ((five, 0.0), (five, 0.01), (zero, 0.005)):  # an explicit 0 is not "unspecified"
+            with pytest.raises(ValueError, match="clearance"):
+                Validator(space, checker, policy=ValidationPolicy(clearance_m=stated))

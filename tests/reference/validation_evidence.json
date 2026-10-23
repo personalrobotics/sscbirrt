@@ -459,6 +459,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -479,7 +483,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "python",
@@ -488,6 +492,10 @@
      "law": null,
      "duration_s": null,
      "provenance": [
+      [
+       "clearance_m",
+       "0.0"
+      ],
       [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
@@ -515,6 +523,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -535,7 +547,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "python",
@@ -544,6 +556,10 @@
      "law": "piecewise_constant_acceleration",
      "duration_s": 2.303328025477707,
      "provenance": [
+      [
+       "clearance_m",
+       "0.0"
+      ],
       [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
@@ -573,6 +589,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -593,7 +613,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "python",
@@ -602,6 +622,10 @@
      "law": null,
      "duration_s": null,
      "provenance": [
+      [
+       "clearance_m",
+       "0.0"
+      ],
       [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
@@ -629,6 +653,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -649,7 +677,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "python",
@@ -680,6 +708,10 @@
      "duration_s": null,
      "provenance": [
       [
+       "clearance_m",
+       "0.0"
+      ],
+      [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
       ],
@@ -706,6 +738,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -726,7 +762,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "python",
@@ -735,6 +771,10 @@
      "law": "piecewise_constant_acceleration",
      "duration_s": 2.303328025477707,
      "provenance": [
+      [
+       "clearance_m",
+       "0.0"
+      ],
       [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
@@ -762,6 +802,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -782,7 +826,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "python",
@@ -813,6 +857,10 @@
      "duration_s": 1.6663853503184713,
      "provenance": [
       [
+       "clearance_m",
+       "0.0"
+      ],
+      [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
       ],
@@ -839,6 +887,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -859,7 +911,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "python",
@@ -921,6 +973,10 @@
      "law": null,
      "duration_s": null,
      "provenance": [
+      [
+       "clearance_m",
+       "0.0"
+      ],
       [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
@@ -1466,6 +1522,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -1486,7 +1546,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "native",
@@ -1495,6 +1555,10 @@
      "law": null,
      "duration_s": null,
      "provenance": [
+      [
+       "clearance_m",
+       "0.0"
+      ],
       [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
@@ -1522,6 +1586,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -1542,7 +1610,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "native",
@@ -1551,6 +1619,10 @@
      "law": "piecewise_constant_acceleration",
      "duration_s": 2.303328025477707,
      "provenance": [
+      [
+       "clearance_m",
+       "0.0"
+      ],
       [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
@@ -1580,6 +1652,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -1600,7 +1676,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "native",
@@ -1609,6 +1685,10 @@
      "law": null,
      "duration_s": null,
      "provenance": [
+      [
+       "clearance_m",
+       "0.0"
+      ],
       [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
@@ -1636,6 +1716,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -1656,7 +1740,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "native",
@@ -1687,6 +1771,10 @@
      "duration_s": null,
      "provenance": [
       [
+       "clearance_m",
+       "0.0"
+      ],
+      [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
       ],
@@ -1713,6 +1801,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -1733,7 +1825,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "native",
@@ -1742,6 +1834,10 @@
      "law": "piecewise_constant_acceleration",
      "duration_s": 2.303328025477707,
      "provenance": [
+      [
+       "clearance_m",
+       "0.0"
+      ],
       [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
@@ -1769,6 +1865,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -1789,7 +1889,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "native",
@@ -1820,6 +1920,10 @@
      "duration_s": 1.6663853503184713,
      "provenance": [
       [
+       "clearance_m",
+       "0.0"
+      ],
+      [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
       ],
@@ -1846,6 +1950,10 @@
       "ambiguity_band_m": 0.0,
       "parameters": [
        [
+        "clearance_m",
+        "0"
+       ],
+       [
         "endpoints",
         "checked"
        ],
@@ -1866,7 +1974,7 @@
         "exact"
        ]
       ],
-      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+      "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
      },
      "implementation": "sscbirrt 3.12.0",
      "backend": "native",
@@ -1928,6 +2036,10 @@
      "law": null,
      "duration_s": null,
      "provenance": [
+      [
+       "clearance_m",
+       "0.0"
+      ],
       [
        "scene_mjb_sha256",
        "cfa4c166d23ee341016b3aab1ab43f7d8d028fe1afd54ee2104688db967cebc9"
@@ -2034,6 +2146,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2054,7 +2170,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -2093,6 +2209,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -2119,6 +2239,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2139,7 +2263,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -2177,6 +2301,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -2219,6 +2347,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2239,7 +2371,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -2248,6 +2380,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -2275,6 +2411,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2295,7 +2435,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -2304,6 +2444,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -2342,6 +2486,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2362,7 +2510,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -2401,6 +2549,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -2427,6 +2579,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2447,7 +2603,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -2485,6 +2641,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -2538,6 +2698,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2558,7 +2722,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -2589,6 +2753,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -2615,6 +2783,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2635,7 +2807,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -2665,6 +2837,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -2707,6 +2883,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2727,7 +2907,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -2758,6 +2938,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -2784,6 +2968,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2804,7 +2992,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -2834,6 +3022,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -2876,6 +3068,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2896,7 +3092,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -2905,6 +3101,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -2932,6 +3132,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -2952,7 +3156,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -2961,6 +3165,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -3014,6 +3222,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3034,7 +3246,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -3073,6 +3285,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -3099,6 +3315,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3119,7 +3339,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -3157,6 +3377,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -3199,6 +3423,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3219,7 +3447,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -3228,6 +3456,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -3255,6 +3487,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3275,7 +3511,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -3284,6 +3520,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -3337,6 +3577,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3357,7 +3601,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -3412,6 +3656,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -3438,6 +3686,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3458,7 +3710,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -3512,6 +3764,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -3554,6 +3810,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3574,7 +3834,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -3629,6 +3889,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -3655,6 +3919,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3675,7 +3943,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -3729,6 +3997,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -3787,6 +4059,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3807,7 +4083,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -3846,6 +4122,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -3872,6 +4152,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3892,7 +4176,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -3930,6 +4214,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -3975,6 +4263,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -3995,7 +4287,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -4034,6 +4326,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -4060,6 +4356,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -4080,7 +4380,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -4118,6 +4418,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -4171,6 +4475,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -4191,7 +4499,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -4200,6 +4508,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -4227,6 +4539,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -4247,7 +4563,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -4256,6 +4572,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -4298,6 +4618,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -4318,7 +4642,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -4327,6 +4651,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -4354,6 +4682,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -4374,7 +4706,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -4383,6 +4715,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -4436,6 +4772,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -4456,7 +4796,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -4487,6 +4827,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -4513,6 +4857,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -4533,7 +4881,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -4563,6 +4911,10 @@
         "law": null,
         "duration_s": null,
         "provenance": [
+         [
+          "clearance_m",
+          "0.0"
+         ],
          [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
@@ -4605,6 +4957,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -4625,7 +4981,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "python",
@@ -4656,6 +5012,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -4682,6 +5042,10 @@
          "ambiguity_band_m": 0.0,
          "parameters": [
           [
+           "clearance_m",
+           "0"
+          ],
+          [
            "endpoints",
            "checked"
           ],
@@ -4702,7 +5066,7 @@
            "exact"
           ]
          ],
-         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them."
+         "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
         },
         "implementation": "sscbirrt 3.12.0",
         "backend": "native",
@@ -4733,6 +5097,10 @@
         "duration_s": null,
         "provenance": [
          [
+          "clearance_m",
+          "0.0"
+         ],
+         [
           "scene_mjb_sha256",
           "fcc415db6c06a48a5bb10ab67b6cb15dcaf7da79bf7053a357f73f8c8785951f"
          ],
@@ -4750,6 +5118,4382 @@
      }
     }
    }
+  }
+ },
+ "clearance": {
+  "mjcf": "<mujoco><compiler angle=\"radian\"/>\n  <asset><mesh name=\"plate\" vertex=\"0 -0.1 -0.1 0 -0.1 0.1 0 0.1 -0.1 0 0.1 0.1 0.02 -0.1 -0.1 0.02 -0.1 0.1 0.02 0.1 -0.1 0.02 0.1 0.1\"/></asset>\n  <contact><pair geom1=\"tip\" geom2=\"post_geom\" margin=\"0\"/></contact>\n  <worldbody>\n    <body name=\"block\" pos=\"0.5 0.3 0.5\"><geom name=\"block_geom\" type=\"box\" size=\"0.03 0.05 0.05\"/></body>\n    <body name=\"shelf\" pos=\"0.5 -0.3 0.5\"><geom name=\"shelf_plate\" type=\"mesh\" mesh=\"plate\"/>\n      <geom name=\"shelf_back\" type=\"box\" pos=\"0.12 0 0\" size=\"0.01 0.01 0.01\"/></body>\n    <body name=\"other/link\" pos=\"0.5 0 0.5\"><joint name=\"other/j\" type=\"hinge\" axis=\"0 0 1\"/>\n      <geom name=\"other_geom\" type=\"box\" size=\"0.03 0.05 0.05\"/></body>\n    <body name=\"post\" pos=\"0.5 0.6 0.5\"><geom name=\"post_geom\" type=\"sphere\" size=\"0.03\"/></body>\n    <body name=\"arm\" pos=\"0 0 0.5\"><joint name=\"jx\" type=\"slide\" axis=\"1 0 0\" range=\"-1 1\"/>\n      <joint name=\"jy\" type=\"slide\" axis=\"0 1 0\" range=\"-1 1\"/>\n      <geom name=\"link\" type=\"capsule\" fromto=\"-0.2 0 0 -0.1 0 0\" size=\"0.01\"/>\n      <geom name=\"tip\" type=\"sphere\" size=\"0.02\"/><site name=\"tip_site\"/></body>\n    <body name=\"can\" pos=\"2 2 0.5\"><freejoint/><geom name=\"can_geom\" type=\"cylinder\" size=\"0.02 0.03\"/></body>\n  </worldbody>\n</mujoco>",
+  "clearances_m": [
+   0.0,
+   0.005
+  ],
+  "scene": {
+   "mujoco": "3.14.0",
+   "model_signature": 10417265375677501715,
+   "mjb_sha256": "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+  },
+  "cases": {
+   "primitive_inside": {
+    "q": [
+     0.44509999999999994,
+     0.3
+    ],
+    "held": null,
+    "allowed": null,
+    "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.44509999999999994,
+         0.3
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "arm",
+          "body2": "block",
+          "geom1": 6,
+          "geom2": 0,
+          "distance": 0.0049000000000000606
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.44509999999999994,
+         0.3
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "arm",
+          "body2": "block",
+          "geom1": 6,
+          "geom2": 0,
+          "distance": 0.0049000000000000606
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "primitive_outside": {
+    "q": [
+     0.44489999999999996,
+     0.3
+    ],
+    "held": null,
+    "allowed": null,
+    "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "mesh_inside": {
+    "q": [
+     0.47509999999999997,
+     -0.3
+    ],
+    "held": null,
+    "allowed": null,
+    "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.47509999999999997,
+         -0.3
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "arm",
+          "body2": "shelf",
+          "geom1": 6,
+          "geom2": 1,
+          "distance": 0.004900000000000063
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.47509999999999997,
+         -0.3
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "arm",
+          "body2": "shelf",
+          "geom1": 6,
+          "geom2": 1,
+          "distance": 0.004900000000000063
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "mesh_outside": {
+    "q": [
+     0.4749,
+     -0.3
+    ],
+    "held": null,
+    "allowed": null,
+    "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "stationary_robot_inside": {
+    "q": [
+     0.44509999999999994,
+     0.0
+    ],
+    "held": null,
+    "allowed": null,
+    "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.44509999999999994,
+         0.0
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "arm",
+          "body2": "other/link",
+          "geom1": 6,
+          "geom2": 3,
+          "distance": 0.0049000000000000606
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.44509999999999994,
+         0.0
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "arm",
+          "body2": "other/link",
+          "geom1": 6,
+          "geom2": 3,
+          "distance": 0.0049000000000000606
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "stationary_robot_outside": {
+    "q": [
+     0.44489999999999996,
+     0.0
+    ],
+    "held": null,
+    "allowed": null,
+    "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "held_near_environment_inside": {
+    "q": [
+     0.40009999999999996,
+     0.3
+    ],
+    "held": [
+     0.045,
+     0.0,
+     0.0
+    ],
+    "allowed": null,
+    "snapshot_sha256": "d35eaa9873c0bf2c27fdaea1c4f0e79cac300a6f8a1b0735274a9c437e996d2f",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "d35eaa9873c0bf2c27fdaea1c4f0e79cac300a6f8a1b0735274a9c437e996d2f"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "d35eaa9873c0bf2c27fdaea1c4f0e79cac300a6f8a1b0735274a9c437e996d2f"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.40009999999999996,
+         0.3
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": 0.004900000064012329
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": 0.004900000064012329
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": 0.004900000064012329
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": 0.004900000064012329
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": 0.004900000064012329
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "d35eaa9873c0bf2c27fdaea1c4f0e79cac300a6f8a1b0735274a9c437e996d2f"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.40009999999999996,
+         0.3
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": 0.004900000064012329
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": 0.004900000064012329
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": 0.004900000064012329
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": 0.004900000064012329
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": 0.004900000064012329
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "d35eaa9873c0bf2c27fdaea1c4f0e79cac300a6f8a1b0735274a9c437e996d2f"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "held_near_environment_outside": {
+    "q": [
+     0.3999,
+     0.3
+    ],
+    "held": [
+     0.045,
+     0.0,
+     0.0
+    ],
+    "allowed": null,
+    "snapshot_sha256": "d35eaa9873c0bf2c27fdaea1c4f0e79cac300a6f8a1b0735274a9c437e996d2f",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "d35eaa9873c0bf2c27fdaea1c4f0e79cac300a6f8a1b0735274a9c437e996d2f"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "d35eaa9873c0bf2c27fdaea1c4f0e79cac300a6f8a1b0735274a9c437e996d2f"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "d35eaa9873c0bf2c27fdaea1c4f0e79cac300a6f8a1b0735274a9c437e996d2f"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "d35eaa9873c0bf2c27fdaea1c4f0e79cac300a6f8a1b0735274a9c437e996d2f"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "held_near_own_arm": {
+    "q": [
+     0.0,
+     -0.6
+    ],
+    "held": [
+     0.0,
+     0.043,
+     0.0
+    ],
+    "allowed": [],
+    "snapshot_sha256": "1cc9499ffd8fd65da30a33c0e3a55365b6fb2f4edad3df2cd0e8c8554d8b3563",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "1cc9499ffd8fd65da30a33c0e3a55365b6fb2f4edad3df2cd0e8c8554d8b3563"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "1cc9499ffd8fd65da30a33c0e3a55365b6fb2f4edad3df2cd0e8c8554d8b3563"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "1cc9499ffd8fd65da30a33c0e3a55365b6fb2f4edad3df2cd0e8c8554d8b3563"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "1cc9499ffd8fd65da30a33c0e3a55365b6fb2f4edad3df2cd0e8c8554d8b3563"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "held_on_allowed_body": {
+    "q": [
+     0.40599999999999997,
+     0.3
+    ],
+    "held": [
+     0.045,
+     0.0,
+     0.0
+    ],
+    "allowed": [
+     "block"
+    ],
+    "snapshot_sha256": "eb40c8a78a69d9e80fed53310adc002604fc1de2aec8a909b1057151a81c7713",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "eb40c8a78a69d9e80fed53310adc002604fc1de2aec8a909b1057151a81c7713"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "eb40c8a78a69d9e80fed53310adc002604fc1de2aec8a909b1057151a81c7713"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "eb40c8a78a69d9e80fed53310adc002604fc1de2aec8a909b1057151a81c7713"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "eb40c8a78a69d9e80fed53310adc002604fc1de2aec8a909b1057151a81c7713"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "held_on_body_not_allowed": {
+    "q": [
+     0.40599999999999997,
+     0.3
+    ],
+    "held": [
+     0.045,
+     0.0,
+     0.0
+    ],
+    "allowed": [],
+    "snapshot_sha256": "5aa90b26bfe4ac2421934c552dcd91752da403263d22f879a38d8365a971c082",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.40599999999999997,
+         0.3
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999968611609
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999968611609
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "5aa90b26bfe4ac2421934c552dcd91752da403263d22f879a38d8365a971c082"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.40599999999999997,
+         0.3
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999968611609
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999968611609
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "5aa90b26bfe4ac2421934c552dcd91752da403263d22f879a38d8365a971c082"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.40599999999999997,
+         0.3
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999933390206
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999933390206
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999933390206
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999933390206
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999933390206
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "5aa90b26bfe4ac2421934c552dcd91752da403263d22f879a38d8365a971c082"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.40599999999999997,
+         0.3
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999933390206
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999933390206
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999933390206
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999933390206
+         },
+         {
+          "kind": "robot_environment",
+          "body1": "can",
+          "body2": "block",
+          "geom1": 7,
+          "geom2": 0,
+          "distance": -0.000999999933390206
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "5aa90b26bfe4ac2421934c552dcd91752da403263d22f879a38d8365a971c082"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "predefined_pair_inside": {
+    "q": [
+     0.44509999999999994,
+     0.6
+    ],
+    "held": null,
+    "allowed": null,
+    "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.44509999999999994,
+         0.6
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "post",
+          "body2": "arm",
+          "geom1": 4,
+          "geom2": 6,
+          "distance": 0.0049000000000000606
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": false,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": {
+        "failure": "collision",
+        "configuration": [
+         0.44509999999999994,
+         0.6
+        ],
+        "segment": null,
+        "fraction": null,
+        "time_s": null,
+        "contacts": [
+         {
+          "kind": "robot_environment",
+          "body1": "post",
+          "body2": "arm",
+          "geom1": 4,
+          "geom2": 6,
+          "distance": 0.0049000000000000606
+         }
+        ],
+        "constraint": null,
+        "detail": "in collision"
+       },
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "predefined_pair_outside": {
+    "q": [
+     0.44489999999999996,
+     0.6
+    ],
+    "held": null,
+    "allowed": null,
+    "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7",
+    "checks": {
+     "0": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.0"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     },
+     "0.005": {
+      "python": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "python",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      },
+      "native": {
+       "subject": "state",
+       "valid": true,
+       "intervals": 0,
+       "checks": 1,
+       "policy": {
+        "name": "joint_l2_subdivision",
+        "mechanism": "joint_subdivision",
+        "guarantee": "discrete",
+        "resolution": 0.05,
+        "ambiguity_band_m": 0.0,
+        "parameters": [
+         [
+          "clearance_m",
+          "0.005"
+         ],
+         [
+          "endpoints",
+          "checked"
+         ],
+         [
+          "interpolation",
+          "raw_linear"
+         ],
+         [
+          "rounding",
+          "1e-09"
+         ],
+         [
+          "trajectory",
+          "source_path_states_or_speed_bounded_time_steps"
+         ],
+         [
+          "trajectory_limits",
+          "exact"
+         ]
+        ],
+        "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+       },
+       "implementation": "sscbirrt 3.12.0",
+       "backend": "native",
+       "witness": null,
+       "interpolation": null,
+       "law": null,
+       "duration_s": null,
+       "provenance": [
+        [
+         "clearance_m",
+         "0.005"
+        ],
+        [
+         "scene_mjb_sha256",
+         "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64"
+        ],
+        [
+         "scene_model_signature",
+         "10417265375677501715"
+        ],
+        [
+         "snapshot_sha256",
+         "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+        ]
+       ]
+      }
+     }
+    }
+   }
+  },
+  "classification": {
+   "empty_hand": {
+    "moving_bodies": [
+     "arm"
+    ],
+    "geoms": [
+     {
+      "geom": "block_geom",
+      "body": "block",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     },
+     {
+      "geom": "shelf_plate",
+      "body": "shelf",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     },
+     {
+      "geom": "shelf_back",
+      "body": "shelf",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     },
+     {
+      "geom": "other_geom",
+      "body": "other/link",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     },
+     {
+      "geom": "post_geom",
+      "body": "post",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     },
+     {
+      "geom": "link",
+      "body": "arm",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.0
+      }
+     },
+     {
+      "geom": "tip",
+      "body": "arm",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.0
+      }
+     },
+     {
+      "geom": "can_geom",
+      "body": "can",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     }
+    ],
+    "pair_margin": {
+     "0": [
+      0.0
+     ],
+     "0.005": [
+      0.005
+     ]
+    }
+   },
+   "holding_can": {
+    "moving_bodies": [
+     "arm",
+     "can"
+    ],
+    "geoms": [
+     {
+      "geom": "block_geom",
+      "body": "block",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     },
+     {
+      "geom": "shelf_plate",
+      "body": "shelf",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     },
+     {
+      "geom": "shelf_back",
+      "body": "shelf",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     },
+     {
+      "geom": "other_geom",
+      "body": "other/link",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     },
+     {
+      "geom": "post_geom",
+      "body": "post",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.005
+      }
+     },
+     {
+      "geom": "link",
+      "body": "arm",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.0
+      }
+     },
+     {
+      "geom": "tip",
+      "body": "arm",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.0
+      }
+     },
+     {
+      "geom": "can_geom",
+      "body": "can",
+      "authored_margin": 0.0,
+      "margin": {
+       "0": 0.0,
+       "0.005": 0.0
+      }
+     }
+    ],
+    "pair_margin": {
+     "0": [
+      0.0
+     ],
+     "0.005": [
+      0.005
+     ]
+    }
+   }
+  },
+  "refusals": {
+   "override": {
+    "zero_accepted": true,
+    "positive_refused": true,
+    "error": "clearance > 0 needs the model's own contact margins, but the model enables MuJoCo's margin override (<option><flag override=\"enable\"/>), which replaces every margin with opt.o_margin"
+   },
+   "flex_that_can_touch_the_moving_set": {
+    "zero_accepted": true,
+    "positive_refused": true,
+    "error": "clearance > 0 is not implemented for flex contacts: flex 'rope' can collide with moving geom 'link'"
+   },
+   "flex_with_collisions_off": {
+    "zero_accepted": true,
+    "positive_refused": false,
+    "error": null
+   }
+  },
+  "interleaved_equal_alone": true,
+  "model_margin_oracle": {
+   "configurations": 2000,
+   "identical_contact_lists": 2000,
+   "invalid_configurations": 105,
+   "compiled_margin_m": 0.005
+  },
+  "plans": {
+   "python_0": {
+    "success": true,
+    "backend": "python",
+    "policy": {
+     "name": "joint_l2_subdivision",
+     "mechanism": "joint_subdivision",
+     "guarantee": "discrete",
+     "resolution": 0.05,
+     "ambiguity_band_m": 0.0,
+     "parameters": [
+      [
+       "clearance_m",
+       "0"
+      ],
+      [
+       "endpoints",
+       "checked"
+      ],
+      [
+       "interpolation",
+       "raw_linear"
+      ],
+      [
+       "rounding",
+       "1e-09"
+      ],
+      [
+       "trajectory",
+       "source_path_states_or_speed_bounded_time_steps"
+      ],
+      [
+       "trajectory_limits",
+       "exact"
+      ]
+     ],
+     "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+    },
+    "provenance": {
+     "clearance_m": 0.0,
+     "scene_mjb_sha256": "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64",
+     "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+    }
+   },
+   "python_0.005": {
+    "success": true,
+    "backend": "python",
+    "policy": {
+     "name": "joint_l2_subdivision",
+     "mechanism": "joint_subdivision",
+     "guarantee": "discrete",
+     "resolution": 0.05,
+     "ambiguity_band_m": 0.0,
+     "parameters": [
+      [
+       "clearance_m",
+       "0.005"
+      ],
+      [
+       "endpoints",
+       "checked"
+      ],
+      [
+       "interpolation",
+       "raw_linear"
+      ],
+      [
+       "rounding",
+       "1e-09"
+      ],
+      [
+       "trajectory",
+       "source_path_states_or_speed_bounded_time_steps"
+      ],
+      [
+       "trajectory_limits",
+       "exact"
+      ]
+     ],
+     "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+    },
+    "provenance": {
+     "clearance_m": 0.005,
+     "scene_mjb_sha256": "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64",
+     "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+    }
+   },
+   "native_0": {
+    "success": true,
+    "backend": "native",
+    "policy": {
+     "name": "joint_l2_subdivision",
+     "mechanism": "joint_subdivision",
+     "guarantee": "discrete",
+     "resolution": 0.05,
+     "ambiguity_band_m": 0.0,
+     "parameters": [
+      [
+       "clearance_m",
+       "0"
+      ],
+      [
+       "endpoints",
+       "checked"
+      ],
+      [
+       "interpolation",
+       "raw_linear"
+      ],
+      [
+       "rounding",
+       "1e-09"
+      ],
+      [
+       "trajectory",
+       "source_path_states_or_speed_bounded_time_steps"
+      ],
+      [
+       "trajectory_limits",
+       "exact"
+      ]
+     ],
+     "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. No collision clearance is added."
+    },
+    "provenance": {
+     "clearance_m": 0.0,
+     "scene_mjb_sha256": "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64",
+     "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+    }
+   },
+   "native_0.005": {
+    "success": true,
+    "backend": "native",
+    "policy": {
+     "name": "joint_l2_subdivision",
+     "mechanism": "joint_subdivision",
+     "guarantee": "discrete",
+     "resolution": 0.05,
+     "ambiguity_band_m": 0.0,
+     "parameters": [
+      [
+       "clearance_m",
+       "0.005"
+      ],
+      [
+       "endpoints",
+       "checked"
+      ],
+      [
+       "interpolation",
+       "raw_linear"
+      ],
+      [
+       "rounding",
+       "1e-09"
+      ],
+      [
+       "trajectory",
+       "source_path_states_or_speed_bounded_time_steps"
+      ],
+      [
+       "trajectory_limits",
+       "exact"
+      ]
+     ],
+     "summary": "Valid at states at most 0.05 apart (Euclidean, joint space, to a relative 1e-09) along each raw-linear motion, endpoints included; nothing is claimed between them. Each state keeps the moving set at least 0.005 m from the environment."
+    },
+    "provenance": {
+     "clearance_m": 0.005,
+     "scene_mjb_sha256": "7f11a5e16427d988d5e380c120ce37257cf167ba36247dea0bd8a8789ffd1e64",
+     "snapshot_sha256": "c03bc93f520f9a95a2d26ed8d1296a68126eb9c2805bc7c57b792e0f527157c7"
+    }
+   }
+  },
+  "mutation": {
+   "caller_model_unchanged": true,
+   "scene_model_unchanged": true
   }
  }
 }

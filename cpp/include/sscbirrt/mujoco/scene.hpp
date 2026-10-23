@@ -59,6 +59,7 @@ class Scene {
   int nmocap() const;
   int ngeom() const;
   const SceneProvenance& provenance() const { return provenance_; }
+  std::string current_mjb_sha256() const;  // of the model as it is now: equals provenance().mjb_sha256 unless written
   const ::mjModel_* model() const { return model_; }
 
  private:
