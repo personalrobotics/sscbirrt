@@ -32,10 +32,23 @@ struct InvalidContact {
 // shared) blocks those pairs with MuJoCo's body-level masks, which mj_collision uses only to prefilter body pairs;
 // every remaining geom pair passes MuJoCo's own geom-level filter, so the contacts that count, and their order, are
 // those of a full mj_collision. filter_passive_pairs = false runs the full mj_collision (the reference path).
+//
+// A clearance (#256) keeps the moving set (arm bodies and held objects' subtrees) at least that far from the
+// environment (every other body). The view gives each environment geom margin max(authored, clearance) and raises
+// body_margin (MuJoCo prunes BVH nodes by it) and the pair_margin of every predefined moving-environment <pair> to
+// match; moving geoms keep their authored margins. MuJoCo adds the two geom margins of a pair, so the separation
+// kept is at least the clearance, exactly the clearance where the moving geom's authored margin is 0. Clearance 0
+// leaves every margin as authored. The scene is never written: each validator owns its margins.
+struct CollisionOptions {
+  double clearance = 0.0;           // metres, finite and >= 0
+  bool filter_passive_pairs = true;
+};
+
 class SceneValidator final : public StateValidator {
  public:
-  SceneValidator(std::shared_ptr<const Scene> scene, Snapshot snapshot,
-                 bool filter_passive_pairs = true);  // validates the snapshot
+  // Validates the snapshot; throws std::invalid_argument for a bad clearance, and for clearance > 0 on a model whose
+  // margins MuJoCo overrides (mjENBL_OVERRIDE) or with a collision-enabled flex that can touch the moving set.
+  SceneValidator(std::shared_ptr<const Scene> scene, Snapshot snapshot, CollisionOptions options = {});
   ~SceneValidator() override;
   SceneValidator(const SceneValidator&) = delete;
   SceneValidator& operator=(const SceneValidator&) = delete;
@@ -47,6 +60,10 @@ class SceneValidator final : public StateValidator {
   int raw_contact_count(ConfigView q) const;  // contacts mj_collision generates at q, before classification
   const Scene& scene() const { return *scene_; }
   const Snapshot& snapshot() const { return snapshot_; }
+  double clearance() const { return clearance_; }
+  std::vector<int> moving_bodies() const;      // the arm bodies and the held objects' subtrees, ascending
+  std::vector<double> geom_margins() const;    // the margins this validator collides with, per geom
+  std::vector<double> pair_margins() const;    // and per predefined <pair>
 
  private:
   void pose(ConfigView q) const;  // steps 1 to 6 into data_
@@ -56,6 +73,8 @@ class SceneValidator final : public StateValidator {
   std::vector<int> attachment_of_body_;   // per body: index of the attachment whose object subtree holds it, or -1
   std::unique_ptr<::mjModel_> collision_view_;     // the scene's model with the masks below; null when unfiltered
   std::vector<int> body_contype_, body_conaffinity_;  // moving bodies (~0, ~0), passive bodies (~0, 0)
+  std::vector<double> geom_margin_, body_margin_, pair_margin_;  // the clearance's margins; empty at clearance 0
+  double clearance_ = 0.0;
 };
 
 }  // namespace sscbirrt::mujoco

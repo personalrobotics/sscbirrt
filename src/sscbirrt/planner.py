@@ -27,7 +27,7 @@ from sscbirrt.sets import Sample, SetProjector, SetSampler, StateSet, explicit_s
 from sscbirrt.space import JointSpace
 from sscbirrt.trajectory import Trajectory, TrajectoryOptions, coalesce, initial_trajectory, limits, shortcut
 from sscbirrt.tree import RRTree
-from sscbirrt.validation import ValidationReport, Validator, classify, spread_order
+from sscbirrt.validation import ValidationReport, Validator, checker_clearance, classify, spread_order
 
 logger = logging.getLogger(__name__)
 
@@ -422,7 +422,12 @@ class CBiRRT:
         result = self._solve_python(problem, seed)
         result.backend = "python"
         result.backend_reasons = reasons
-        result.provenance = {**versions(), "backend": "python"}
+        result.provenance = {
+            **versions(),
+            "backend": "python",
+            **dict(getattr(problem.validator, "provenance", None) or {}),  # the scene and snapshot, as native records
+            "clearance_m": checker_clearance(problem.validator),
+        }
         result.stats = dict(self._counts)
         return result, None
 

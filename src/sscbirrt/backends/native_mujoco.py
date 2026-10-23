@@ -307,18 +307,32 @@ class NativeCollisionChecker:
     native backend lowers to. It is a ``sscbirrt.backends.native.ValidatorIntegration``: ``fresh()`` returns a
     new validator on the same scene and snapshot with its own ``mjData``, and lowering calls it so that every
     solve owns its validator.
+
+    ``clearance`` (metres, default 0) is the minimum distance every valid state keeps between the moving set (the
+    arm bodies and the subtrees of the snapshot's held objects) and the environment (every other body, including
+    resting free objects and robot bodies outside the planned joints). Each environment geom's contact margin
+    becomes the larger of its own and the clearance, in this checker's private view of the scene; the scene and the
+    caller's model are never written, so checkers with different clearances share one scene. MuJoCo adds the two
+    geom margins of a pair, so the distance kept is at least the clearance, exactly the clearance where the moving
+    geom's own margin is 0. The moving set keeps its own margins, so contacts within it (a held object and its
+    gripper, the arm with itself) get no added clearance, and allowed bodies stay allowed. A predefined ``<pair>``
+    between the moving set and the environment keeps at least the clearance. Refused, when ``clearance > 0``: a
+    model with MuJoCo's margin override enabled, and a collision-enabled flex that can touch the moving set.
     """
 
-    def __init__(self, scene: NativeScene, snapshot: Snapshot):
+    def __init__(self, scene: NativeScene, snapshot: Snapshot, clearance: float = 0.0):
+        from sscbirrt.validation import check_clearance
+
         if snapshot.scene is not scene:
             raise ValueError("the snapshot was captured for a different scene")
         self.scene = scene
         self.snapshot = snapshot
-        self.native = _load().SceneValidator(scene.native, snapshot.native)
+        self.clearance_m = check_clearance(clearance)
+        self.native = _load().SceneValidator(scene.native, snapshot.native, clearance=self.clearance_m)
 
     def fresh(self):
-        """A new native validator with its own mjData, for one solve."""
-        return _load().SceneValidator(self.scene.native, self.snapshot.native)
+        """A new native validator with its own mjData and margins, for one solve."""
+        return _load().SceneValidator(self.scene.native, self.snapshot.native, clearance=self.clearance_m)
 
     @property
     def provenance(self) -> dict[str, Any]:
@@ -327,6 +341,7 @@ class NativeCollisionChecker:
             "scene_model_signature": self.scene.provenance["model_signature"],
             "scene_mjb_sha256": self.scene.provenance["mjb_sha256"],
             "snapshot_sha256": self.snapshot.sha256,
+            "clearance_m": self.clearance_m,
         }
 
     @property

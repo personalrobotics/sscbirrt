@@ -83,3 +83,55 @@ def test_the_evidence_shows_what_247_asks():
     # Snapshots that differ only in their allowances differ in hash; the same allowances give the same hash.
     assert view["can_on_table"]["same_hash"] == [["strict", "strict_again"], ["table"]]
     assert all(len(group) == 1 for name in EXPECTED_247 if name != "can_on_table" for group in view[name]["same_hash"])
+
+
+# #256's contract, per case: whether the state is valid at clearance 0 and at 5 mm (both backends).
+EXPECTED_256 = {
+    "primitive_inside": (True, False),
+    "primitive_outside": (True, True),
+    "mesh_inside": (True, False),  # a two-geom body: reached only through BVH traversal, so body_margin matters
+    "mesh_outside": (True, True),
+    "stationary_robot_inside": (True, False),  # a robot body outside the planned joints is environment
+    "stationary_robot_outside": (True, True),
+    "held_near_environment_inside": (True, False),
+    "held_near_environment_outside": (True, True),
+    "held_near_own_arm": (True, True),  # 3 mm from its own arm, nothing allowed: no clearance within the moving set
+    "held_on_allowed_body": (True, True),  # touching an allowed body stays allowed
+    "held_on_body_not_allowed": (False, False),
+    "predefined_pair_inside": (True, False),  # a predefined moving-environment pair gets the clearance
+    "predefined_pair_outside": (True, True),
+}
+
+
+def test_the_evidence_shows_what_256_asks():
+    a = json.loads(tool.ARTIFACT.read_text())
+    v = tool._clearance_view(a["clearance"])
+    assert set(v["cases"]) == set(EXPECTED_256)
+    for name, (at_zero, at_5mm) in EXPECTED_256.items():
+        for clearance, want in (("0", at_zero), ("0.005", at_5mm)):
+            got = v["cases"][name][clearance]
+            assert got["python"] == got["native"] and got["python"]["valid"] is want, (name, clearance, got)
+            if not want and name != "held_on_body_not_allowed":
+                assert {k for _, _, k in got["python"]["contacts"]} == {"robot_environment"}, (name, got)
+    # The validators' own view: what moves, and the margins they collide with (environment raised, moving set not).
+    held = v["classification"]["holding_can"]
+    assert held["moving_bodies"] == ["arm", "can"]
+    for geom, body, margin in held["geoms"]:
+        assert margin["0"] == 0.0 and margin["0.005"] == (0.0 if body in ("arm", "can") else 0.005), geom
+    assert held["pair_margin"] == {"0": [0.0], "0.005": [0.005]}
+    assert v["classification"]["empty_hand"]["moving_bodies"] == ["arm"]
+    # Refused before any check, and only for a positive clearance: override, and a flex that can touch the arm.
+    assert v["refusals"] == {
+        "override": (True, True),
+        "flex_that_can_touch_the_moving_set": (True, True),
+        "flex_with_collisions_off": (True, False),
+    }
+    assert v["interleaved_equal_alone"] and v["oracle_agrees"]
+    assert a["clearance"]["model_margin_oracle"]["invalid_configurations"] > 0  # the oracle compared real contacts
+    # Plans: the policy and provenance record the clearance; one scene serves both.
+    for backend in ("python", "native"):
+        for c, text in ((0.0, "0"), (0.005, "0.005")):
+            success, parameters, recorded = v["plans"][f"{backend}_{c:g}"]
+            assert success and ["clearance_m", text] in parameters and recorded == c
+    assert v["one_scene_for_every_plan"]
+    assert v["mutation"] == {"caller_model_unchanged": True, "scene_model_unchanged": True}

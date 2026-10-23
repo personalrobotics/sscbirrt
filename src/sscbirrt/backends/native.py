@@ -91,6 +91,7 @@ class Lowered:
     space: Any  # _native.JointSpace
     provenance: dict = field(default_factory=dict)  # merged from every integration's ``provenance``
     checker_provenance: dict = field(default_factory=dict)  # the validator's alone, for validation reports
+    clearance_m: float = 0.0  # the checker's clearance (#256), for the reports' ValidationPolicy
 
 
 def _space_metric(metric, space: JointSpace) -> bool:
@@ -317,7 +318,11 @@ def lower(problem: PlanningProblem, config: CBiRRTConfig) -> Lowered:
     if isinstance(problem.validator, ValidatorIntegration):
         checker_provenance = dict(problem.validator.provenance)
         provenance.update(checker_provenance)
-    return Lowered(np_problem, _lower_config(config), nspace, provenance, checker_provenance)
+    from sscbirrt.validation import checker_clearance
+
+    clearance = checker_clearance(problem.validator)
+    provenance.setdefault("clearance_m", clearance)
+    return Lowered(np_problem, _lower_config(config), nspace, provenance, checker_provenance, clearance)
 
 
 @dataclass
@@ -346,8 +351,9 @@ def lower_validator(space: JointSpace, checker, path_constraint, policy):
     return _native.Validator(nspace, validator, constraint, _native.ValidationPolicy(float(policy.resolution)))
 
 
-def report_from_native(r, provenance: tuple = ()):
-    """A native ``ValidationReport`` as ``sscbirrt.validation.ValidationReport``."""
+def report_from_native(r, provenance: tuple = (), clearance_m: float = 0.0):
+    """A native ``ValidationReport`` as ``sscbirrt.validation.ValidationReport``; ``clearance_m`` is the checker's,
+    which the native report does not carry."""
     from sscbirrt.validation import LAW, Contact, InvalidWitness, ValidationPolicy, ValidationReport
 
     witness = None
@@ -370,7 +376,7 @@ def report_from_native(r, provenance: tuple = ()):
         valid=bool(r.valid),
         intervals=int(r.intervals),
         checks=int(r.checks),
-        policy=ValidationPolicy(r.policy.resolution),
+        policy=ValidationPolicy(r.policy.resolution, clearance_m=clearance_m),
         implementation=r.implementation,
         backend="native",
         witness=witness,
@@ -456,7 +462,7 @@ def solve(lowered: Lowered, seed: int | None, abort_fn: Callable[[], bool] | Non
             raise UnsupportedCapability(str(e)) from None
         except _native.ContractError as e:
             raise MotionContractError(str(e)) from None
-    return convert(r, lowered.provenance, lowered.checker_provenance)
+    return convert(r, lowered.provenance, lowered.checker_provenance, lowered.clearance_m)
 
 
 def smooth_trajectory(lowered: Lowered, path, vmax, amax, options, seed: int, abort_fn: Callable[[], bool] | None):
@@ -505,12 +511,12 @@ def smooth_trajectory(lowered: Lowered, path, vmax, amax, options, seed: int, ab
         native_path = [list(map(float, q)) for q in traj.path]
         report = validator.validate_trajectory(pieces, [float(v) for v in vmax], [float(a) for a in amax], native_path)
         traj.validation = report_from_native(
-            report, tuple(sorted((str(k), str(v)) for k, v in lowered.checker_provenance.items()))
+            report, tuple(sorted((str(k), str(v)) for k, v in lowered.checker_provenance.items())), lowered.clearance_m
         )
     return traj
 
 
-def convert(r, provenance: dict | None = None, checker_provenance: dict | None = None):
+def convert(r, provenance: dict | None = None, checker_provenance: dict | None = None, clearance_m: float = 0.0):
     """A native PlanResult as the Python PlanResult. ``checker_provenance`` goes on its validation report."""
     from sscbirrt.planner import PlanResult, versions
 
@@ -551,6 +557,6 @@ def convert(r, provenance: dict | None = None, checker_provenance: dict | None =
         validation=None
         if r.validation is None
         else report_from_native(
-            r.validation, tuple(sorted((str(k), str(v)) for k, v in (checker_provenance or {}).items()))
+            r.validation, tuple(sorted((str(k), str(v)) for k, v in (checker_provenance or {}).items())), clearance_m
         ),
     )

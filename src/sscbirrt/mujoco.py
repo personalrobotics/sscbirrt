@@ -205,6 +205,7 @@ def plan(
     backend: str = "auto",
     extra_arm_bodies: Sequence[str] = (),
     trajectory: TrajectoryOptions | None = None,
+    clearance: float = 0.0,
 ) -> PlanResult:
     """Plan a collision-free path for ``arm`` in the world ``data`` holds now.
 
@@ -226,12 +227,17 @@ def plan(
         trajectory: ``TrajectoryOptions`` to also time the path under velocity and acceleration limits:
             ``result.trajectory``, with the arm's joint names (``result.path`` stays the planned path). See
             ``CBiRRT.smooth_trajectory``.
+        clearance: Metres every state keeps between the moving set (the arm and what it holds) and the
+            environment; default 0. The scene does not depend on it, so plans at different clearances share one
+            scene. See ``NativeCollisionChecker`` for which pairs and how authored margins combine.
 
     Returns:
         A ``PlanResult``: ``success``, ``path``, ``failure_reason``, which member of each set was used
         (``start_index``, ``goal_index``), ``backend``, and provenance.
     """
-    planner, problem = _setup(model, data, arm, start, goal, constraint, holding, config, backend, extra_arm_bodies)
+    planner, problem = _setup(
+        model, data, arm, start, goal, constraint, holding, config, backend, extra_arm_bodies, clearance
+    )
     result = planner.solve(problem, seed=seed, trajectory=trajectory)
     if result.trajectory is not None:
         result.trajectory.joint_names = tuple(arm.joints)
@@ -248,22 +254,25 @@ def validator(
     config: CBiRRTConfig | None = None,
     backend: str = "auto",
     extra_arm_bodies: Sequence[str] = (),
+    clearance: float = 0.0,
 ):
     """The ``sscbirrt.Validator`` that ``plan`` with these arguments applies (#230), for checking a returned path or
     trajectory: ``validator(...).validate_path(result.path)`` equals ``result.validation``, and
     ``validate_trajectory(result.trajectory)`` equals ``result.trajectory.validation``.
 
     The scene is the world ``data`` holds now, as for ``plan``; the report's provenance (``snapshot_sha256``) shows
-    whether it is the world the plan was made in.
+    whether it is the world the plan was made in. ``clearance`` is ``plan``'s: pass the plan's to apply its rules.
     """
     from sscbirrt.validation import Validator
 
     here = arm.configuration(data)
-    planner, problem = _setup(model, data, arm, here, here, constraint, holding, config, "python", extra_arm_bodies)
+    planner, problem = _setup(
+        model, data, arm, here, here, constraint, holding, config, "python", extra_arm_bodies, clearance
+    )
     return Validator.for_problem(problem, planner.config, backend=backend)
 
 
-def _setup(model, data, arm, start, goal, constraint, holding, config, backend, extra_arm_bodies):
+def _setup(model, data, arm, start, goal, constraint, holding, config, backend, extra_arm_bodies, clearance=0.0):
     """The planner and problem ``plan`` solves: the native MuJoCo scene of ``data`` now, the arm's space, the roles."""
     if not isinstance(arm, Arm):
         raise TypeError(f"arm must be an sscbirrt.mujoco.Arm, got {type(arm).__name__}")
@@ -282,7 +291,8 @@ def _setup(model, data, arm, start, goal, constraint, holding, config, backend, 
         raise NativeUnsupported(
             [f"sscbirrt.mujoco.plan checks collisions with the native MuJoCo scene ({r})" for r in e.reasons]
         ) from None
-    checker = NativeCollisionChecker(scene, Snapshot.capture(scene, data, _attachments(model, data, arm, holding)))
+    snapshot = Snapshot.capture(scene, data, _attachments(model, data, arm, holding))
+    checker = NativeCollisionChecker(scene, snapshot, clearance=clearance)
     planner = CBiRRT(
         robot, arm.ik if arm.ik is not None else _NoIK(), checker, config or CBiRRTConfig(), backend=backend
     )
