@@ -32,6 +32,21 @@ def test_plan_in_mujoco_runs(capsys):
     assert capsys.readouterr().out.startswith("True native")
 
 
+def test_planning_clearance_runs(capsys):
+    pytest.importorskip("mujoco")
+    pytest.importorskip("ssik")
+    pytest.importorskip("sscbirrt_assets")
+    from sscbirrt.backends import native_mujoco
+
+    if not native_mujoco.available():
+        pytest.skip(native_mujoco.unavailable_reason())
+    namespace: dict = {}
+    exec(compile(_first_python_block("## Plan in MuJoCo"), "README MuJoCo", "exec"), namespace)
+    exec(compile(_first_python_block("### Planning clearance"), "README clearance", "exec"), namespace)
+    assert namespace["careful"].success
+    assert capsys.readouterr().out.splitlines()[-1] == "0.005 0.005"
+
+
 def test_validating_a_path_runs():
     namespace: dict = {}
     exec(compile(_first_python_block("## Quick start without a simulator"), "README quick start", "exec"), namespace)

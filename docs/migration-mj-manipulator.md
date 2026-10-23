@@ -65,6 +65,24 @@ first criterion), and it does not own the simulator or its threads.
    these: pass the same body ids (or names) as `allowed_bodies`, and the
    snapshot and its `sha256` are the same. Each body is exact; list a subtree
    to allow it.
+   A planning clearance is the checker's argument, not a model edit:
+   `NativeCollisionChecker(scene, snapshot, clearance=0.005)` (#256). It keeps
+   the arm and its held objects that far from everything else, and one scene
+   serves every clearance, so a clearance chosen per motion rebuilds nothing.
+   Code that put margins on the environment geoms of a planning model should
+   pass the clearance instead and build one scene per model and group. Two
+   differences from model margins:
+   - **Held objects.** Model margins on a held object add to a fixture's
+     margin, since MuJoCo sums a pair's margins, so a carried can kept twice
+     the margin from a margined table. They also kept the margin between the
+     can and its own arm. The checker's clearance keeps exactly the clearance
+     from the environment and adds nothing within the moving set.
+   - **Stale body margins.** Writing `geom_margin` into a compiled `MjModel`
+     leaves `body_margin` stale, and MuJoCo then prunes multi-geom bodies with
+     the old margin. The checker computes both.
+
+   Validate under the plan's clearance: pass the same value to
+   `NativeCollisionChecker` (or `sscbirrt.mujoco.validator`) that planned it.
 3. **Revalidate before executing.** The path was valid against the snapshot.
    Capture a fresh snapshot before execution and compare `sha256`; if it
    differs, run the path (or at least its executable prefix) through a

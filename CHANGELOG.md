@@ -6,6 +6,11 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Documentation for planning clearance (#256): a tested `clearance=` example in the README's "Plan in MuJoCo",
+  validating under the plan's clearance, the measured cost, and a migration note for integrators who set margins on
+  the planning model.
+
 ## [3.13.0] - 2026-10-23
 
 Planning clearance is a first-class, per-validator argument (#256): `clearance=` keeps the moving set at least that
