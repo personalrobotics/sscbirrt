@@ -129,6 +129,33 @@ every side grasp of a cylinder, and `template.instantiate(T_world_cylinder_botto
 places each as a TSR on the gripper's grasp frame. Pass them all as the goal
 and the planner chooses among them; `result.goal_index` says which.
 
+### Planning clearance
+
+Ask for a minimum distance from everything the arm does not carry, in metres;
+the model stays as it is. Continuing the example above:
+
+```python
+from sscbirrt.mujoco import validator
+
+careful = plan(model, data, arm, goal=goal, seed=0, clearance=0.005)  # 5 mm from the environment
+print(careful.validation.policy.clearance_m, careful.provenance["clearance_m"])
+
+check = validator(model, data, arm, clearance=0.005)  # validate under the plan's own rules
+assert check.validate_path(careful.path) == careful.validation
+```
+
+Every valid state keeps the moving set (the planned joints' bodies and what
+`holding` carries) at least `clearance` from the environment: fixtures, free
+objects resting in the world, and robot bodies outside the planned joints,
+such as a second arm. Nothing is added between members of the moving set, so a
+held object may still sit close to its gripper, and bodies a held object is
+allowed to touch stay allowed. Each call chooses its own clearance (none for a
+grasp approach, some for a transfer) and every call shares one collision scene,
+so changing it rebuilds nothing. The default is 0, exactly the behavior before
+3.13. The clearance is recorded in each report's policy and in
+`result.provenance`; see [Native MuJoCo scene](#native-mujoco-scene-collision-checking-in-c)
+for the exact semantics and its cost.
+
 ## Quick start without a simulator
 
 Three roles, three kinds of set: a finite start, a goal induced by a pose
@@ -293,6 +320,12 @@ if not report.valid:
   in joint space) are checked, both ends included, and nothing is claimed
   between them. The report carries the policy, so no answer depends on a
   hidden setting.
+- **The same clearance.** A collision checker's clearance is part of the rules:
+  `Validator.for_problem` and `CBiRRT.validator()` take it from the planner's
+  checker, and `sscbirrt.mujoco.validator(..., clearance=...)` must be given
+  the clearance the plan used. Its report records the clearance it applied
+  (`report.policy.clearance_m`), and a policy stating a different one from its
+  checker is refused.
 - **The report** gives `valid`, the number of states checked, and for an
   invalid subject the first invalid state: its segment and fraction, the
   failure (`position_limits`, `collision` or `path_constraint`), the
@@ -884,8 +917,11 @@ held object and its gripper) get no added clearance, and allowed bodies stay
 allowed. A positive clearance is refused on a model with MuJoCo's margin
 override enabled, or with a collision-enabled flex that can touch the moving
 set. The clearance is recorded in the validation policy (`clearance_m`) and in
-`PlanResult.provenance`. `tools/collision_benchmark.py` reports its cost on a
-table of resting cans; set a clearance this way rather than by writing
+`PlanResult.provenance`. Its cost is the extra contacts it creates: on the demo
+world with eight cans resting on the table, a 5 mm check took 1.09x the time of
+a check at 0 (21.0 against 19.2 µs on one Linux host), the same as setting
+those margins in the model itself; `tools/collision_benchmark.py` measures
+another world with `--mjcf`. Set a clearance this way rather than by writing
 `geom_margin` into a compiled model, which leaves MuJoCo's per-body margins
 stale.
 `PlanResult.provenance` records the scene's MJB hash and the snapshot
