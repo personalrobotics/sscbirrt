@@ -340,13 +340,17 @@ class TestClearanceIngress:
         for good, want in ((0, 0.0), (np.float32(0.005), float(np.float32(0.005))), (np.int64(0), 0.0), (0.01, 0.01)):
             assert native_mujoco.NativeCollisionChecker(scene, snap, clearance=good).clearance_m == want
 
-    def test_a_policy_stating_another_clearance_than_its_checker_is_refused(self, parts):
+    def test_a_policy_must_state_its_checkers_clearance_exactly(self, parts):
         from sscbirrt import JointSpace, ValidationPolicy, Validator
 
         scene, snap = parts
-        checker = native_mujoco.NativeCollisionChecker(scene, snap, clearance=0.005)
         space = JointSpace(np.array([-2.0, -3.0]), np.array([2.0, 3.0]))
-        assert Validator(space, checker).policy.clearance_m == 0.005  # taken from the checker
-        assert Validator(space, checker, policy=ValidationPolicy(clearance_m=0.005)).policy.clearance_m == 0.005
-        with pytest.raises(ValueError, match="clearance"):
-            Validator(space, checker, policy=ValidationPolicy(clearance_m=0.01))
+        five, zero = (native_mujoco.NativeCollisionChecker(scene, snap, clearance=c) for c in (0.005, 0.0))
+        # No policy: the default policy at the checker's clearance.
+        assert Validator(space, five).policy == ValidationPolicy(clearance_m=0.005)
+        assert Validator(space, zero).policy == ValidationPolicy()
+        # A supplied policy is kept only when it states the checker's clearance exactly.
+        assert Validator(space, five, policy=ValidationPolicy(0.1, clearance_m=0.005)).policy.resolution == 0.1
+        for checker, stated in ((five, 0.0), (five, 0.01), (zero, 0.005)):  # an explicit 0 is not "unspecified"
+            with pytest.raises(ValueError, match="clearance"):
+                Validator(space, checker, policy=ValidationPolicy(clearance_m=stated))

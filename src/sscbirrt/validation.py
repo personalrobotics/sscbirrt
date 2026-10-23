@@ -285,7 +285,8 @@ class Validator:
         space: The joint space (limits and topology).
         checker: The collision checker (``is_valid(q)``; ``invalid_contacts(q)`` too, for contact witnesses).
         path_constraint: A set every state must be a member of, or None.
-        policy: The ``ValidationPolicy``; default ``ValidationPolicy()``.
+        policy: The ``ValidationPolicy``; default ``ValidationPolicy()`` at the checker's clearance. A supplied policy
+            must state the checker's clearance exactly (``ValidationPolicy.clearance_m``), or it is refused.
         backend: ``"auto"``: the native core when every component has a native form, else this Python
             reference; ``"native"``: the native core or ``NativeUnsupported``; ``"python"``: the reference.
 
@@ -307,14 +308,16 @@ class Validator:
         self.space = space
         self.checker = checker
         self.path_constraint = path_constraint
-        # The checker enforces the clearance; the policy records it. A policy stating another clearance is refused.
+        # The checker enforces the clearance and the policy records it: with no policy, the default policy at the
+        # checker's clearance; a supplied policy must state exactly that clearance, 0 included, or it is refused.
         clearance = checker_clearance(checker)
-        policy = policy or ValidationPolicy()
-        if policy.clearance_m not in (0.0, clearance):
+        if policy is None:
+            policy = ValidationPolicy(clearance_m=clearance)
+        elif policy.clearance_m != clearance:
             raise ValueError(
                 f"the policy states a clearance of {policy.clearance_m:g} m but the checker enforces {clearance:g} m"
             )
-        self.policy = dataclasses.replace(policy, clearance_m=clearance)
+        self.policy = policy
         self.backend = "python"
         self.backend_reasons: tuple[str, ...] = ()
         self._native = None
@@ -345,7 +348,9 @@ class Validator:
             problem.space,
             problem.validator,
             problem.path_constraint,
-            policy=ValidationPolicy.from_config(config or CBiRRTConfig()),
+            policy=ValidationPolicy.from_config(
+                config or CBiRRTConfig(), clearance_m=checker_clearance(problem.validator)
+            ),
             backend=backend,
         )
 
