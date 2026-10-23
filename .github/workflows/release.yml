@@ -1,21 +1,38 @@
 name: Release
 
-# Tag-driven release pipeline (#153), on the ssik pattern.
+# Tag-driven release pipeline (#153, #260). Every release publishes exactly the files that passed verification:
+# each distribution is built once, and the same bytes are verified, uploaded to TestPyPI, uploaded to PyPI, and
+# attached to the GitHub release, with their hashes re-checked at every hand-off. Nothing is rebuilt after
+# verification. The recipe for cutting a release is in CONTRIBUTING.md ("Releasing").
 #
-#   v*rc*              build wheels + sdist, publish to TestPyPI (the dry run; the artifacts may carry the
-#                      final version the tag rehearses, e.g. v3.0.0rc1 on the commit whose version is 3.0.0)
-#   v*                 build wheels + sdist, publish to PyPI, create the GitHub release from the CHANGELOG
-#   workflow_dispatch  build wheels + sdist only; publishes to TestPyPI only with publish_testpypi=true
+#    1. version            the tag, pyproject's version and CMake's project(VERSION) agree (tools/release_check.py);
+#                          vX.Y.ZrcN must be cut from a commit whose pyproject version is X.Y.ZrcN, vX.Y.Z from X.Y.Z
+#    2. build_wheels,      unprivileged: each wheel (cibuildwheel, [tool.cibuildwheel] in pyproject.toml) and the
+#       build_sdist        sdist, built once, with the README's relative links pinned to the tag
+#    3. gather             every file is sscbirrt at this version (filename and recorded metadata); writes SHA256SUMS
+#                          and manifest.json into one artifact, and the digest of SHA256SUMS as a job output
+#    4. verify             the gathered files in clean environments on Linux and macOS: clean wheel, clean sdist,
+#                          demos, reference and validation artifacts, README examples, public API checks
+#    5. publish_testpypi   (tags; or dispatch with publish_testpypi) uploads those exact files to TestPyPI
+#    6. confirm_testpypi   downloads every file back from TestPyPI and confirms its hash; an rc also reruns 4 on them
+#    7. publish_pypi       (final tags only) uploads the unchanged gathered files to PyPI
+#    8. confirm_pypi       downloads every file back from PyPI, confirms its hash, installs from PyPI, runs the quick start
+#    9. release_report     merges the manifest, every check and every job result into release-report.json
+#   10. github_release     (final tags only) attaches the same files, SHA256SUMS, manifest and report to the release,
+#                          then downloads them back and confirms their hashes
 #
-# The README in the repository uses relative image and link paths; each build job first pins them to the tag
-# (tools/pypi_readme.py), so the PyPI description shows the images from that release.
+# Every job after gather downloads the one gathered artifact and re-checks it against SHA256SUMS, and SHA256SUMS against
+# the digest gather recorded, before it acts. Immediately before the TestPyPI upload, the PyPI upload and the release
+# creation, a step resolves the tag to the commit it points to now and stops unless that is this run's commit, so a
+# moved or deleted tag never publishes under its new target. publish_pypi needs verify and confirm_testpypi to succeed, so a failure
+# before it leaves PyPI untouched. An rc tag stops after confirm_testpypi and release_report.
 #
-# Auth: Trusted Publishing (PyPI / TestPyPI OIDC). No API tokens. The publish jobs run inside the GitHub
-# environments `release` and `testpypi-release` so environment-protection rules apply.
+# workflow_dispatch builds, gathers and verifies only; it publishes to TestPyPI only with publish_testpypi=true, and it
+# never publishes to PyPI or creates a release.
 #
-# The wheel matrix and the repair rules live in pyproject.toml under [tool.cibuildwheel]: CPython 3.10 to
-# 3.14 on manylinux_2_28 x86_64 and macOS arm64, libmujoco excluded from bundling, every wheel installed
-# with [mujoco,ssik] and run through the reference artifact check before it is kept.
+# Auth: Trusted Publishing (PyPI / TestPyPI OIDC). No API tokens. The publish jobs run inside the GitHub environments
+# `release` and `testpypi-release` so environment-protection rules apply. Only those two jobs hold id-token: write;
+# only github_release holds contents: write. Third-party actions are pinned to full commit SHAs.
 
 on:
   push:
@@ -30,53 +47,164 @@ on:
 permissions:
   contents: read
 
+# Two runs for one tag never overlap: a running release is never cancelled, and a later run for the tag waits for it
+# (GitHub keeps at most one waiting run per group). Each dispatch run is untagged and has its own group, so dispatch
+# runs do not wait on each other.
+concurrency:
+  group: release-${{ github.event_name == 'push' && github.ref || github.run_id }}
+  cancel-in-progress: false
+
 jobs:
+  version:
+    name: Tag, package and CMake versions agree
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      kind: ${{ steps.check.outputs.kind }}
+      readme_ref: ${{ steps.check.outputs.readme_ref }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - id: check
+        env:
+          # Only a pushed tag is a release; a dispatch run (on any ref) is untagged.
+          TAG: ${{ github.event_name == 'push' && github.ref_type == 'tag' && github.ref_name || '' }}
+        run: |
+          if [ -n "$TAG" ]; then
+            python3 -I tools/release_check.py version --tag "$TAG"
+            echo "readme_ref=$TAG" >> "$GITHUB_OUTPUT"
+          else
+            python3 -I tools/release_check.py version
+            echo "readme_ref=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          fi
+
   build_wheels:
     name: Wheels on ${{ matrix.os }}
+    needs: version
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v4
-      - name: Pin the README's relative images and links to this tag, for the PyPI description
-        run: python3 tools/pypi_readme.py --ref "${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}"
-      - name: Build and test wheels
-        uses: pypa/cibuildwheel@v3.4.1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          name: wheels-${{ matrix.os }}
+          persist-credentials: false
+      - name: Pin the README's relative images and links to this tag, for the PyPI description
+        env:
+          README_REF: ${{ needs.version.outputs.readme_ref }}
+        run: python3 tools/pypi_readme.py --ref "$README_REF"
+      - name: Build and test wheels
+        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dist-wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
+          if-no-files-found: error
 
   build_sdist:
     name: Source distribution
+    needs: version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          python-version: "3.12"
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
       - name: Pin the README's relative images and links to this tag, for the PyPI description
-        run: python3 tools/pypi_readme.py --ref "${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}"
+        env:
+          README_REF: ${{ needs.version.outputs.readme_ref }}
+        run: python3 tools/pypi_readme.py --ref "$README_REF"
       - name: Build the sdist
-        run: uv build --sdist
-      - name: The sdist compiles on a machine with no Eigen (the build downloads the pinned one)
-        run: |
-          uv venv --python 3.12 "$RUNNER_TEMP/sdist-env"
-          uv pip install --python "$RUNNER_TEMP/sdist-env/bin/python" dist/*.tar.gz
-          "$RUNNER_TEMP/sdist-env/bin/python" -c "import sscbirrt._native as n; assert n.has_ssik(), n.ssik_unavailable_reason(); print('sdist ok; SSIK adapter built against the downloaded Eigen')"
-      - uses: actions/upload-artifact@v4
+        run: uv build --sdist --out-dir dist
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: sdist
+          name: dist-sdist
           path: dist/*.tar.gz
+          if-no-files-found: error
+
+  gather:
+    name: Gather the distributions with a manifest and SHA256SUMS
+    needs: [version, build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    outputs:
+      sums_sha256: ${{ steps.gather.outputs.sums_sha256 }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: dist-*
+          path: release/dist
+          merge-multiple: true
+      - id: gather
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          TAG: ${{ needs.version.outputs.kind != 'untagged' && github.ref_name || '' }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 -I tools/release_check.py gather release/dist --version "$VERSION" --out release \
+            ${TAG:+--tag "$TAG"} --commit "$GITHUB_SHA" --run-url "$RUN_URL"
+          { echo '### SHA256SUMS'; echo '```'; cat release/SHA256SUMS; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-dist
+          path: release/
+          if-no-files-found: error
+
+  verify:
+    name: Verify the gathered files (${{ matrix.os }})
+    needs: [version, gather]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            installs: wheel sdist
+          - os: macos-latest
+            installs: wheel
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-dist
+          path: release
+      - name: Re-check the gathered files against SHA256SUMS, and SHA256SUMS against gather's digest
+        env:
+          SUMS_SHA256: ${{ needs.gather.outputs.sums_sha256 }}
+        working-directory: release
+        run: |
+          echo "$SUMS_SHA256  SHA256SUMS" | shasum -a 256 -c -
+          (cd dist && shasum -a 256 -c ../SHA256SUMS)
+          diff <(cd dist && find . -mindepth 1 -maxdepth 1 | sed 's|^\./||' | LC_ALL=C sort) <(cut -c67- SHA256SUMS | LC_ALL=C sort)
+      - name: Mesa's EGL, which sscbirrt-demo selects on a headless Linux host before it imports mujoco
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libegl-mesa0
+      - name: Clean-environment checks (${{ matrix.installs }})
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          uv run --no-project --python 3.12 python -I tools/release_check.py dist release/dist --version "$VERSION" \
+            --sums release/SHA256SUMS --install ${{ matrix.installs }} --python 3.12 \
+            --label "verify-${{ matrix.os }}" --report "reports/verify-${{ matrix.os }}.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ !cancelled() }}
+        with:
+          name: report-verify-${{ matrix.os }}
+          path: reports/
 
   publish_testpypi:
     name: Publish to TestPyPI
-    needs: [build_wheels, build_sdist]
+    needs: [version, gather, verify]
     runs-on: ubuntu-latest
     if: >-
-      (startsWith(github.ref, 'refs/tags/v') && contains(github.ref, 'rc')) ||
+      needs.version.outputs.kind != 'untagged' ||
       (github.event_name == 'workflow_dispatch' && inputs.publish_testpypi)
     environment:
       name: testpypi-release
@@ -84,65 +212,211 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          path: dist
-          merge-multiple: true
-      - name: Every artifact carries the tag's version (an rc tag may carry the final version it rehearses)
-        if: startsWith(github.ref, 'refs/tags/v')
+          name: release-dist
+          path: release
+      - name: Re-check the gathered files against SHA256SUMS, and SHA256SUMS against gather's digest
+        env:
+          SUMS_SHA256: ${{ needs.gather.outputs.sums_sha256 }}
+        working-directory: release
         run: |
-          TAG="${GITHUB_REF#refs/tags/v}"; BASE="${TAG%%rc*}"; ls -1 dist/
-          for f in dist/*; do
-            case "$(basename "$f")" in
-              sscbirrt-"$TAG".tar.gz|sscbirrt-"$TAG"-*.whl|sscbirrt-"$BASE".tar.gz|sscbirrt-"$BASE"-*.whl) ;;
-              *) echo "::error::$(basename "$f") is neither version $TAG nor $BASE (pyproject version and tag must agree)"; exit 1 ;;
-            esac
-          done
-          echo "OK: all artifacts are version $TAG or $BASE"
-      - uses: pypa/gh-action-pypi-publish@release/v1
+          echo "$SUMS_SHA256  SHA256SUMS" | shasum -a 256 -c -
+          (cd dist && shasum -a 256 -c ../SHA256SUMS)
+          diff <(cd dist && find . -mindepth 1 -maxdepth 1 | sed 's|^\./||' | LC_ALL=C sort) <(cut -c67- SHA256SUMS | LC_ALL=C sort)
+      - name: The tag still points to this run's commit (a moved or deleted tag stops the run)
+        if: needs.version.outputs.kind != 'untagged'
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Annotated tags list their commit as refs/tags/TAG^{}; lightweight tags only as refs/tags/TAG.
+          refs="$(git ls-remote --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG" "refs/tags/$TAG^{}")"
+          target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG^{}" '$2 == ref {print $1}')"
+          [ -n "$target" ] || target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG" '$2 == ref {print $1}')"
+          if [ "$target" != "$GITHUB_SHA" ]; then
+            echo "::error::tag $TAG now points to ${target:-nothing}, not this run's commit $GITHUB_SHA"
+            exit 1
+          fi
+          echo "tag $TAG still points to $GITHUB_SHA"
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
         with:
           repository-url: https://test.pypi.org/legacy/
+          packages-dir: release/dist/
+
+  confirm_testpypi:
+    name: TestPyPI serves the gathered bytes
+    needs: [version, gather, publish_testpypi]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-dist
+          path: release
+      - name: Re-check the gathered files against SHA256SUMS, and SHA256SUMS against gather's digest
+        env:
+          SUMS_SHA256: ${{ needs.gather.outputs.sums_sha256 }}
+        working-directory: release
+        run: |
+          echo "$SUMS_SHA256  SHA256SUMS" | shasum -a 256 -c -
+          (cd dist && shasum -a 256 -c ../SHA256SUMS)
+          diff <(cd dist && find . -mindepth 1 -maxdepth 1 | sed 's|^\./||' | LC_ALL=C sort) <(cut -c67- SHA256SUMS | LC_ALL=C sort)
+      - name: Mesa's EGL, which sscbirrt-demo selects on a headless Linux host before it imports mujoco
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libegl-mesa0
+      - name: Download every file from TestPyPI and confirm its hash (an rc also reruns the clean wheel checks on them)
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          KIND: ${{ needs.version.outputs.kind }}
+        run: |
+          if [ "$KIND" = rc ]; then set -- --verify --install wheel; fi
+          uv run --no-project --python 3.12 python -I tools/release_check.py index testpypi --version "$VERSION" \
+            --sums release/SHA256SUMS "$@" --python 3.12 --label testpypi --report reports/testpypi.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ !cancelled() }}
+        with:
+          name: report-testpypi
+          path: reports/
 
   publish_pypi:
     name: Publish to PyPI
-    needs: [build_wheels, build_sdist]
+    needs: [version, gather, verify, confirm_testpypi]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, 'rc')
+    if: needs.version.outputs.kind == 'final' && github.event_name == 'push'
     environment:
       name: release
       url: https://pypi.org/p/sscbirrt
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          path: dist
-          merge-multiple: true
-      - name: Every artifact carries the tag's version
+          name: release-dist
+          path: release
+      - name: Re-check the gathered files against SHA256SUMS, and SHA256SUMS against gather's digest
+        env:
+          SUMS_SHA256: ${{ needs.gather.outputs.sums_sha256 }}
+        working-directory: release
         run: |
-          TAG="${GITHUB_REF#refs/tags/v}"; ls -1 dist/
-          for f in dist/*; do
-            case "$(basename "$f")" in
-              sscbirrt-"$TAG".tar.gz|sscbirrt-"$TAG"-*.whl) ;;
-              *) echo "::error::$(basename "$f") is not version $TAG (pyproject version and tag must agree)"; exit 1 ;;
-            esac
-          done
-          echo "OK: all artifacts are version $TAG"
-      - uses: pypa/gh-action-pypi-publish@release/v1
+          echo "$SUMS_SHA256  SHA256SUMS" | shasum -a 256 -c -
+          (cd dist && shasum -a 256 -c ../SHA256SUMS)
+          diff <(cd dist && find . -mindepth 1 -maxdepth 1 | sed 's|^\./||' | LC_ALL=C sort) <(cut -c67- SHA256SUMS | LC_ALL=C sort)
+      - name: The tag still points to this run's commit (a moved or deleted tag stops the run)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Annotated tags list their commit as refs/tags/TAG^{}; lightweight tags only as refs/tags/TAG.
+          refs="$(git ls-remote --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG" "refs/tags/$TAG^{}")"
+          target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG^{}" '$2 == ref {print $1}')"
+          [ -n "$target" ] || target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG" '$2 == ref {print $1}')"
+          if [ "$target" != "$GITHUB_SHA" ]; then
+            echo "::error::tag $TAG now points to ${target:-nothing}, not this run's commit $GITHUB_SHA"
+            exit 1
+          fi
+          echo "tag $TAG still points to $GITHUB_SHA"
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+        with:
+          packages-dir: release/dist/
+
+  confirm_pypi:
+    name: PyPI serves the gathered bytes, and the quick start runs from PyPI
+    needs: [version, gather, publish_pypi]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-dist
+          path: release
+      - name: Re-check the gathered files against SHA256SUMS, and SHA256SUMS against gather's digest
+        env:
+          SUMS_SHA256: ${{ needs.gather.outputs.sums_sha256 }}
+        working-directory: release
+        run: |
+          echo "$SUMS_SHA256  SHA256SUMS" | shasum -a 256 -c -
+          (cd dist && shasum -a 256 -c ../SHA256SUMS)
+          diff <(cd dist && find . -mindepth 1 -maxdepth 1 | sed 's|^\./||' | LC_ALL=C sort) <(cut -c67- SHA256SUMS | LC_ALL=C sort)
+      - name: Download every file from PyPI, confirm its hash, then install from PyPI and run the quick start
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          uv run --no-project --python 3.12 python -I tools/release_check.py index pypi --version "$VERSION" \
+            --sums release/SHA256SUMS --quick-start --python 3.12 --label pypi --report reports/pypi.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ !cancelled() }}
+        with:
+          name: report-pypi
+          path: reports/
+
+  release_report:
+    name: Release report
+    needs: [version, gather, verify, publish_testpypi, confirm_testpypi, publish_pypi, confirm_pypi]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        continue-on-error: true # a run that failed before gather has no manifest; the report still records the jobs
+        with:
+          name: release-dist
+          path: release
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        continue-on-error: true
+        with:
+          pattern: report-*
+          path: reports
+      - name: Merge the manifest, every check report and every job result
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          python3 -I tools/release_check.py report --manifest release/manifest.json --reports reports \
+            --out release-report/release-report.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-report
+          path: release-report/release-report.json
+          if-no-files-found: error
 
   github_release:
-    name: GitHub release from the CHANGELOG
-    needs: publish_pypi
+    name: GitHub release with the same files and SHA256SUMS
+    needs: [version, gather, confirm_pypi, release_report]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, 'rc')
+    if: needs.version.outputs.kind == 'final' && github.event_name == 'push'
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - name: Extract this version's CHANGELOG section
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-dist
+          path: release
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-report
+          path: release
+      - name: Re-check the gathered files against SHA256SUMS, and SHA256SUMS against gather's digest
+        env:
+          SUMS_SHA256: ${{ needs.gather.outputs.sums_sha256 }}
+        working-directory: release
         run: |
-          TAG="${GITHUB_REF#refs/tags/v}"
-          python3 - "$TAG" <<'PY' > notes.md
+          echo "$SUMS_SHA256  SHA256SUMS" | shasum -a 256 -c -
+          (cd dist && shasum -a 256 -c ../SHA256SUMS)
+          diff <(cd dist && find . -mindepth 1 -maxdepth 1 | sed 's|^\./||' | LC_ALL=C sort) <(cut -c67- SHA256SUMS | LC_ALL=C sort)
+      - name: Extract this version's CHANGELOG section
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          python3 - "$VERSION" <<'PY' > notes.md
           import re, sys, pathlib
           tag = sys.argv[1]
           text = pathlib.Path("CHANGELOG.md").read_text()
@@ -152,8 +426,34 @@ jobs:
           print(m.group(1).strip())
           PY
           test -s notes.md
-      - uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          body_path: notes.md
+      - name: The tag still points to this run's commit (a moved or deleted tag stops the run)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Annotated tags list their commit as refs/tags/TAG^{}; lightweight tags only as refs/tags/TAG.
+          refs="$(git ls-remote --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG" "refs/tags/$TAG^{}")"
+          target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG^{}" '$2 == ref {print $1}')"
+          [ -n "$target" ] || target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG" '$2 == ref {print $1}')"
+          if [ "$target" != "$GITHUB_SHA" ]; then
+            echo "::error::tag $TAG now points to ${target:-nothing}, not this run's commit $GITHUB_SHA"
+            exit 1
+          fi
+          echo "tag $TAG still points to $GITHUB_SHA"
+      - name: Create the release with the gathered files, SHA256SUMS, manifest and report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$TAG" --notes-file notes.md \
+            release/dist/* release/SHA256SUMS release/manifest.json release/release-report.json
+      - name: The release serves the gathered bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          mkdir attached
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir attached --pattern 'sscbirrt-*' --pattern SHA256SUMS
+          cmp attached/SHA256SUMS release/SHA256SUMS
+          (cd attached && shasum -a 256 -c SHA256SUMS)
+          diff <(cd attached && find . -mindepth 1 -maxdepth 1 ! -name SHA256SUMS | sed 's|^\./||' | LC_ALL=C sort) \
+            <(cut -c67- release/SHA256SUMS | LC_ALL=C sort)
