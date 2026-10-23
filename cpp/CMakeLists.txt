@@ -28,8 +28,20 @@ add_library(sscbirrt::core ALIAS sscbirrt_core)
 # The trajectory smoother mirrors sscbirrt._trajectory operation by operation (#214); without contraction into fused
 # multiply-adds, both round the same way on every platform.
 set_source_files_properties(src/trajectory.cpp src/validation.cpp PROPERTIES COMPILE_OPTIONS -ffp-contract=off)
-# sscbirrt::version() and every validation report's implementation (#230); CI holds it equal to pyproject's version.
-set_source_files_properties(src/validation.cpp PROPERTIES COMPILE_DEFINITIONS SSCBIRRT_VERSION="${PROJECT_VERSION}")
+# sscbirrt::version() and every validation report's implementation (#230); a test holds it equal to the installed
+# package's version. project(VERSION) must be numeric, so a release candidate (3.13.0rc1) cannot live there: a wheel
+# or sdist build takes the full version from pyproject through scikit-build-core, and a plain CMake build reports
+# PROJECT_VERSION. pyproject's numeric release part must equal PROJECT_VERSION (#260).
+if(DEFINED SKBUILD_PROJECT_VERSION AND NOT SKBUILD_PROJECT_VERSION VERSION_EQUAL PROJECT_VERSION)
+  message(FATAL_ERROR "sscbirrt: pyproject version ${SKBUILD_PROJECT_VERSION_FULL} does not match "
+                      "project(VERSION ${PROJECT_VERSION}) in cpp/CMakeLists.txt")
+endif()
+if(DEFINED SKBUILD_PROJECT_VERSION_FULL)
+  set(SSCBIRRT_VERSION_STRING "${SKBUILD_PROJECT_VERSION_FULL}")
+else()
+  set(SSCBIRRT_VERSION_STRING "${PROJECT_VERSION}")
+endif()
+set_source_files_properties(src/validation.cpp PROPERTIES COMPILE_DEFINITIONS SSCBIRRT_VERSION="${SSCBIRRT_VERSION_STRING}")
 target_include_directories(sscbirrt_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)

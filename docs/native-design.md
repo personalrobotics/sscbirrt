@@ -1863,8 +1863,10 @@ implementations, held equal on every reference case.
 - **Policy and version.**
   - `ValidationPolicy { resolution }` reports a fixed name, mechanism (`joint_subdivision`), guarantee
     (`discrete`), ambiguity band (0) and parameters.
-  - `sscbirrt::version()` is CMake's `PROJECT_VERSION`, and `_native.__version__` exposes it. A test holds it equal
-    to the installed package's version.
+  - `sscbirrt::version()` is the package version from `pyproject.toml` in a wheel or sdist build (scikit-build-core's
+    `SKBUILD_PROJECT_VERSION_FULL`, so a release candidate reports `3.13.0rc1`), and CMake's `PROJECT_VERSION` in a
+    plain CMake build. `_native.__version__` exposes it. A test holds it equal to the installed package's version,
+    and the build refuses a pyproject version whose numeric release differs from `PROJECT_VERSION` (#260).
 - **Lifetime and threading.**
   - A `Validator` borrows shared components and keeps nothing between calls: no cache, so query order cannot
     change an answer.
