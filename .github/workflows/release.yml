@@ -22,7 +22,9 @@ name: Release
 #                          then downloads them back and confirms their hashes
 #
 # Every job after gather downloads the one gathered artifact and re-checks it against SHA256SUMS, and SHA256SUMS against
-# the digest gather recorded, before it acts. publish_pypi needs verify and confirm_testpypi to succeed, so a failure
+# the digest gather recorded, before it acts. Immediately before the TestPyPI upload, the PyPI upload and the release
+# creation, a step resolves the tag to the commit it points to now and stops unless that is this run's commit, so a
+# moved or deleted tag never publishes under its new target. publish_pypi needs verify and confirm_testpypi to succeed, so a failure
 # before it leaves PyPI untouched. An rc tag stops after confirm_testpypi and release_report.
 #
 # workflow_dispatch builds, gathers and verifies only; it publishes to TestPyPI only with publish_testpypi=true, and it
@@ -44,6 +46,13 @@ on:
 
 permissions:
   contents: read
+
+# Two runs for one tag never overlap: a running release is never cancelled, and a later run for the tag waits for it
+# (GitHub keeps at most one waiting run per group). Each dispatch run is untagged and has its own group, so dispatch
+# runs do not wait on each other.
+concurrency:
+  group: release-${{ github.event_name == 'push' && github.ref || github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   version:
@@ -215,6 +224,20 @@ jobs:
           echo "$SUMS_SHA256  SHA256SUMS" | shasum -a 256 -c -
           (cd dist && shasum -a 256 -c ../SHA256SUMS)
           diff <(cd dist && find . -mindepth 1 -maxdepth 1 | sed 's|^\./||' | LC_ALL=C sort) <(cut -c67- SHA256SUMS | LC_ALL=C sort)
+      - name: The tag still points to this run's commit (a moved or deleted tag stops the run)
+        if: needs.version.outputs.kind != 'untagged'
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Annotated tags list their commit as refs/tags/TAG^{}; lightweight tags only as refs/tags/TAG.
+          refs="$(git ls-remote --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG" "refs/tags/$TAG^{}")"
+          target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG^{}" '$2 == ref {print $1}')"
+          [ -n "$target" ] || target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG" '$2 == ref {print $1}')"
+          if [ "$target" != "$GITHUB_SHA" ]; then
+            echo "::error::tag $TAG now points to ${target:-nothing}, not this run's commit $GITHUB_SHA"
+            exit 1
+          fi
+          echo "tag $TAG still points to $GITHUB_SHA"
       - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
         with:
           repository-url: https://test.pypi.org/legacy/
@@ -281,6 +304,19 @@ jobs:
           echo "$SUMS_SHA256  SHA256SUMS" | shasum -a 256 -c -
           (cd dist && shasum -a 256 -c ../SHA256SUMS)
           diff <(cd dist && find . -mindepth 1 -maxdepth 1 | sed 's|^\./||' | LC_ALL=C sort) <(cut -c67- SHA256SUMS | LC_ALL=C sort)
+      - name: The tag still points to this run's commit (a moved or deleted tag stops the run)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Annotated tags list their commit as refs/tags/TAG^{}; lightweight tags only as refs/tags/TAG.
+          refs="$(git ls-remote --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG" "refs/tags/$TAG^{}")"
+          target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG^{}" '$2 == ref {print $1}')"
+          [ -n "$target" ] || target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG" '$2 == ref {print $1}')"
+          if [ "$target" != "$GITHUB_SHA" ]; then
+            echo "::error::tag $TAG now points to ${target:-nothing}, not this run's commit $GITHUB_SHA"
+            exit 1
+          fi
+          echo "tag $TAG still points to $GITHUB_SHA"
       - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
         with:
           packages-dir: release/dist/
@@ -390,6 +426,19 @@ jobs:
           print(m.group(1).strip())
           PY
           test -s notes.md
+      - name: The tag still points to this run's commit (a moved or deleted tag stops the run)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Annotated tags list their commit as refs/tags/TAG^{}; lightweight tags only as refs/tags/TAG.
+          refs="$(git ls-remote --tags "https://github.com/$GITHUB_REPOSITORY" "refs/tags/$TAG" "refs/tags/$TAG^{}")"
+          target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG^{}" '$2 == ref {print $1}')"
+          [ -n "$target" ] || target="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$TAG" '$2 == ref {print $1}')"
+          if [ "$target" != "$GITHUB_SHA" ]; then
+            echo "::error::tag $TAG now points to ${target:-nothing}, not this run's commit $GITHUB_SHA"
+            exit 1
+          fi
+          echo "tag $TAG still points to $GITHUB_SHA"
       - name: Create the release with the gathered files, SHA256SUMS, manifest and report
         env:
           GH_TOKEN: ${{ github.token }}

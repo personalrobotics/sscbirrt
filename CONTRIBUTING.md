@@ -62,11 +62,15 @@ uploaded. Check a tag locally with `python3 tools/release_check.py version --tag
    installs from PyPI and runs the quick start, and creates the GitHub release from the CHANGELOG section with the
    distributions, `SHA256SUMS`, `manifest.json` and `release-report.json` attached.
 
+**Never move or delete a tag while a release run for it exists** (running, waiting, or able to be re-run). If a tag
+must change, cut the next version (the next rc, or the next patch) instead. The TestPyPI, PyPI and GitHub-release
+jobs each stop unless the tag still points to the run's commit, so a moved tag fails the run rather than publishing
+one commit's files under another; it does not make moving a tag safe.
+
 A failure anywhere before the PyPI upload leaves PyPI untouched. A transient failure (an index slow to serve the
 files, a runner fault) is retried with "Re-run failed jobs" on the same run, which reuses the gathered files. A
-failure in the files themselves needs a new build: before TestPyPI the tag can be pushed again at the fixed commit, but once
-TestPyPI holds a version's files it refuses different files under the same names, so the fix ships as the next rc or
-patch version. `workflow_dispatch` builds, gathers, verifies and writes the report on any branch without publishing,
+failure in the files themselves needs a new build, and so the next rc or patch version: TestPyPI refuses different
+files under a version's existing names, and the tag stays where it is. `workflow_dispatch` builds, gathers, verifies and writes the report on any branch without publishing,
 which is how to rehearse a change to the pipeline.
 To check gathered files by hand, download the run's `release-dist` artifact and run
 `python3 tools/release_check.py dist release-dist/dist --version X.Y.Z --sums release-dist/SHA256SUMS --python 3.12`.
