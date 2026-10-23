@@ -6,6 +6,12 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.13.0]
+
+Planning clearance is a first-class, per-validator argument (#256): `clearance=` keeps the moving set at least that
+far from the environment, one scene serves every clearance, and the clearance is recorded in the validation policy
+and plan provenance. Releases now build, verify and publish one immutable artifact set (#260).
+
 ### Added
 - A first-class planning clearance (#256): `NativeCollisionChecker(scene, snapshot, clearance=...)`, and
   `clearance=` on `sscbirrt.mujoco.plan` and `validator`, keep the moving set (the planned arm and its held objects)
