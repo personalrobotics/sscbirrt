@@ -408,6 +408,7 @@ def run_checks(
     work_root: Path,
     names: tuple[str, ...] | None,
     install_args: tuple[str, ...] = (),
+    attempts: int = 1,
 ) -> list[dict]:
     """Install ``requirement`` (or the one it names for the new interpreter) into a fresh environment and run the
     checks; a failed install skips the rest."""
@@ -421,7 +422,25 @@ def run_checks(
     def install() -> str:
         _uv("venv", "--quiet", "--python", python_request, venv, cwd=work)
         target = requirement(python) if callable(requirement) else requirement
-        _uv("pip", "install", "--quiet", "--no-cache", "--python", python, *install_args, target, "pytest", cwd=work)
+        for attempt in range(attempts):  # an index can list a new release before its simple page serves it
+            try:
+                _uv(
+                    "pip",
+                    "install",
+                    "--quiet",
+                    "--no-cache",
+                    "--python",
+                    python,
+                    *install_args,
+                    target,
+                    "pytest",
+                    cwd=work,
+                )
+                break
+            except CheckFailed:
+                if attempt == attempts - 1:
+                    raise
+                time.sleep(60)
         menagerie = env.py("-c", "import sscbirrt_assets; print(sscbirrt_assets.menagerie_path())").strip()
         env.env = _clean_env(menagerie)
         installed = env.py("-c", "import importlib.metadata as m; print(m.version('sscbirrt'))").strip()
@@ -482,7 +501,7 @@ def confirm_index(index: str, version: str, sums: Path, download: Path, wait: fl
     download.mkdir(parents=True, exist_ok=True)
     for name in sorted(set(served) | set(expected)):
         record = {"name": name, "expected": expected.get(name), "index_reported": None, "downloaded": None}
-        if name in served:
+        if name in served and name in expected:  # only names SHA256SUMS lists are written to disk
             record["index_reported"] = served[name]["digests"]["sha256"]
             target = download / name
             with urllib.request.urlopen(served[name]["url"], timeout=300) as r, target.open("wb") as f:
@@ -647,6 +666,7 @@ def main(argv: list[str] | None = None) -> int:
                     work_root,
                     QUICK_START,
                     ("--index-url", "https://pypi.org/simple"),
+                    attempts=10,
                 )
     except CheckFailed as exc:
         report["checks"].append(
