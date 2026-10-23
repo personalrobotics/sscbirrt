@@ -323,6 +323,65 @@ def check_public_api(e: Env) -> str:
     return e.py("-c", PUBLIC_ALLOWANCES)
 
 
+# #256 / #259 through public names only: 0 mm and 5 mm checkers over one scene, the documented refusals, and the
+# refused malformed clearances. A slide-joint arm's sphere tip (radius 0.02) faces a box whose near face is x = 0.47.
+PUBLIC_CLEARANCE = """
+import json, numpy as np, mujoco
+from sscbirrt.backends.native_mujoco import NativeCollisionChecker, NativeScene, Snapshot
+WORLD = '''<mujoco>{option}<worldbody>
+  <body name="arm" pos="0 0 0.5"><joint name="x" type="slide" axis="1 0 0"/><geom type="sphere" size="0.02"/></body>
+  <body name="wall" pos="0.5 0 0.5"><geom type="box" size="0.03 0.1 0.1"/></body>
+  {flex}
+</worldbody></mujoco>'''
+FLEX = ('<flexcomp name="rope" type="grid" count="3 1 1" spacing="0.05 0.05 0.05" pos="-0.5 -0.8 0.2" dim="1" '
+        'radius="0.01"/>')
+def world(option="", flex=""):
+    m = mujoco.MjModel.from_xml_string(WORLD.format(option=option, flex=flex))
+    scene = NativeScene.from_model(m, ["x"])
+    return scene, Snapshot.from_state(scene, mujoco.MjData(m).qpos)
+def tip_gap(gap):
+    return np.array([0.47 - 0.02 - gap])
+scene, snap = world()
+zero, five = NativeCollisionChecker(scene, snap), NativeCollisionChecker(scene, snap, clearance=0.005)
+answers = {gap: [zero.is_valid(tip_gap(gap)), five.is_valid(tip_gap(gap))] for gap in (0.0049, 0.0051)}
+assert answers == {0.0049: [True, False], 0.0051: [True, True]}, answers
+assert zero.scene is five.scene is scene
+assert (zero.provenance["clearance_m"], five.provenance["clearance_m"]) == (0.0, 0.005)
+assert zero.provenance["scene_mjb_sha256"] == five.provenance["scene_mjb_sha256"]
+refusals = {}
+for name, kw in (("override", {"option": '<option><flag override="enable"/></option>'}), ("flex", {"flex": FLEX})):
+    s, sn = world(**kw)
+    assert NativeCollisionChecker(s, sn, clearance=0).is_valid(tip_gap(0.1))
+    try:
+        NativeCollisionChecker(s, sn, clearance=0.005)
+    except ValueError as exc:
+        assert name in str(exc), (name, str(exc))
+        refusals[name] = str(exc)
+    else:
+        raise AssertionError(f"{name}: clearance 0.005 was accepted")
+malformed = {}
+for bad, expected in ((True, TypeError), (float("nan"), ValueError), (-0.001, ValueError)):
+    try:
+        NativeCollisionChecker(scene, snap, clearance=bad)
+    except expected as exc:
+        malformed[repr(bad)] = type(exc).__name__
+    else:
+        raise AssertionError(f"clearance {bad!r} was not refused with {expected.__name__}")
+print(json.dumps({
+    "answers_0_and_5mm": {str(g): a for g, a in answers.items()},
+    "clearance_m": [zero.provenance["clearance_m"], five.provenance["clearance_m"]],
+    "scene_mjb_sha256": zero.provenance["scene_mjb_sha256"],
+    "refusals": refusals,
+    "malformed": malformed,
+}))
+"""
+
+
+def check_public_clearance(e: Env) -> str:
+    """Planning clearance (#256) through public names: one scene, two clearances, the refusals."""
+    return e.py("-c", PUBLIC_CLEARANCE)
+
+
 # The checks run, in order, against each clean install. A release that adds public behaviour appends its check.
 CHECKS: list[tuple[str, Callable[[Env], str]]] = [
     ("version", check_version_reported),
@@ -331,6 +390,7 @@ CHECKS: list[tuple[str, Callable[[Env], str]]] = [
     ("validation_artifact", check_validation_artifact),
     ("readme", check_readme),
     ("public_api", check_public_api),
+    ("public_clearance", check_public_clearance),
 ]
 QUICK_START = ("version", "readme")
 

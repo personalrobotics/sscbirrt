@@ -2,10 +2,13 @@
 # Copyright (c) 2025 Siddhartha Srinivasa
 
 """The release gate refuses before any upload (#260): a tag whose version is not the package's, and a gathered file
-that is not this package at this version, stop the workflow at its first job and at gather."""
+that is not this package at this version, stop the workflow at its first job and at gather. The installed-artifact
+public clearance check (#259) holds for this build."""
 
 import importlib.util
 import io
+import json
+import subprocess
 import sys
 import tarfile
 import zipfile
@@ -98,3 +101,21 @@ def test_gather_writes_sums_that_recheck_and_refuses_a_file_that_is_not_this_ver
     _wheel(dist / "sscbirrt-3.13.0rc1-cp312-cp312-manylinux_2_28_x86_64.whl", "3.13.0")
     with pytest.raises(release_check.CheckFailed, match="records version 3.13.0,"):
         release_check.gather(dist, "3.13.0rc1", out, None, None, None)
+
+
+def test_public_clearance_check_passes_on_the_installed_build():
+    """The release's public clearance check (#259) holds for this build, through public names only."""
+    pytest.importorskip("mujoco")
+    from sscbirrt.backends import native_mujoco
+
+    if not native_mujoco.available():
+        pytest.skip(native_mujoco.unavailable_reason())
+    assert "_load" not in release_check.PUBLIC_CLEARANCE and "_native_mujoco" not in release_check.PUBLIC_CLEARANCE
+    out = subprocess.run(
+        [sys.executable, "-I", "-c", release_check.PUBLIC_CLEARANCE], capture_output=True, text=True, check=True
+    ).stdout
+    result = json.loads(out.strip().splitlines()[-1])
+    assert result["answers_0_and_5mm"] == {"0.0049": [True, False], "0.0051": [True, True]}
+    assert result["clearance_m"] == [0.0, 0.005]
+    assert set(result["refusals"]) == {"override", "flex"}
+    assert result["malformed"] == {"True": "TypeError", "nan": "ValueError", "-0.001": "ValueError"}
