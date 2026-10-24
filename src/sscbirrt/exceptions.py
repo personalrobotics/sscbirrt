@@ -58,6 +58,23 @@ class AllGoalConfigurationsInvalid(PlanningError):
         super().__init__(msg)
 
 
+class InvalidPath(PlanningError):
+    """Raised when a given path is not valid under the planner's own rules, so it cannot be timed (#267).
+
+    ``CBiRRT.time_path`` raises it, before any timing, for the expected operational failure: a path whose state or
+    straight motion breaks the joint limits, collides, or leaves the path constraint, such as a rebase bridge that is
+    blocked. ``report`` is the path's ``ValidationReport`` under the validator ``plan`` applies (clearance included);
+    its ``witness`` names the failure, the segment (0 is the path's first motion) and fraction, the state, and the
+    contacts when the checker can name them.
+    """
+
+    def __init__(self, report):
+        self.report = report
+        w = report.witness
+        where = "" if w is None else f": {w.failure} in segment {w.segment} at fraction {w.fraction:.4g} ({w.detail})"
+        super().__init__(f"path is not valid under the planner's rules{where}")
+
+
 class UnsupportedCapability(TypeError):
     """Raised when a state set is asked for a capability it does not provide.
 

@@ -27,6 +27,12 @@ the override and flex refusals; that the caller's model and the scene are unchan
 without affecting each other; that with no attachment the 5 mm checker equals a model compiled with 5 mm margins,
 contact for contact; and the policies and provenance of plans at both clearances.
 
+For #267 it records, on the first world and both backends, ``CBiRRT.time_path`` on a planned path: with
+``geometry="keep"`` (how far its samples lie from the given polyline) and ``"shortcut"``, each report next to the
+public validator's; a rebase with a clear straight bridge prepended; one whose bridge crosses the wall
+(``InvalidPath``, its witness); and, on a 5 mm checker, the clearance in the reports and a bridge from a state
+that is valid at 0 but within 5 mm of the wall.
+
 ``tests/reference/geodude_132_evidence.json`` is the reduced Geodude edge of ssrobot#132, made by
 ``tools/geodude_132_evidence.py`` inside ssrobot.
 
@@ -417,6 +423,95 @@ def _clearance_view(section: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# #267: rebase bridges for the first world's plan, prepended to the planned path.
+CLEAR_BRIDGE_FROM = [1.7, -0.3]  # beside the start, away from the wall
+BLOCKED_BRIDGE_FROM = [-1.0, 0.0]  # its straight line to the start sweeps the hand through the wall
+NEAR_WALL = [0.0, -0.2745]  # valid at clearance 0, within 5 mm of the wall
+
+
+def _polyline_distance(points: np.ndarray, corners: list[np.ndarray]) -> float:
+    """The largest distance from ``points`` to the polyline through ``corners`` (joint space)."""
+    best = np.full(len(points), np.inf)
+    for a, b in zip(corners[:-1], corners[1:]):
+        d = b - a
+        t = np.clip(((points - a) @ d) / max(float(d @ d), 1e-30), 0.0, 1.0)
+        best = np.minimum(best, np.linalg.norm(points - (a + t[:, None] * d), axis=1))
+    return float(best.max())
+
+
+def _time_paths() -> dict[str, Any]:
+    import mujoco
+
+    from sscbirrt import CBiRRT, CBiRRTConfig, InvalidPath, TrajectoryOptions
+    from sscbirrt.backends.mujoco import MuJoCoRobotModel
+    from sscbirrt.backends.native_mujoco import NativeCollisionChecker, NativeScene, Snapshot, _NoIK
+
+    model = mujoco.MjModel.from_xml_string(WORLD)
+    data = mujoco.MjData(model)
+    scene = NativeScene.from_model(model, ["j0", "j1"])
+    snap = Snapshot.capture(scene, data)
+    robot = MuJoCoRobotModel(model, data, "tip", ["j0", "j1"])
+    options = TrajectoryOptions(velocity_limits=1.57, acceleration_limits=4.0)
+    out: dict[str, Any] = {}
+    for backend in ("python", "native"):
+        for clearance in (0.0, 0.005):
+            checker = NativeCollisionChecker(scene, snap, clearance=clearance)
+            planner = CBiRRT(robot, _NoIK(), checker, CBiRRTConfig(), backend=backend)
+            result = planner.plan(start=np.array(START), goal=np.array(GOAL), seed=0, return_details=True)
+            path = [np.asarray(q, dtype=float) for q in result.path]
+            public = planner.validator()
+            rec: dict[str, Any] = {"plan_success": result.success, "path_waypoints": len(path)}
+            for geometry in ("keep", "shortcut"):
+                traj = planner.time_path(path, options, geometry=geometry)
+                samples = traj.sample(10_000_000)[1]  # every 10 ms
+                rec[geometry] = {
+                    "report": _report(traj.validation),
+                    "report_equals_public": traj.validation == public.validate_trajectory(traj),
+                    "duration_s": traj.duration,
+                    "pieces": len(traj.pieces),
+                    "max_distance_from_path": _polyline_distance(samples, path),
+                }
+            for name, q0 in (("clear_bridge", CLEAR_BRIDGE_FROM), ("blocked_bridge", BLOCKED_BRIDGE_FROM),
+                             ("near_wall_bridge", NEAR_WALL)):  # fmt: skip
+                rebased = [np.array(q0, dtype=float), *path]
+                try:
+                    traj = planner.time_path(rebased, options, geometry="keep")
+                    rec[name] = {"timed": True, "report": _report(traj.validation)}
+                except InvalidPath as e:
+                    rec[name] = {"timed": False, "error": type(e).__name__, "report": _report(e.report)}
+            out[f"{backend}_{clearance:g}"] = rec
+    return out
+
+
+def _time_path_view(section: dict[str, Any]) -> dict[str, Any]:
+    """The comparable part of the #267 section: decisions, report equalities, geometry kept or not."""
+    view = {}
+    for key, rec in section.items():
+        v: dict[str, Any] = {"plan_success": rec["plan_success"]}
+        for geometry in ("keep", "shortcut"):
+            g = rec[geometry]
+            v[geometry] = {
+                "valid": g["report"]["valid"],
+                "clearance_m": g["report"]["policy"]["parameters"][0],
+                "report_equals_public": g["report_equals_public"],
+                "on_the_path": g["max_distance_from_path"] < 1e-9,
+            }
+        v["shortcut_no_slower"] = rec["shortcut"]["duration_s"] <= rec["keep"]["duration_s"] + 1e-9
+        for name in ("clear_bridge", "blocked_bridge", "near_wall_bridge"):
+            r = rec[name]
+            w = r["report"]["witness"]
+            v[name] = {
+                "timed": r["timed"],
+                "error": r.get("error"),
+                "witness": None
+                if w is None
+                else {"failure": w["failure"], "segment": w["segment"],
+                      "bodies": sorted({b for c in w["contacts"] for b in (c["body1"], c["body2"])})},
+            }  # fmt: skip
+        view[key] = v
+    return view
+
+
 def _report(r) -> dict[str, Any]:
     return r.to_dict()
 
@@ -487,6 +582,7 @@ def generate() -> dict[str, Any]:
     out["python_equals_native_verdicts"] = {name: _verdict(py[name]) == _verdict(nat[name]) for name in py}
     out["allowances"] = _allowances()
     out["clearance"] = _clearances()
+    out["time_path"] = _time_paths()
     return out
 
 
@@ -515,6 +611,7 @@ def semantic_view(artifact: dict[str, Any]) -> dict[str, Any]:
         "python_equals_native_verdicts": artifact["python_equals_native_verdicts"],
         "allowances": _allowance_view(artifact["allowances"]),
         "clearance": _clearance_view(artifact["clearance"]),
+        "time_path": _time_path_view(artifact["time_path"]),
     }
     for backend, b in artifact["backends"].items():
         view[backend] = {
@@ -544,7 +641,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         print(
             "validation evidence matches (verdicts, planning = public, repeats and reorders, python = native, "
-            "attachment allowances, clearance)"
+            "attachment allowances, clearance, time_path)"
         )
         return 0
     args.output.write_text(json.dumps(fresh, indent=1) + "\n")

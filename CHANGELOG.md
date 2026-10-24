@@ -6,6 +6,18 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `CBiRRT.time_path(path, options, constraint_tsrs=None, *, geometry)` times a given path (for example a plan
+  rebased onto the state the robot reached, with a straight bridge prepended) under the planner's own rules, with
+  no private import (#267).
+  - The path is validated by `CBiRRT.validator(constraint_tsrs)`, the validator `plan` applies, clearance included;
+    `traj.validation` is that validator's whole-trajectory report.
+  - `geometry` is required: `"keep"` times the given straight segments exactly, at rest at every corner;
+    `"shortcut"` smooths as `plan`'s `trajectory=` does.
+  - `InvalidPath` (a `PlanningError`, with `.report`) is the one expected failure, raised before timing for a path
+    that breaks a limit, collides or leaves the constraint. Malformed arguments raise `TypeError`/`ValueError`.
+  - Evidence: the `time_path` section of `tests/reference/validation_evidence.json` (both backends, 0 and 5 mm).
+
 ### Changed
 - Documentation for planning clearance (#256): a tested `clearance=` example in the README's "Plan in MuJoCo",
   validating under the plan's clearance, the measured cost, and a migration note for integrators who set margins on

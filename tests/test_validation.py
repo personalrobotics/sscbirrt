@@ -511,3 +511,50 @@ class TestPlannerValidator:
         with pytest.raises(ValueError, match="need IK"):
             planner.validator(constraint_tsrs=[TSR()])
         assert planner.validator().validate_state([0.0, 0.0]).valid
+
+
+class TestTimePath:
+    """#267: ``CBiRRT.time_path``'s public entry. Caller errors raise ``TypeError``/``ValueError`` before any check;
+    a path the planner's validator rejects raises ``InvalidPath``; the behaviour itself is in the validation
+    evidence (``tests/test_validation_artifact.py``)."""
+
+    OPTIONS = TrajectoryOptions(velocity_limits=1.0, acceleration_limits=2.0)
+
+    @pytest.fixture
+    def planner(self):
+        return CBiRRT(PlanarArm(), collision_checker=Wall(0, 0.45, 0.55), backend="python")
+
+    PATH = [np.array([0.0, 0.0]), np.array([0.3, 0.2]), np.array([0.4, 0.4])]
+
+    @pytest.mark.parametrize(
+        "kwargs, error, match",
+        [
+            ({"geometry": "exact"}, ValueError, "geometry"),
+            ({"geometry": None}, ValueError, "geometry"),
+            ({"geometry": "keep", "options": {"velocity_limits": 1.0}}, TypeError, "TrajectoryOptions"),
+            ({"geometry": "keep", "options": TrajectoryOptions(velocity_limits=-1.0, acceleration_limits=2.0)},
+             ValueError, "velocity_limits"),
+            ({"geometry": "keep", "path": [np.array([0.0, 0.0])]}, ValueError, "at least 2"),
+            ({"geometry": "keep", "path": [[0.0, 0.0, 0.0], [0.1, 0.1, 0.1]]}, ValueError, "path"),
+            ({"geometry": "keep", "path": [[0.0, 0.0], [math.nan, 0.1]]}, ValueError, "finite|non-finite"),
+            ({"geometry": "keep", "constraint_tsrs": [object()]}, ValueError, "IK"),
+        ],
+    )  # fmt: skip
+    def test_caller_errors_are_refused_before_any_check(self, planner, kwargs, error, match):
+        args = {"path": self.PATH, "options": self.OPTIONS, **kwargs}
+        with pytest.raises(error, match=match):
+            planner.time_path(args.pop("path"), args.pop("options"), **args)
+
+    def test_geometry_has_no_default(self, planner):
+        with pytest.raises(TypeError, match="geometry"):
+            planner.time_path(self.PATH, self.OPTIONS)
+
+    def test_an_invalid_path_is_the_expected_failure_and_says_where(self, planner):
+        from sscbirrt import InvalidPath, PlanningError
+
+        blocked = [np.array([0.0, 0.0]), np.array([0.5, 0.0]), np.array([0.5, 0.4])]  # segment 0 enters the wall
+        with pytest.raises(InvalidPath) as caught:
+            planner.time_path(blocked, self.OPTIONS, geometry="keep")
+        assert isinstance(caught.value, PlanningError) and not isinstance(caught.value, ValueError)
+        w = caught.value.report.witness
+        assert (w.failure, w.segment) == ("collision", 0) and "segment 0" in str(caught.value)
