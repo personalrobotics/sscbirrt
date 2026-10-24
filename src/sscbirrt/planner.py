@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Siddhartha Srinivasa
 
+import dataclasses
 import functools
 import itertools
 import logging
@@ -16,6 +17,7 @@ from sscbirrt.exceptions import (
     AllGoalConfigurationsInvalid,
     AllStartConfigurationsInCollision,
     AllStartConfigurationsInvalid,
+    InvalidPath,
     MotionContractError,
     UnsupportedCapability,
 )
@@ -354,9 +356,79 @@ class CBiRRT:
 
         Uses the backend selection of ``solve``: native when the problem lowers (with ``backend="auto"``), else the
         Python reference with the reasons on ``Trajectory.backend_reasons``.
+
+        It assumes ``path`` is valid and does not check it. To time a path you already have (a replayed or rebased
+        plan) under this planner's rules without building a problem, use ``time_path``.
         """
         seed = options.seed if options.seed is not None else 0
         return self._smooth_trajectory(problem, path, options, seed, None)
+
+    def time_path(self, path, options: TrajectoryOptions, constraint_tsrs=None, *, geometry: str) -> Trajectory:
+        """Time a given path under ``options``' limits and this planner's own rules (#267), for example a planned
+        path with a straight bridge prepended from the state the robot actually reached.
+
+        The path is first checked by ``self.validator(constraint_tsrs)``, the validator ``plan`` applies: the same
+        space, collision checker (and its clearance, #256), path constraint and ``ValidationPolicy``. Only a valid
+        path is timed, and the returned trajectory's ``validation`` is that validator's whole-trajectory report.
+
+        Args:
+            path: Two or more configurations; the first is where the motion starts.
+            options: ``TrajectoryOptions``: the limits, and when shortcutting stops. ``seed`` defaults to 0.
+            constraint_tsrs: The path-constraint TSRs (or chains) ``plan`` was given; several are an intersection.
+            geometry: ``"keep"``: the trajectory follows the given path's straight segments exactly, at rest at
+                every corner, each segment time-optimal; it is the given path, timed. ``"shortcut"``: as
+                ``smooth_trajectory``, randomized time-optimal shortcuts replace windows of it whenever faster and
+                valid, so the motion may leave the given segments (seeded, so repeatable).
+
+        Returns:
+            A ``Trajectory`` whose ``validation`` is valid, and whose ``path`` is ``path``.
+
+        Raises:
+            InvalidPath: The expected operational failure: ``path`` breaks a joint limit, collides, or leaves the
+                path constraint (for a rebase, ``e.report.witness.segment == 0`` is a blocked bridge). Nothing is
+                timed. ``e.report`` says where and why.
+            TypeError, ValueError: A caller error, raised before any check: ``geometry`` not ``"keep"`` or
+                ``"shortcut"``, ``options`` not ``TrajectoryOptions`` or with malformed limits, a path that is not
+                two or more finite configurations of this planner's joints, or ``constraint_tsrs`` without IK.
+            RuntimeError: An internal defect (a timed trajectory failing the rule its path passed); never an
+                expected outcome.
+        """
+        if geometry not in ("keep", "shortcut"):
+            raise ValueError(f'geometry must be "keep" or "shortcut", got {geometry!r}')
+        if not isinstance(options, TrajectoryOptions):
+            raise TypeError(f"options must be TrajectoryOptions, got {type(options).__name__}")
+        limits(options, self.space.dof)
+        configs = as_configurations(path, self.space.dof, "path")
+        if len(configs) < 2:
+            raise ValueError(f"path needs at least 2 configurations, got {len(configs)}")
+        if self.ik is None and constraint_tsrs:
+            raise ValueError("TSR constraints need IK: CBiRRT(robot, ik=..., collision_checker=...)")
+        validator = self.validator(constraint_tsrs)
+        report = validator.validate_path(configs)  # raises ValueError for non-finite configurations
+        if not report.valid:
+            raise InvalidPath(report)
+        problem = legacy_problem(
+            self.robot,
+            self.ik,
+            self.collision,
+            self.space,
+            self.config,
+            [configs[0]],
+            [configs[-1]],
+            None,
+            None,
+            constraint_tsrs,
+        )
+        if geometry == "keep":
+            options = dataclasses.replace(options, iterations=0)  # no shortcut attempt: the path, at rest at corners
+        seed = options.seed if options.seed is not None else 0
+        traj = self._smooth_trajectory(problem, configs, options, seed, None)
+        if traj.validation is None or not traj.validation.valid:
+            raise RuntimeError(
+                "internal error: a trajectory timed along a valid path failed validation: "
+                f"{traj.validation.witness if traj.validation is not None else 'no report'}"
+            )
+        return traj
 
     def _smooth_trajectory(
         self, problem, path, options: TrajectoryOptions, seed: int, lowered, reasons: tuple[str, ...] = ()

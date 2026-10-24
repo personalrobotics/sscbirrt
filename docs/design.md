@@ -447,6 +447,21 @@ gives the same trajectory on any machine. The native core and the Python
 reference implement the same contract, and only their random streams differ
 ([native-design.md](native-design.md)).
 
+**Timing a given path (#267).** `CBiRRT.time_path(path, options,
+constraint_tsrs, geometry=...)` times a path the caller already has, such as a
+plan rebased onto the robot's actual state by a prepended straight bridge. The
+path is first validated by `CBiRRT.validator(constraint_tsrs)`, the validator
+`plan` applies (its space, checker and clearance, path constraint and
+`ValidationPolicy`); an invalid path raises `InvalidPath`, a `PlanningError`
+carrying the report, and is not timed. A valid path is timed by the same
+smoother as `plan`: `geometry="keep"` with no shortcut attempts, so the
+trajectory is the given polyline at rest at every corner, and
+`geometry="shortcut"` with them. The result's `validation` is that
+validator's whole-trajectory report. Malformed arguments are caller errors
+(`TypeError`, `ValueError`), raised before any check; a timed trajectory that
+failed the rule its path passed would be an internal defect and raises
+`RuntimeError`, never `InvalidPath`.
+
 ## Collision clearance (#256)
 
 A collision checker may enforce a clearance: the minimum distance every valid

@@ -394,8 +394,48 @@ times_ns, positions = traj.sample(2_000_000)   # a command every 2 ms, for your 
 ```
 
 The same `trajectory=` works on `CBiRRT.solve` and `CBiRRT.plan`
-(`return_details=True`). `CBiRRT.smooth_trajectory(problem, path, options)`
-times a path you already have.
+(`return_details=True`).
+
+### Timing a path you already have
+
+`CBiRRT.time_path(path, options, constraint_tsrs=None, geometry=...)` times a
+path you already hold, for example a planned path rebased onto the state the
+robot actually reached by prepending a straight bridge:
+
+```python
+import numpy as np
+from sscbirrt import CBiRRT, InvalidPath, TrajectoryOptions
+from sscbirrt.testing import PlanarArm, Wall
+
+planner = CBiRRT(PlanarArm(), collision_checker=Wall(0, 0.45, 0.55, extent=0.3))  # a wall with a way around
+limits = TrajectoryOptions(velocity_limits=1.0, acceleration_limits=2.0)
+path = planner.plan(start=np.array([0.0, 0.0]), goal=np.array([1.0, 0.0]), seed=0)
+
+arrived = np.array([-0.1, 0.05])  # where the robot actually is
+traj = planner.time_path([arrived, *path], limits, geometry="keep")  # the plan, unchanged, from there
+print(traj.validation.valid, traj.validation.policy.clearance_m)  # True 0.0
+
+try:
+    planner.time_path([np.array([1.2, 0.0]), *path], limits, geometry="keep")
+except InvalidPath as e:  # the expected failure: this bridge crosses the wall
+    print(e.report.witness.failure, e.report.witness.segment)  # collision 0
+```
+
+- **The planner's own rules.** The path is checked by `planner.validator(constraint_tsrs)`,
+  the validator `plan` applies, so the same edge resolution, path constraint and
+  collision checker, with its clearance. Only a valid path is timed, and
+  `traj.validation` is that validator's report.
+- **`geometry` is required.** `"keep"` follows the given straight segments exactly,
+  stopping at every corner: the given path, timed. `"shortcut"` smooths it as
+  `plan`'s `trajectory=` does, so the motion may leave the given segments.
+- **One expected failure.** `InvalidPath` (a `PlanningError`) means the path
+  breaks a limit, collides or leaves the constraint; `e.report` says where, and
+  segment 0 is the path's first motion (a rebase bridge). A `TypeError` or
+  `ValueError` is a caller error, raised before any check: a malformed path,
+  options or `geometry`.
+
+`CBiRRT.smooth_trajectory(problem, path, options)` is the lower-level form for a
+`PlanningProblem` you built yourself; it does not check the path first.
 
 **Three things, kept apart.**
 - **The path** (`result.path`): the planner's validated waypoints, never
