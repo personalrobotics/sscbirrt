@@ -47,6 +47,12 @@ def test_planning_clearance_runs(capsys):
     assert capsys.readouterr().out.splitlines()[-1] == "0.005 0.005"
 
 
+def test_timing_a_path_you_already_have_runs(capsys):
+    namespace: dict = {}
+    exec(compile(_first_python_block("### Timing a path you already have"), "README time_path", "exec"), namespace)
+    assert capsys.readouterr().out.splitlines() == ["True 0.0", "collision 0"]
+
+
 def test_validating_a_path_runs():
     namespace: dict = {}
     exec(compile(_first_python_block("## Quick start without a simulator"), "README quick start", "exec"), namespace)

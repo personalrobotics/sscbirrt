@@ -135,3 +135,32 @@ def test_the_evidence_shows_what_256_asks():
             assert success and ["clearance_m", text] in parameters and recorded == c
     assert v["one_scene_for_every_plan"]
     assert v["mutation"] == {"caller_model_unchanged": True, "scene_model_unchanged": True}
+
+
+def test_the_evidence_shows_what_267_asks():
+    """#267: a configured planner times a given path with public names only, under ``plan``'s own validator."""
+    v = tool._time_path_view(json.loads(tool.ARTIFACT.read_text())["time_path"])
+    assert set(v) == {"python_0", "python_0.005", "native_0", "native_0.005"}
+    for key, rec in v.items():
+        clearance = key.split("_")[1]
+        assert rec["plan_success"]
+        for geometry in ("keep", "shortcut"):
+            g = rec[geometry]
+            # The validator plan applies, clearance included, and the trajectory's report is its report.
+            assert g["valid"] and g["report_equals_public"] and g["clearance_m"] == ["clearance_m", clearance], key
+        assert (
+            rec["keep"]["on_the_path"] and not rec["shortcut"]["on_the_path"]
+        )  # keep follows the path; shortcut may not
+        assert rec["shortcut_no_slower"]
+        assert rec["clear_bridge"] == {"timed": True, "error": None, "witness": None}
+        # A blocked bridge is the documented expected failure, at the bridge (segment 0), naming the wall's body.
+        blocked = rec["blocked_bridge"]
+        assert not blocked["timed"] and blocked["error"] == "InvalidPath"
+        assert blocked["witness"]["failure"] == "collision" and blocked["witness"]["segment"] == 0
+        assert "world" in blocked["witness"]["bodies"]
+        # Within 5 mm of the wall: timed without a clearance, refused with the planner's 5 mm.
+        near = rec["near_wall_bridge"]
+        if clearance == "0":
+            assert near["timed"]
+        else:
+            assert not near["timed"] and near["witness"]["segment"] == 0
