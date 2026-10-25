@@ -6,6 +6,12 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.14.0]
+
+A given path can be timed under the planner's own rules through public API: `CBiRRT.time_path` validates it with
+the validator `plan` applies, keeps or shortcuts its geometry as asked, and raises `InvalidPath` when it is not
+valid (#267).
+
 ### Added
 - `CBiRRT.time_path(path, options, constraint_tsrs=None, *, geometry)` times a given path (for example a plan
   rebased onto the state the robot reached, with a straight bridge prepended) under the planner's own rules, with
