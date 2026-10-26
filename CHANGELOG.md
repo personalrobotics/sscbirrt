@@ -6,7 +6,7 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [3.14.0]
+## [3.14.0] - 2026-10-25
 
 A given path can be timed under the planner's own rules through public API: `CBiRRT.time_path` validates it with
 the validator `plan` applies, keeps or shortcuts its geometry as asked, and raises `InvalidPath` when it is not
