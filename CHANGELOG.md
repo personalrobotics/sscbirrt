@@ -7,6 +7,18 @@ follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- **Requires `sstsr>=4,<5`** (was `>=3.5,<4`; #274). sstsr 4 makes TSR membership exact up to round-off and
+  `distance` continuous (sstsr#190): `contains` no longer accepts poses up to `1e-3` (1 mm, 1 mrad) outside a
+  region's bounds. A TSR goal, start or path constraint is now accepted by `membership_tolerance` alone, a TSR
+  distance within it, as that field's documentation already said. Configurations that sat in the old band and
+  more than `membership_tolerance` from the region are no longer in the set.
+  - On sscbirrt's own evidence nothing changes: the reference artifact's 16 cases (both backends), the validation
+    evidence and the mj_manipulator corpus give the same verdicts and paths.
+  - The TSR conformance corpus gains probes on and just past a bound (`0`, `2e-4`, `9e-4`, `1.1e-3`) in every
+    region, so the native TSR is checked on the poses whose verdicts changed; they are refused with exactly that
+    distance.
+
+### Changed
 - `docs/design.md` explains why a planned constrained path sits at the edge of acceptance, and how to plan with a
   margin: tighten the constraint for `plan`, validate against the original (#269).
 

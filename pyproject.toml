@@ -36,7 +36,7 @@ dependencies = [
     # uses for both contains and project -- under the old wrap a pose just inside a narrow rotation bound
     # could measure about pi out, so a valid near-boundary state was rejected and project aimed at a wrong
     # target (sstsr#186).
-    "sstsr>=3.5,<4",
+    "sstsr>=4,<5",
 ]
 
 [project.optional-dependencies]
@@ -72,7 +72,7 @@ sscbirrt-assets = { path = "assets" }
 # ssik is a build requirement so the isolated build can ask it for the ssik_cpp CMake package
 # (SSCBIRRT_WITH_SSIK=AUTO); without it the extension builds with the adapter disabled. sstsr is one because the native
 # pose regions are its C++ core, found through tsr.get_cmake_dir() (#184); find_package pins no version.
-requires = ["scikit-build-core>=0.10", "pybind11>=2.12", "ssik>=8.2,<9", "mujoco==3.14.0", "sstsr>=3.5,<4"]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12", "ssik>=8.2,<9", "mujoco==3.14.0", "sstsr>=4,<5"]
 build-backend = "scikit_build_core.build"
 
 # The C++ core under cpp/ is the primary build; the wheel reuses it with the Python

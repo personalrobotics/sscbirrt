@@ -988,7 +988,7 @@ the text as well as against the differential corpus:
   `lo <= hi` on the three translations. These are sstsr 3.2.0's rules
   (personalrobotics/tsr#162), stated in its `docs/ARCHITECTURE.md` as
   conditions on the inputs so that a second implementation reproduces them;
-  sscbirrt pins `sstsr>=3.2,<4`. Rotational rows may have `hi < lo`: that
+  sscbirrt pins `sstsr>=4,<5` (exact membership since sstsr 4, #274). Rotational rows may have `hi < lo`: that
   is an outer interval wrapping through $\pm\pi$, and its width is
   $2\pi + (hi - lo)$. Widths are clamped to $2\pi$. The continuous bounds
   wrap each rotational `lo` into $[-\pi, \pi)$ and set `hi = lo + width`.
@@ -1189,7 +1189,7 @@ artifact compares them: outcome, validation, provenance where unique.
    evaluations.
 4. **Python `TSR` validation**: resolved upstream in sstsr 3.2.0
    (personalrobotics/tsr#162) with the tolerance exported as
-   `tsr.FRAME_ATOL`; sscbirrt pins `sstsr>=3.2,<4`.
+   `tsr.FRAME_ATOL`; sscbirrt pins `sstsr>=4,<5`.
 
 ---
 
