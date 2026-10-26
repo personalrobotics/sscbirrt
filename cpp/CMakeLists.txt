@@ -69,7 +69,7 @@ else()
 endif()
 find_package(sstsr_cpp CONFIG QUIET)
 if(NOT TARGET sstsr::sstsr_cpp)
-  message(FATAL_ERROR "sscbirrt needs sstsr's C++ core (sstsr >= 3.3): pip install 'sstsr>=3.3,<4' and pass "
+  message(FATAL_ERROR "sscbirrt needs sstsr's C++ core (sstsr >= 4): pip install 'sstsr>=4,<5' and pass "
     "-DSSCBIRRT_SSTSR_CMAKE_DIR=$(python -c \"import tsr; print(tsr.get_cmake_dir())\"). ${_sstsr_err}")
 endif()
 message(STATUS "sscbirrt: sstsr C++ core from ${sstsr_cpp_DIR}")

@@ -3508,8 +3508,8 @@
  "issue": "https://github.com/personalrobotics/sscbirrt/issues/94",
  "versions": {
   "numpy": "2.4.6",
-  "python": "3.12.12",
+  "python": "3.14.7",
   "sscbirrt": "3.14.0",
-  "sstsr": "3.5.0"
+  "sstsr": "4.0.0"
  }
 }

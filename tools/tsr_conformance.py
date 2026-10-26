@@ -97,6 +97,19 @@ def probes(t: TSR, rng: np.random.Generator) -> list[np.ndarray]:
         out.append(t.T0_w @ _frame(0.01, -0.01, 0.0, 0.2, pitch, 0.4) @ t.Tw_e)
     out.append(t.T0_w @ _frame(0.0, 0.0, 0.0, np.pi, 0.0, np.pi) @ t.Tw_e)  # an RPY-equivalent representation
     out.append(t.T0_w @ _frame(0.0, 0.0, 0.0, 0.0, 0.0, -np.pi) @ t.Tw_e)  # yaw exactly at the seam
+    # sstsr 4 (#190, sscbirrt #274): membership is exact, so poses just past a bound are refused with that distance.
+    # Probe the old 1e-3 band: on, 2e-4, 9e-4 and 1.1e-3 past the upper bound of the first nonzero-width translation
+    # row and of the first rotation row narrower than a full turn, from a pose at the region's centre.
+    cont = np.asarray(t._Bw_cont)
+    centre = (cont[:, 0] + cont[:, 1]) / 2
+    for rows in (range(3), range(3, 6)):
+        row = next((i for i in rows if 0 < cont[i, 1] - cont[i, 0] < 2 * np.pi), None)
+        if row is None:
+            continue
+        for past in (0.0, 2e-4, 9e-4, 1.1e-3):
+            c = centre.copy()
+            c[row] = cont[row, 1] + past
+            out.append(t.T0_w @ _frame(*c) @ t.Tw_e)
     return out
 
 

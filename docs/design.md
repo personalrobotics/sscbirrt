@@ -316,12 +316,14 @@ and `connect_steps` None or at least 1; `start_sample_probability` and
 
 **A planned path sits at the edge of acceptance.** Every state the planner
 keeps (a projected step, an interpolated edge state, a smoothing shortcut) is
-accepted by the same rule a validator applies, and nothing pulls it further
-in. sstsr's `TSR.contains` also allows `1e-3` of slack on every bound
-(sstsr#190), so on a millimetre-scale constraint a planned state can sit up
-to 1 mm outside `Bw` and still be valid. Revalidating the path in a slightly
-different scene (a joint outside the planned group a few µm off) can
-therefore refuse it.
+accepted by the same rule a validator applies, a TSR distance within
+`membership_tolerance`, and nothing pulls it further in. Since sstsr 4
+(sstsr#190, #274) that distance is exact and continuous; before it,
+`TSR.contains` also allowed `1e-3` of slack on every bound, so on a
+millimetre-scale constraint a planned state could sit up to 1 mm outside
+`Bw` and read distance 0. Either way a planned state can sit at the edge of
+acceptance, and revalidating the path in a slightly different scene (a joint
+outside the planned group a few µm off) can refuse it.
 
 **Plan with a margin by tightening the constraint, and validate against the
 original.** Pass `plan(..., constraint_tsrs=[tightened])`, where `tightened`

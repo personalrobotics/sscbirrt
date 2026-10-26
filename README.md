@@ -833,7 +833,7 @@ that implements the integration protocols below (the MuJoCo scene and SSIK
 do), and `TSRConfigurationSet`s whose region is a `TSR` or `TSRChain` and whose IK
 has a native form (SSIK around an `ssik.Manipulator` of any family ssik
 solves natively, `ssik.cpp.NATIVE_FAMILIES`). TSRs and SSIK then run entirely
-in C++: TSRs and TSR chains are sstsr's own C++ core (sstsr 3.3), and SSIK is
+in C++: TSRs and TSR chains are sstsr's own C++ core (sstsr 4), and SSIK is
 ssik's own C++ (`ssik::Solver`, ssik 8.2), which ssik verifies against its
 Python. Anything else
 (Python-only IK, predicates, Python-only validators, samplers, or motion

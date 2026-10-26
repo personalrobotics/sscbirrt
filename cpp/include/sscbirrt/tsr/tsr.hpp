@@ -19,7 +19,6 @@ namespace sscbirrt::tsr {
 // The pose regions are sstsr's own C++ (sstsr >= 3.3, #184): one implementation of the TSR and TSR-chain rules,
 // held to sstsr's Python by sstsr's conformance corpus. This header is the boundary to it.
 using sstsr::Bounds6;
-using sstsr::kEpsilon;
 using sstsr::TSR;
 using sstsr::TSRChain;
 
