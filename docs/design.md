@@ -314,6 +314,28 @@ and `max_projection_iters` at least 1; `max_per_draw` None or at least 1;
 and `connect_steps` None or at least 1; `start_sample_probability` and
 `goal_sample_probability` within $[0, 1]$. The native `PlannerConfig` applies the same ranges.
 
+**A planned path sits at the edge of acceptance.** Every state the planner
+keeps (a projected step, an interpolated edge state, a smoothing shortcut) is
+accepted by the same rule a validator applies, and nothing pulls it further
+in. sstsr's `TSR.contains` also allows `1e-3` of slack on every bound
+(sstsr#190), so on a millimetre-scale constraint a planned state can sit up
+to 1 mm outside `Bw` and still be valid. Revalidating the path in a slightly
+different scene (a joint outside the planned group a few µm off) can
+therefore refuse it.
+
+**Plan with a margin by tightening the constraint, and validate against the
+original.** Pass `plan(..., constraint_tsrs=[tightened])`, where `tightened`
+is the constraint TSR with each nonzero-width translation row narrowed by
+δ on both sides (zero-width rows unchanged), and validate with
+`planner.validator(constraint_tsrs=[original])`. Every planned state then
+keeps at least δ to the original's acceptance edge, interpolated states
+included. Choose δ from a measured error budget, not a guess: on Geodude, a
+rail drift of at most 9.6 µm between planned and arrival scenes, so 25 µm
+(#269's measurements). The margin is the caller's, who knows the budget; the
+validation tolerance stays `membership_tolerance`. Tightening only the
+projection is not enough: it moves projected steps inward but leaves
+interpolated edge states at the edge (measured in #269).
+
 ## The reference artifact
 
 `tools/reference_artifact.py` runs a fixed matrix of problems on the planar

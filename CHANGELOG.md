@@ -6,6 +6,10 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- `docs/design.md` explains why a planned constrained path sits at the edge of acceptance, and how to plan with a
+  margin: tighten the constraint for `plan`, validate against the original (#269).
+
 ## [3.14.0] - 2026-10-25
 
 A given path can be timed under the planner's own rules through public API: `CBiRRT.time_path` validates it with
