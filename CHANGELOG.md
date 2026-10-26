@@ -6,7 +6,7 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [3.15.0]
+## [3.15.0] - 2026-10-26
 
 sscbirrt moves to sstsr 4, whose TSR membership is exact up to round-off (#274): a TSR goal, start or path
 constraint is accepted by `membership_tolerance` alone. On sscbirrt's own evidence no verdict or path changes.
