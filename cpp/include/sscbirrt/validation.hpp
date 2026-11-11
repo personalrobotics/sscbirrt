@@ -150,7 +150,6 @@ class Validator {
   // One piece's states after its start: (states checked, an invalid one or nullopt). first: the earliest invalid one
   // (every report); otherwise the first found, for the smoother, which needs only the verdict. See search.
   std::pair<long, std::optional<InvalidWitness>> check_piece(const trajectory::Piece& piece, int index, double t0,
-                                                             const std::vector<double>& vmax,
                                                              const PathEvidence* evidence, bool first = true) const;
   std::optional<InvalidWitness> check_state(ConfigView q) const { return witness(q, std::nullopt, std::nullopt); }
 
@@ -159,7 +158,7 @@ class Validator {
  private:
   std::optional<InvalidWitness> witness(ConfigView q, std::optional<int> segment, std::optional<double> fraction,
                                         std::optional<double> time_s = std::nullopt) const;
-  std::vector<double> time_steps(const trajectory::Piece& piece, const std::vector<double>& vmax) const;
+  std::vector<double> time_steps(const trajectory::Piece& piece) const;
   // A state to check, with where it is. A time is either known or found, for a witness only, on a ramp.
   struct Entry {
     Config q;
@@ -175,8 +174,8 @@ class Validator {
   std::pair<long, std::optional<InvalidWitness>> search(const std::vector<Entry>& entries, bool first) const;
   std::optional<InvalidWitness> entry_witness(const Entry& e) const;
   void segment_entries(ConfigView q0, ConfigView q1, int index, std::vector<Entry>& out) const;
-  void piece_entries(const trajectory::Piece& piece, int index, double t0, const std::vector<double>& vmax,
-                     const PathEvidence* evidence, std::vector<Entry>& out) const;
+  void piece_entries(const trajectory::Piece& piece, int index, double t0, const PathEvidence* evidence,
+                     std::vector<Entry>& out) const;
   ValidationReport report(const char* subject, int intervals, long checks, std::optional<InvalidWitness> w) const;
   void check_config(ConfigView q, const std::string& name) const;
 

@@ -6,6 +6,21 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **A trajectory piece off the source path is sampled by its own speed, not by the velocity limits (#279).**
+  - The rule: `n = max(1, ceil(T * speed / resolution - 1e-9))` time steps, where `Piece::speed` (Python
+    `Piece.speed`) is the norm of each joint's greatest `|v|` over the piece. It replaces `ceil(T |vmax| / ...)`,
+    which assumed every joint at its limit at once.
+  - The guarantee is unchanged: consecutive states are at most `resolution` apart in joint space.
+  - A synchronized shortcut moves most joints below their limits, so validating and smoothing check about half as
+    many states. On a Geodude recycling round: 25,034 states instead of 51,277 on its shortcut pieces.
+  - Checked states, and so smoothed trajectories and witness times, change. The validation evidence keeps every
+    verdict with fewer checks.
+  - The policy's `trajectory` parameter is now `source_path_states_or_piece_speed_bounded_time_steps`.
+- `Validator.check_piece`, `trajectory.accepts` and `trajectory.piece_samples` no longer take `vmax` (#279).
+  Sampling needs only the piece. The C++ `Validator::check_piece` and `trajectory::piece_samples` change the same
+  way.
+
 ### Fixed
 - **The door demo's handle is a 36 mm bar** (was 24 mm; #280). sstsr 4.1 keeps a side grasp's closed fingertips a
   clearance inside the far side of the bar, and the Robotiq 2F-85 cannot do that on a bar thinner than 29 mm (sstsr

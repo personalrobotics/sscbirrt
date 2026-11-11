@@ -22,6 +22,7 @@ from sscbirrt.trajectory import (
     initial_trajectory,
     min_time,
     piece_from_native,
+    piece_samples,
     ramp_from_native,
     shortcut,
     synchronize,
@@ -88,6 +89,23 @@ class TestSynchronization:
             T = piece.duration
             for j, ramp in enumerate(piece.ramps):
                 assert verify(ramp, q1[j], v1[j], vmax[j], amax[j], T)
+
+    def test_piece_samples_are_one_resolution_step_apart_at_most(self):
+        # Any two states one sample step apart are within the resolution, however the joints share the motion.
+        rng = np.random.default_rng(3)
+        vmax, amax = np.array([1.0, 2.0, 0.5]), np.array([3.0, 1.0, 2.0])
+        resolution = 0.05
+        for _ in range(300):
+            q0, q1 = rng.uniform(-2, 2, 3), rng.uniform(-2, 2, 3)
+            v0, v1 = rng.uniform(-1, 1, 3) * vmax, rng.uniform(-1, 1, 3) * vmax
+            piece = synchronize(q0, v0, q1, v1, vmax, amax)
+            if piece is None:
+                continue
+            T = piece.duration
+            step = T / (len(piece_samples(piece, resolution)) - 1)
+            ts = np.linspace(0.0, T - step, 201)
+            at = lambda t: np.array([r.evaluate(t)[0] for r in piece.ramps]).T  # noqa: E731
+            assert np.linalg.norm(at(ts + step) - at(ts), axis=1).max() <= resolution * (1 + 1e-9)
 
 
 def _planner(backend="auto", **config):

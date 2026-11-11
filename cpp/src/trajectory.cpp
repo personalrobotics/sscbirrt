@@ -255,6 +255,19 @@ double Piece::duration() const {
   return d;
 }
 
+double Piece::speed() const {
+  double total = 0.0;
+  for (const Ramp& r : ramps) {
+    double v = r.v0, m = std::abs(r.v0);
+    for (const Segment& seg : r.segments) {
+      v = v + seg.acceleration * seg.duration;
+      m = std::max(m, std::abs(v));
+    }
+    total += m * m;
+  }
+  return std::sqrt(total);
+}
+
 std::pair<Piece, Piece> Piece::split(double t) const {
   Piece before{{}, validated}, after{{}, validated};
   for (const Ramp& r : ramps) {
@@ -428,9 +441,9 @@ Trajectory initial_trajectory(const std::vector<Config>& corners, const std::vec
 // Shortcuts in time
 // ---------------------------------------------------------------------------------------------------------------------
 
-std::vector<Config> piece_samples(const Piece& piece, double resolution, const std::vector<double>& vmax) {
+std::vector<Config> piece_samples(const Piece& piece, double resolution) {
   const double T = piece.duration();
-  const int n = std::max(1, static_cast<int>(std::ceil(T * norm(vmax) / resolution)));
+  const int n = std::max(1, static_cast<int>(std::ceil(T * piece.speed() / resolution)));
   const double step = T / n;
   std::vector<Config> out(static_cast<std::size_t>(n) + 1, Config(piece.ramps.size()));
   for (int i = 0; i <= n; ++i) {
@@ -475,7 +488,7 @@ std::optional<std::string> accepts(const Trajectory& traj, double t1, double t2,
   for (const auto& [name, part] : parts) {
     if (part->duration() <= kEpsT) continue;
     if (part != &piece && evidence && evidence->straight_span(*part)) continue;
-    auto [checks, w] = validator.check_piece(*part, 0, 0.0, traj.velocity_limits, evidence, /*first=*/false);
+    auto [checks, w] = validator.check_piece(*part, 0, 0.0, evidence, /*first=*/false);
     (void)checks;
     if (w) return std::string(name) + ": " + failure_name(w->failure) + " (" + w->detail + ")";
   }
@@ -552,7 +565,7 @@ Trajectory shortcut(Trajectory traj, const MotionValidator& motion, const WhyIna
     if (validator) {
       refused = accepts(traj, rec.t1, rec.t2, *piece, *validator, evidence ? &*evidence : nullptr);
     } else {
-      refused = validate_samples(piece_samples(*piece, resolution, vmax), motion, why, recheck_returned);
+      refused = validate_samples(piece_samples(*piece, resolution), motion, why, recheck_returned);
     }
     if (refused) {
       rec.rejected = std::move(*refused);

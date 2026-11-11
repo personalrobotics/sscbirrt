@@ -1916,9 +1916,11 @@ piece in time order. The Python reference (`sscbirrt.validation`) matches it ope
 - **Why not `validate_motion` on such a piece.** A splice cuts pieces mid-way. A cut planned piece would then be
   sampled on a new grid, at states nobody planned or checked. This is the door bug of slice 1 one level up: a
   correct trajectory could fail its final check.
-- **Every other piece** is checked at `n = max(1, ceil(T |vmax| / resolution - 1e-9))` uniform time steps, since
-  `|q(t + dt) - q(t)| <= dt |vmax|` once velocities are within limits. Every bounded joint's turning point that
-  leaves its limits is added, so position limits are exact.
+- **Every other piece** is checked at `n = max(1, ceil(T * speed / resolution - 1e-9))` uniform time steps, where
+  `Piece::speed` is the norm of each joint's greatest `|v|` over the piece, reached at a segment boundary since
+  velocity is piecewise linear. Then `|q(t + dt) - q(t)| <= dt * speed`. A synchronized shortcut moves most joints
+  below their limits, so this needs about half the states of the limits' bound, `|vmax|` (#279). Every bounded
+  joint's turning point that leaves its limits is added, so position limits are exact.
 - **The smoother.** `trajectory::accepts` checks a shortcut's start, then the cut piece before it, the new piece and
   the cut piece after it, each with `Validator::check_piece`. Every piece of a smoothed trajectory has therefore
   passed the rule as it stands, and the final `validate_trajectory` agrees by construction.

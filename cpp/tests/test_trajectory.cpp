@@ -120,6 +120,33 @@ TEST(synchronized_joints_share_one_duration_within_their_limits) {
   CHECK(found > 250);
 }
 
+TEST(piece_samples_are_one_resolution_step_apart_at_most) {
+  // Any two states one sample step apart are within the resolution, however the joints share the motion.
+  Rng rng(3);
+  const std::vector<double> vmax{1.0, 2.0, 0.5}, amax{3.0, 1.0, 2.0};
+  const auto u = [&](double lo, double hi) { return lo + (hi - lo) * unit(rng); };
+  const double resolution = 0.05;
+  for (int i = 0; i < 300; ++i) {
+    Config q0(3), q1(3), v0(3), v1(3);
+    for (int j = 0; j < 3; ++j) {
+      q0[j] = u(-2, 2);
+      q1[j] = u(-2, 2);
+      v0[j] = u(-1, 1) * vmax[j];
+      v1[j] = u(-1, 1) * vmax[j];
+    }
+    const auto piece = synchronize(q0, v0, q1, v1, vmax, amax);
+    if (!piece) continue;
+    const double T = piece->duration();
+    const double step = T / static_cast<double>(piece_samples(*piece, resolution).size() - 1);
+    for (int k = 0; k <= 200; ++k) {
+      const double t = (T - step) * k / 200.0;
+      double d2 = 0.0;
+      for (const Ramp& r : piece->ramps) d2 += std::pow(r.position(t + step) - r.position(t), 2);
+      CHECK(std::sqrt(d2) <= resolution * (1 + 1e-9));
+    }
+  }
+}
+
 TEST(initial_trajectory_is_at_rest_at_every_corner) {
   const Trajectory traj = initial_trajectory(coalesce(dense_u()), kV, kA);
   CHECK(traj.pieces.size() == 3);

@@ -19,8 +19,8 @@ answered.
 trace lies on the trajectory's source path (``Trajectory.path``), an exact reparameterization of part of it, is
 checked at that path's own states within its span: the evidence is reused only once the equivalence is
 established numerically. Every other piece is checked at uniform time steps short enough that no joint-space step
-exceeds the resolution under the trajectory's velocity limits, and position limits are checked exactly at every
-ramp's turning point. A trajectory that breaks its own invariants (continuity, limits, rest at both ends) is
+exceeds the resolution at the piece's own top speed (``trajectory.speed``), and position limits are checked exactly
+at every ramp's turning point. A trajectory that breaks its own invariants (continuity, limits, rest at both ends) is
 malformed: ``MalformedTrajectory``.
 
 **The planner uses this.** The default motion validator samples tree edges with the same rule, a planned path is
@@ -45,6 +45,7 @@ from typing import Any
 import numpy as np
 
 from sscbirrt.space import JointSpace
+from sscbirrt.trajectory import speed
 
 SUBJECTS = ("state", "motion", "path", "trajectory")
 LAW = "piecewise_constant_acceleration"  # how a Trajectory's position evolves: quadratic on every ramp segment
@@ -121,7 +122,7 @@ class ValidationPolicy:
             ("endpoints", "checked"),
             ("interpolation", "raw_linear"),
             ("rounding", f"{ROUNDING:g}"),
-            ("trajectory", "source_path_states_or_speed_bounded_time_steps"),
+            ("trajectory", "source_path_states_or_piece_speed_bounded_time_steps"),
             ("trajectory_limits", "exact"),
         )
 
@@ -407,22 +408,20 @@ class Validator:
         breaks = trajectory.breaks
         entries = [(np.array([r.x0 for r in trajectory.pieces[0].ramps]), 0, None, 0.0)]
         for k, piece in enumerate(trajectory.pieces):
-            entries += self._piece_entries(piece, k, float(breaks[k]), vmax, evidence)
+            entries += self._piece_entries(piece, k, float(breaks[k]), evidence)
         checks, witness = self._search(entries, first=True)
         return self._report("trajectory", len(trajectory.pieces), checks, witness, float(trajectory.duration))
 
-    def check_piece(
-        self, piece, index: int, t0: float, vmax: np.ndarray, evidence: PathEvidence | None, first: bool = True
-    ):
+    def check_piece(self, piece, index: int, t0: float, evidence: PathEvidence | None, first: bool = True):
         """Check the states of one piece after its start: (states checked, an invalid one or None).
 
         A piece whose trace lies on the source path is checked at the path's states within its span and at its end;
-        any other piece at ``n = max(1, ceil(T |vmax| / resolution - ROUNDING))`` uniform time steps, with every
+        any other piece at ``n = max(1, ceil(T * speed(piece) / resolution - ROUNDING))`` uniform time steps, with every
         bounded joint's out-of-limits turning point added. The smoother accepts a shortcut only if each piece it
         creates passes this (``first=False``: the whole verdict only), so a returned trajectory passes
         ``validate_trajectory``. See ``_search`` for the order.
         """
-        return self._search(self._piece_entries(piece, index, t0, vmax, evidence), first)
+        return self._search(self._piece_entries(piece, index, t0, evidence), first)
 
     # ----- the reference implementation ----------------------------------------------------------------------------
 
@@ -467,7 +466,7 @@ class Validator:
         n = subdivisions(float(np.linalg.norm(d)), self.policy.resolution)
         return [(q1 if i == n else line_point(q0, d, i, n), segment, i / n, None) for i in range(1, n + 1)]
 
-    def _piece_entries(self, piece, index: int, t0: float, vmax: np.ndarray, evidence: PathEvidence | None) -> list:
+    def _piece_entries(self, piece, index: int, t0: float, evidence: PathEvidence | None) -> list:
         """The states of one piece after its start, as search entries (see ``check_piece``)."""
         T = piece.duration
         on_path = None if evidence is None else evidence.straight_span(piece)
@@ -478,7 +477,7 @@ class Validator:
                 (q, index, None, t0 + T if i == last else (lambda q=q: t0 + _time_at(piece.ramps[ref], q[ref], T)))
                 for i, (_, q) in enumerate(states)
             ]
-        ts = _time_steps(piece, self.policy.resolution, vmax, self.space)
+        ts = _time_steps(piece, self.policy.resolution, self.space)
         qs = np.stack([r.evaluate(ts)[0] for r in piece.ramps], axis=1)
         return [(qs[i], index, None, t0 + float(ts[i])) for i in range(len(ts))]
 
@@ -618,12 +617,12 @@ def spread_order(n: int) -> list[int]:
     return out
 
 
-def _time_steps(piece, resolution: float, vmax: np.ndarray, space: JointSpace) -> np.ndarray:
+def _time_steps(piece, resolution: float, space: JointSpace) -> np.ndarray:
     """The times after a piece's start that are checked: uniform steps over which no joint-space step exceeds the
-    resolution (``|q(t + dt) - q(t)| <= dt |vmax|``), and every bounded joint's turning point that leaves its limits,
-    so position limits hold exactly along the law."""
+    resolution (``|q(t + dt) - q(t)| <= dt * speed(piece)``), and every bounded joint's turning point that leaves its
+    limits, so position limits hold exactly along the law."""
     T = piece.duration
-    n = max(1, math.ceil(T * float(np.linalg.norm(vmax)) / resolution - ROUNDING))
+    n = max(1, math.ceil(T * speed(piece) / resolution - ROUNDING))
     ts = list(np.linspace(0.0, T, n + 1)[1:])
     bounded = np.ones(space.dof, dtype=bool) if space.continuous_joints is None else ~space.continuous_joints
     extra = []

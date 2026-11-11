@@ -347,8 +347,8 @@ checks a trajectory's whole law, not its knots, and equals
   own states within its span. That is the one place earlier evidence is
   reused, and only once the piece is shown numerically to retrace the path.
 - **Every other piece** is checked at time steps short enough that no
-  joint-space step exceeds the resolution under the trajectory's velocity
-  limits.
+  joint-space step exceeds the resolution at the piece's own top speed (the
+  norm of each joint's greatest velocity on it), not at the velocity limits.
 - **Position limits** are checked exactly, at every ramp's turning point.
 - **The witness** gives the piece (`segment`) and `time_s`.
 - **Malformed trajectories raise.** A trajectory that breaks its own
