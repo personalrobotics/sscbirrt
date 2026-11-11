@@ -29,7 +29,7 @@ std::vector<std::pair<std::string, std::string>> ValidationPolicy::parameters() 
   return {{"endpoints", "checked"},
           {"interpolation", "raw_linear"},
           {"rounding", "1e-09"},
-          {"trajectory", "source_path_states_or_speed_bounded_time_steps"},
+          {"trajectory", "source_path_states_or_piece_speed_bounded_time_steps"},
           {"trajectory_limits", "exact"}};
 }
 
@@ -423,9 +423,9 @@ std::optional<std::pair<std::vector<std::pair<double, Config>>, int>> PathEviden
   return std::pair{std::move(out), *ref};
 }
 
-std::vector<double> Validator::time_steps(const trajectory::Piece& piece, const std::vector<double>& vmax) const {
+std::vector<double> Validator::time_steps(const trajectory::Piece& piece) const {
   const double T = piece.duration();
-  const int n = std::max(1, static_cast<int>(std::ceil(T * norm(vmax) / policy_.resolution - kRounding)));
+  const int n = std::max(1, static_cast<int>(std::ceil(T * piece.speed() / policy_.resolution - kRounding)));
   const double step = T / n;
   std::vector<double> ts;
   for (int i = 1; i <= n; ++i) ts.push_back(i == n ? T : i * step);
@@ -481,7 +481,7 @@ std::optional<InvalidWitness> Validator::entry_witness(const Entry& e) const {
   return w;
 }
 
-void Validator::piece_entries(const trajectory::Piece& piece, int index, double t0, const std::vector<double>& vmax,
+void Validator::piece_entries(const trajectory::Piece& piece, int index, double t0,
                               const PathEvidence* evidence, std::vector<Entry>& out) const {
   const double T = piece.duration();
   if (evidence) {
@@ -504,7 +504,7 @@ void Validator::piece_entries(const trajectory::Piece& piece, int index, double 
       return;
     }
   }
-  for (const double t : time_steps(piece, vmax)) {
+  for (const double t : time_steps(piece)) {
     Entry e;
     e.q.resize(piece.ramps.size());
     for (std::size_t j = 0; j < e.q.size(); ++j) e.q[j] = piece.ramps[j].position(t);
@@ -515,10 +515,10 @@ void Validator::piece_entries(const trajectory::Piece& piece, int index, double 
 }
 
 std::pair<long, std::optional<InvalidWitness>> Validator::check_piece(const trajectory::Piece& piece, int index,
-                                                                      double t0, const std::vector<double>& vmax,
-                                                                      const PathEvidence* evidence, bool first) const {
+                                                                      double t0, const PathEvidence* evidence,
+                                                                      bool first) const {
   std::vector<Entry> entries;
-  piece_entries(piece, index, t0, vmax, evidence, entries);
+  piece_entries(piece, index, t0, evidence, entries);
   return search(entries, first);
 }
 
@@ -532,8 +532,7 @@ ValidationReport Validator::validate_trajectory(const trajectory::Trajectory& tr
   entries[0].segment = 0;
   entries[0].time_s = 0.0;
   for (std::size_t k = 0; k < traj.pieces.size(); ++k) {
-    piece_entries(traj.pieces[k], static_cast<int>(k), breaks[k], traj.velocity_limits, evidence ? &*evidence : nullptr,
-                  entries);
+    piece_entries(traj.pieces[k], static_cast<int>(k), breaks[k], evidence ? &*evidence : nullptr, entries);
   }
   auto [checks, w] = search(entries, true);
   ValidationReport r = report("trajectory", static_cast<int>(traj.pieces.size()), checks, std::move(w));

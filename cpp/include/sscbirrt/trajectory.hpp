@@ -68,6 +68,9 @@ struct Piece {
   std::string validated;
 
   double duration() const;
+  // A bound on the joint-space speed |qdot(t)| over the piece: the norm of each joint's greatest |v|, which its ramp
+  // reaches at a segment boundary (velocity is piecewise linear).
+  double speed() const;
   std::pair<Piece, Piece> split(double t) const;
 };
 
@@ -99,8 +102,8 @@ Piece straight_line(const Config& q0, const Config& q1, const std::vector<double
 Trajectory initial_trajectory(const std::vector<Config>& corners, const std::vector<double>& vmax,
                               const std::vector<double>& amax);
 
-// Positions along a piece no farther apart than `resolution` in joint space.
-std::vector<Config> piece_samples(const Piece& piece, double resolution, const std::vector<double>& vmax);
+// Positions along a piece no farther apart than `resolution` in joint space (time steps of resolution / speed()).
+std::vector<Config> piece_samples(const Piece& piece, double resolution);
 
 // When shortcutting stops, and how it draws. The defaults equal sscbirrt._trajectory.ShortcutOptions' (a test holds
 // them equal). Every rule but time_budget depends only on the trajectory, so a seed gives the same result anywhere.

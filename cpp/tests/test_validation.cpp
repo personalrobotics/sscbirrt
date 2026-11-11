@@ -115,8 +115,8 @@ TEST(trajectory_pieces_on_the_source_path_reuse_its_states) {
   const ValidationReport r = v.validate_trajectory(traj);
   CHECK(r.valid && r.subject == "trajectory" && r.intervals == 1 && r.duration_s);
   CHECK(r.checks == v.validate_path(path).checks);  // the path's states, none new
-  traj.path.clear();                                  // without its path: speed-bounded time steps
-  CHECK(v.validate_trajectory(traj).checks == 1 + static_cast<long>(std::ceil(*r.duration_s * std::sqrt(2.0) / 0.05 - 1e-9)));
+  traj.path.clear();  // without its path: time steps bounded by the piece's speed, joint 0's alone (1, its limit)
+  CHECK(v.validate_trajectory(traj).checks == 1 + static_cast<long>(std::ceil(*r.duration_s * 1.0 / 0.05 - 1e-9)));
   const ValidationReport hit = Validator(plane(), wall(0.3, 0.4)).validate_trajectory(traj);
   CHECK(!hit.valid && hit.witness->time_s && *hit.witness->time_s > 0 && *hit.witness->segment == 0);
 }

@@ -325,8 +325,29 @@ class TestTrajectories:
         traj = timed(path)
         traj.path = None
         r = Validator(plane(), NoCollision(), backend=backend).validate_trajectory(traj)
-        speed = np.linalg.norm(V2)
+        speed = V2[0]  # joint 0 alone moves, cruising at its limit: the piece's speed, not |vmax|
         assert r.valid and r.checks == 1 + math.ceil(traj.duration * speed / 0.05 - 1e-9)
+
+    def test_a_slab_wider_than_the_resolution_is_never_crossed_unseen(self, backend):
+        # The policy's guarantee, states at most `resolution` apart: a piece that crosses a slab of joint 0 wider than
+        # the resolution has a state inside it, however its joints share the motion.
+        rng = np.random.default_rng(7)
+        space = JointSpace(np.full(4, -2.0), np.full(4, 2.0))
+        vmax, amax = np.array([1.0, 0.6, 1.4, 0.8]), np.array([2.0, 1.0, 3.0, 1.5])
+        resolution = 0.05
+        for _ in range(60):
+            lo = rng.uniform(-0.5, 0.5)
+            hi = lo + 1.05 * resolution
+            q0, q1 = rng.uniform(-1.5, 1.5, 4), rng.uniform(-1.5, 1.5, 4)
+            q0[0], q1[0] = rng.uniform(-1.5, lo), rng.uniform(hi, 1.5)
+            if rng.random() < 0.5:
+                q0, q1 = q1, q0
+            piece = synchronize(q0, np.zeros(4), q1, np.zeros(4), vmax, amax)
+            traj = Trajectory([Piece(piece.ramps, "shortcut")], vmax, amax)
+            v = Validator(space, Wall(0, lo, hi), policy=ValidationPolicy(resolution), backend=backend)
+            r = v.validate_trajectory(traj)
+            assert not r.valid and r.witness.failure == "collision"
+            assert r.checks <= 1 + math.ceil(traj.duration * np.linalg.norm(vmax) / resolution - 1e-9)
 
     def test_a_shortcut_through_an_obstacle_is_found_in_time(self, backend):
         piece = synchronize(np.array([-1.0, 0.0]), np.zeros(2), np.array([1.0, 0.3]), np.zeros(2), V2, A2)
@@ -421,8 +442,8 @@ def test_the_spread_order_visits_every_state_once_middle_first():
 def test_a_spread_check_has_the_same_verdict_and_finds_an_obstacle_sooner(backend):
     piece = synchronize(np.array([-1.0, 0.0]), np.zeros(2), np.array([1.0, 0.3]), np.zeros(2), V2, A2)
     v = Validator(plane(), Wall(0, -0.05, 0.05), policy=ValidationPolicy(0.01), backend="python")
-    earliest = v.check_piece(piece, 0, 0.0, V2, None)  # a report: refined to the earliest invalid state
-    whole = v.check_piece(piece, 0, 0.0, V2, None, first=False)  # the verdict only
+    earliest = v.check_piece(piece, 0, 0.0, None)  # a report: refined to the earliest invalid state
+    whole = v.check_piece(piece, 0, 0.0, None, first=False)  # the verdict only
     assert earliest[1].failure == whole[1].failure == "collision"
     assert whole[0] < earliest[0]  # the wall is mid-way: the first probe lands near it
 

@@ -277,6 +277,20 @@ class Piece:
     def duration(self) -> float:
         return max((r.duration for r in self.ramps), default=0.0)
 
+    @property
+    def speed(self) -> float:
+        """A bound on the joint-space speed ``|qdot(t)|`` over the piece: the norm of each joint's greatest ``|v|``,
+        which its ramp reaches at a segment boundary (velocity is piecewise linear)."""
+        total = 0.0
+        for r in self.ramps:
+            v = r.v0
+            m = abs(v)
+            for d, a in r.pieces:
+                v = v + a * d
+                m = max(m, abs(v))
+            total += m * m
+        return math.sqrt(total)
+
     def state(self, t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         s = [r.state(t) for r in self.ramps]
         return tuple(np.array([x[k] for x in s]) for k in range(3))  # type: ignore[return-value]
@@ -501,7 +515,7 @@ def validate_samples(points: np.ndarray, motion_validator: Any, admissible: Admi
     return None
 
 
-def accepts(traj: Trajectory, t1: float, t2: float, piece: Piece, validator: Any, vmax, evidence) -> str | None:
+def accepts(traj: Trajectory, t1: float, t2: float, piece: Piece, validator: Any, evidence) -> str | None:
     """Why splicing ``piece`` into ``[t1, t2]`` is refused, or ``None``: its start state, the new piece, then the two
     pieces the splice cuts, each through ``validator.check_piece``. Every piece of the result is then one the
     trajectory rule accepted as it stands.
@@ -522,17 +536,17 @@ def accepts(traj: Trajectory, t1: float, t2: float, piece: Piece, validator: Any
             continue
         if name != "shortcut" and evidence is not None and evidence.straight_span(part) is not None:
             continue
-        _, witness = validator.check_piece(part, 0, 0.0, vmax, evidence, first=False)
+        _, witness = validator.check_piece(part, 0, 0.0, evidence, first=False)
         if witness is not None:
             return f"{name}: {witness.failure} ({witness.detail})"
     return None
 
 
-def piece_samples(piece: Piece, resolution: float, vmax: np.ndarray) -> np.ndarray:
+def piece_samples(piece: Piece, resolution: float) -> np.ndarray:
     """Positions along ``piece`` no farther apart than ``resolution`` in joint space: the joint-space speed is at
-    most ``|vmax|``, so a time step of ``resolution / |vmax|`` bounds every chord."""
+    most ``piece.speed``, so a time step of ``resolution / piece.speed`` bounds every chord."""
     T = piece.duration
-    n = max(1, math.ceil(T * float(np.linalg.norm(vmax)) / resolution))
+    n = max(1, math.ceil(T * piece.speed / resolution))
     ts = np.linspace(0.0, T, n + 1)
     return np.stack([r.evaluate(ts)[0] for r in piece.ramps], axis=1)
 
@@ -642,9 +656,9 @@ def shortcut(
             record["rejected"] = "not faster"
             continue
         if validator is not None:
-            why = accepts(traj, float(t1), float(t2), Piece(piece.ramps, "shortcut"), validator, vmax, evidence)
+            why = accepts(traj, float(t1), float(t2), Piece(piece.ramps, "shortcut"), validator, evidence)
         else:
-            why = validate_samples(piece_samples(piece, resolution, vmax), motion_validator, admissible)
+            why = validate_samples(piece_samples(piece, resolution), motion_validator, admissible)
         if why is not None:
             record["rejected"] = why
             continue

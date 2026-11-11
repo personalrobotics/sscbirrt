@@ -4,7 +4,7 @@
  "versions": {
   "sscbirrt": "3.15.0",
   "mujoco": "3.14.0",
-  "numpy": "2.4.6"
+  "numpy": "2.5.4"
  },
  "world": {
   "mjcf": "<mujoco><compiler angle=\"radian\"/><worldbody>\n  <geom name=\"floor\" type=\"plane\" size=\"3 3 0.1\"/>\n  <geom name=\"wall\" type=\"box\" pos=\"0.47 0 0.3\" size=\"0.05 0.5 0.3\"/>\n  <body name=\"arm/base\" pos=\"0 0 0.1\"><joint name=\"j0\" type=\"hinge\" axis=\"0 0 1\" range=\"-3 3\"/>\n    <geom type=\"capsule\" size=\"0.03\" fromto=\"0 0 0 0 0 0.1\"/>\n    <body name=\"arm/link1\" pos=\"0 0 0.1\"><joint name=\"j1\" type=\"hinge\" axis=\"0 1 0\" range=\"-2 2\"/>\n      <geom type=\"capsule\" size=\"0.03\" fromto=\"0 0 0 0.4 0 0\"/>\n      <body name=\"arm/hand\" pos=\"0.4 0 0\">\n        <geom type=\"box\" size=\"0.02 0.03 0.02\"/><site name=\"tip\" pos=\"0.02 0 0\"/>\n      </body>\n    </body>\n  </body>\n</worldbody></mujoco>",
@@ -476,7 +476,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -514,7 +514,7 @@
      "subject": "trajectory",
      "valid": true,
      "intervals": 6,
-     "checks": 106,
+     "checks": 77,
      "policy": {
       "name": "joint_l2_subdivision",
       "mechanism": "joint_subdivision",
@@ -540,7 +540,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -606,7 +606,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -670,7 +670,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -729,7 +729,7 @@
      "subject": "trajectory",
      "valid": true,
      "intervals": 6,
-     "checks": 106,
+     "checks": 77,
      "policy": {
       "name": "joint_l2_subdivision",
       "mechanism": "joint_subdivision",
@@ -755,7 +755,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -793,7 +793,7 @@
      "subject": "trajectory",
      "valid": false,
      "intervals": 1,
-     "checks": 33,
+     "checks": 24,
      "policy": {
       "name": "joint_l2_subdivision",
       "mechanism": "joint_subdivision",
@@ -819,7 +819,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -833,12 +833,12 @@
      "witness": {
       "failure": "collision",
       "configuration": [
-       0.21212635135135133,
+       0.22213231132075478,
        0.0
       ],
       "segment": 0,
       "fraction": null,
-      "time_s": 0.698080349457738,
+      "time_s": 0.6917071265472899,
       "contacts": [
        {
         "kind": "robot_environment",
@@ -846,7 +846,7 @@
         "body2": "world",
         "geom1": 3,
         "geom2": 1,
-        "distance": -0.0010341780197646172
+        "distance": -0.00017195904264936945
        }
       ],
       "constraint": null,
@@ -904,7 +904,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -1539,7 +1539,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -1577,7 +1577,7 @@
      "subject": "trajectory",
      "valid": true,
      "intervals": 7,
-     "checks": 102,
+     "checks": 85,
      "policy": {
       "name": "joint_l2_subdivision",
       "mechanism": "joint_subdivision",
@@ -1603,7 +1603,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -1669,7 +1669,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -1733,7 +1733,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -1792,7 +1792,7 @@
      "subject": "trajectory",
      "valid": true,
      "intervals": 7,
-     "checks": 102,
+     "checks": 85,
      "policy": {
       "name": "joint_l2_subdivision",
       "mechanism": "joint_subdivision",
@@ -1818,7 +1818,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -1856,7 +1856,7 @@
      "subject": "trajectory",
      "valid": false,
      "intervals": 1,
-     "checks": 33,
+     "checks": 24,
      "policy": {
       "name": "joint_l2_subdivision",
       "mechanism": "joint_subdivision",
@@ -1882,7 +1882,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -1896,12 +1896,12 @@
      "witness": {
       "failure": "collision",
       "configuration": [
-       0.21212635135135133,
+       0.22213231132075478,
        0.0
       ],
       "segment": 0,
       "fraction": null,
-      "time_s": 0.698080349457738,
+      "time_s": 0.6917071265472899,
       "contacts": [
        {
         "kind": "robot_environment",
@@ -1909,7 +1909,7 @@
         "body2": "world",
         "geom1": 3,
         "geom2": 1,
-        "distance": -0.0010341780197646172
+        "distance": -0.00017195904264936945
        }
       ],
       "constraint": null,
@@ -1967,7 +1967,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -2163,7 +2163,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -2256,7 +2256,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -2364,7 +2364,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -2428,7 +2428,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -2503,7 +2503,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -2596,7 +2596,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -2715,7 +2715,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -2800,7 +2800,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -2900,7 +2900,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -2985,7 +2985,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -3085,7 +3085,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -3149,7 +3149,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -3239,7 +3239,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -3332,7 +3332,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -3440,7 +3440,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -3504,7 +3504,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -3594,7 +3594,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -3703,7 +3703,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -3827,7 +3827,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -3936,7 +3936,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4076,7 +4076,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4169,7 +4169,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4280,7 +4280,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4373,7 +4373,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4492,7 +4492,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4556,7 +4556,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4635,7 +4635,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4699,7 +4699,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4789,7 +4789,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4874,7 +4874,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -4974,7 +4974,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -5059,7 +5059,7 @@
           ],
           [
            "trajectory",
-           "source_path_states_or_speed_bounded_time_steps"
+           "source_path_states_or_piece_speed_bounded_time_steps"
           ],
           [
            "trajectory_limits",
@@ -5172,7 +5172,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5236,7 +5236,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5302,7 +5302,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5387,7 +5387,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5485,7 +5485,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5549,7 +5549,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5615,7 +5615,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5679,7 +5679,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5756,7 +5756,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5820,7 +5820,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5886,7 +5886,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -5971,7 +5971,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6069,7 +6069,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6133,7 +6133,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6199,7 +6199,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6263,7 +6263,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6340,7 +6340,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6404,7 +6404,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6470,7 +6470,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6555,7 +6555,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6653,7 +6653,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6717,7 +6717,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6783,7 +6783,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6847,7 +6847,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6928,7 +6928,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -6992,7 +6992,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7058,7 +7058,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7175,7 +7175,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7309,7 +7309,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7373,7 +7373,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7439,7 +7439,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7503,7 +7503,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7584,7 +7584,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7648,7 +7648,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7714,7 +7714,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7778,7 +7778,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7861,7 +7861,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7925,7 +7925,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -7991,7 +7991,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8055,7 +8055,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8136,7 +8136,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8229,7 +8229,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8324,7 +8324,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8441,7 +8441,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8571,7 +8571,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8635,7 +8635,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8701,7 +8701,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8786,7 +8786,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8884,7 +8884,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -8948,7 +8948,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -9014,7 +9014,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -9078,7 +9078,7 @@
          ],
          [
           "trajectory",
-          "source_path_states_or_speed_bounded_time_steps"
+          "source_path_states_or_piece_speed_bounded_time_steps"
          ],
          [
           "trajectory_limits",
@@ -9346,7 +9346,7 @@
       ],
       [
        "trajectory",
-       "source_path_states_or_speed_bounded_time_steps"
+       "source_path_states_or_piece_speed_bounded_time_steps"
       ],
       [
        "trajectory_limits",
@@ -9389,7 +9389,7 @@
       ],
       [
        "trajectory",
-       "source_path_states_or_speed_bounded_time_steps"
+       "source_path_states_or_piece_speed_bounded_time_steps"
       ],
       [
        "trajectory_limits",
@@ -9432,7 +9432,7 @@
       ],
       [
        "trajectory",
-       "source_path_states_or_speed_bounded_time_steps"
+       "source_path_states_or_piece_speed_bounded_time_steps"
       ],
       [
        "trajectory_limits",
@@ -9475,7 +9475,7 @@
       ],
       [
        "trajectory",
-       "source_path_states_or_speed_bounded_time_steps"
+       "source_path_states_or_piece_speed_bounded_time_steps"
       ],
       [
        "trajectory_limits",
@@ -9531,7 +9531,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -9575,7 +9575,7 @@
      "subject": "trajectory",
      "valid": true,
      "intervals": 6,
-     "checks": 106,
+     "checks": 77,
      "policy": {
       "name": "joint_l2_subdivision",
       "mechanism": "joint_subdivision",
@@ -9601,7 +9601,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -9672,7 +9672,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -9740,7 +9740,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -9828,7 +9828,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -9898,7 +9898,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -9942,7 +9942,7 @@
      "subject": "trajectory",
      "valid": true,
      "intervals": 6,
-     "checks": 106,
+     "checks": 77,
      "policy": {
       "name": "joint_l2_subdivision",
       "mechanism": "joint_subdivision",
@@ -9968,7 +9968,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10039,7 +10039,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10107,7 +10107,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10204,7 +10204,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10295,7 +10295,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10339,7 +10339,7 @@
      "subject": "trajectory",
      "valid": true,
      "intervals": 7,
-     "checks": 102,
+     "checks": 85,
      "policy": {
       "name": "joint_l2_subdivision",
       "mechanism": "joint_subdivision",
@@ -10365,7 +10365,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10436,7 +10436,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10504,7 +10504,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10592,7 +10592,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10662,7 +10662,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10706,7 +10706,7 @@
      "subject": "trajectory",
      "valid": true,
      "intervals": 8,
-     "checks": 107,
+     "checks": 86,
      "policy": {
       "name": "joint_l2_subdivision",
       "mechanism": "joint_subdivision",
@@ -10732,7 +10732,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10803,7 +10803,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10871,7 +10871,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
@@ -10968,7 +10968,7 @@
        ],
        [
         "trajectory",
-        "source_path_states_or_speed_bounded_time_steps"
+        "source_path_states_or_piece_speed_bounded_time_steps"
        ],
        [
         "trajectory_limits",
