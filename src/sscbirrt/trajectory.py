@@ -279,17 +279,7 @@ class Piece:
 
     @property
     def speed(self) -> float:
-        """A bound on the joint-space speed ``|qdot(t)|`` over the piece: the norm of each joint's greatest ``|v|``,
-        which its ramp reaches at a segment boundary (velocity is piecewise linear)."""
-        total = 0.0
-        for r in self.ramps:
-            v = r.v0
-            m = abs(v)
-            for d, a in r.pieces:
-                v = v + a * d
-                m = max(m, abs(v))
-            total += m * m
-        return math.sqrt(total)
+        return speed(self)
 
     def state(self, t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         s = [r.state(t) for r in self.ramps]
@@ -298,6 +288,20 @@ class Piece:
     def split(self, t: float) -> tuple[Piece, Piece]:
         pairs = [r.split(t) for r in self.ramps]
         return Piece(tuple(p[0] for p in pairs), self.validated), Piece(tuple(p[1] for p in pairs), self.validated)
+
+
+def speed(piece) -> float:
+    """A bound on the joint-space speed ``|qdot(t)|`` over a piece: the norm of each joint's greatest ``|v|``, which
+    its ramp reaches at a segment boundary (velocity is piecewise linear). Reads only ``piece.ramps``."""
+    total = 0.0
+    for r in piece.ramps:
+        v = r.v0
+        m = abs(v)
+        for d, a in r.pieces:
+            v = v + a * d
+            m = max(m, abs(v))
+        total += m * m
+    return math.sqrt(total)
 
 
 def synchronize(

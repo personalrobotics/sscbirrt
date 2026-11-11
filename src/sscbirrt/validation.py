@@ -19,8 +19,8 @@ answered.
 trace lies on the trajectory's source path (``Trajectory.path``), an exact reparameterization of part of it, is
 checked at that path's own states within its span: the evidence is reused only once the equivalence is
 established numerically. Every other piece is checked at uniform time steps short enough that no joint-space step
-exceeds the resolution under the trajectory's velocity limits, and position limits are checked exactly at every
-ramp's turning point. A trajectory that breaks its own invariants (continuity, limits, rest at both ends) is
+exceeds the resolution at the piece's own top speed (``trajectory.speed``), and position limits are checked exactly
+at every ramp's turning point. A trajectory that breaks its own invariants (continuity, limits, rest at both ends) is
 malformed: ``MalformedTrajectory``.
 
 **The planner uses this.** The default motion validator samples tree edges with the same rule, a planned path is
@@ -45,6 +45,7 @@ from typing import Any
 import numpy as np
 
 from sscbirrt.space import JointSpace
+from sscbirrt.trajectory import speed
 
 SUBJECTS = ("state", "motion", "path", "trajectory")
 LAW = "piecewise_constant_acceleration"  # how a Trajectory's position evolves: quadratic on every ramp segment
@@ -415,7 +416,7 @@ class Validator:
         """Check the states of one piece after its start: (states checked, an invalid one or None).
 
         A piece whose trace lies on the source path is checked at the path's states within its span and at its end;
-        any other piece at ``n = max(1, ceil(T * piece.speed / resolution - ROUNDING))`` uniform time steps, with every
+        any other piece at ``n = max(1, ceil(T * speed(piece) / resolution - ROUNDING))`` uniform time steps, with every
         bounded joint's out-of-limits turning point added. The smoother accepts a shortcut only if each piece it
         creates passes this (``first=False``: the whole verdict only), so a returned trajectory passes
         ``validate_trajectory``. See ``_search`` for the order.
@@ -618,10 +619,10 @@ def spread_order(n: int) -> list[int]:
 
 def _time_steps(piece, resolution: float, space: JointSpace) -> np.ndarray:
     """The times after a piece's start that are checked: uniform steps over which no joint-space step exceeds the
-    resolution (``|q(t + dt) - q(t)| <= dt * piece.speed``), and every bounded joint's turning point that leaves its
+    resolution (``|q(t + dt) - q(t)| <= dt * speed(piece)``), and every bounded joint's turning point that leaves its
     limits, so position limits hold exactly along the law."""
     T = piece.duration
-    n = max(1, math.ceil(T * piece.speed / resolution - ROUNDING))
+    n = max(1, math.ceil(T * speed(piece) / resolution - ROUNDING))
     ts = list(np.linspace(0.0, T, n + 1)[1:])
     bounded = np.ones(space.dof, dtype=bool) if space.continuous_joints is None else ~space.continuous_joints
     extra = []

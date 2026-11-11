@@ -343,6 +343,7 @@ class TestTrajectories:
             if rng.random() < 0.5:
                 q0, q1 = q1, q0
             piece = synchronize(q0, np.zeros(4), q1, np.zeros(4), vmax, amax)
+            assert piece is not None  # rest to rest always synchronizes
             traj = Trajectory([Piece(piece.ramps, "shortcut")], vmax, amax)
             v = Validator(space, Wall(0, lo, hi), policy=ValidationPolicy(resolution), backend=backend)
             r = v.validate_trajectory(traj)
