@@ -27,15 +27,21 @@ def _sorted(sols):
     return sorted((tuple(np.round(q, 9)) for q in sols))
 
 
-def _same(a, b, atol=1e-6):
-    """The same solution set: equal counts, and every solution of each matched by one of the other within ``atol``.
-    The polished 7R families refine numerically, so the backends agree to about 1e-7, not to the last bit."""
+def _difference(a, b, atol=1e-6):
+    """How solution sets ``a`` and ``b`` differ, or None for the same set: equal counts, and every solution of each
+    matched by one of the other within ``atol``. The polished 7R families refine numerically, so the backends agree to
+    about 1e-7, not to the last bit."""
     a, b = [np.asarray(q) for q in a], [np.asarray(q) for q in b]
-    return (
-        len(a) == len(b)
-        and all(any(np.max(np.abs(x - y)) <= atol for y in b) for x in a)
-        and all(any(np.max(np.abs(x - y)) <= atol for y in a) for x in b)
-    )
+
+    def unmatched(xs, ys):
+        gaps = [min((float(np.max(np.abs(x - y))) for y in ys), default=np.inf) for x in xs]
+        return [(x.round(9).tolist(), f"{g:.1e}") for x, g in zip(xs, gaps, strict=True) if g > atol]
+
+    only_a, only_b = unmatched(a, b), unmatched(b, a)
+    if len(a) == len(b) and not only_a and not only_b:
+        return None
+    counts = f"{len(a)} against {len(b)} solutions"
+    return f"{counts}; unmatched {len(only_a)}: {only_a[:3]}, and {len(only_b)}: {only_b[:3]}"
 
 
 # One prebuilt arm per family ssik solves natively (ssik.cpp.NATIVE_FAMILIES, minus jointlock, which no prebuilt arm
