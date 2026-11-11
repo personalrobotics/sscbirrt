@@ -77,7 +77,7 @@ class TestEveryNativeFamily:
             T = py.fk(q)
             a, b = py.solve(T), nat.solve(T.tolist())
             assert len(a) > 0, "reachable by construction"
-            assert _same(a, b), f"solution sets differ at q={q}"
+            assert _difference(a, b) is None, f"solution sets differ at q={q}: {_difference(a, b)}"
             for sol in b:
                 assert np.allclose(nat.fk(list(sol)), T, atol=1e-8)
 
@@ -87,7 +87,7 @@ class TestEveryNativeFamily:
         for q in _random_configs(rng, arm, 20):
             T = py.fk(q)
             seed = q + rng.normal(scale=0.3, size=arm.dof)
-            assert _same(py.solve(T, q_init=seed), nat.solve(T.tolist(), list(seed)))
+            assert _difference(py.solve(T, q_init=seed), nat.solve(T.tolist(), list(seed))) is None
 
     def test_a_wrong_length_seed_is_refused(self, pair):
         arm, py, nat = pair
@@ -119,7 +119,7 @@ class TestPrebuiltUR5e:
         ):
             T = py.fk(np.array(q))
             a, b = _sorted(py.solve(T)), _sorted(nat.solve(T.tolist()))
-            assert a == b, f"singular pose disagreement at q={q}"
+            assert a == b, f"singular pose disagreement at q={q}: {_difference(a, b)}"
 
 
 @pytest.mark.skipif("MUJOCO_MENAGERIE_PATH" not in os.environ, reason="needs the MuJoCo Menagerie")
