@@ -6,7 +6,7 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [3.16.0]
+## [3.16.0] - 2026-11-10
 
 sscbirrt checks a trajectory piece at its own speed rather than at the velocity limits (#279): validation and
 smoothing check about half as many states, with the same guarantee that consecutive checked states are at most
