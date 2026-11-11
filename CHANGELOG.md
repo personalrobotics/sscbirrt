@@ -6,6 +6,12 @@ follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [3.16.0]
+
+sscbirrt checks a trajectory piece at its own speed rather than at the velocity limits (#279): validation and
+smoothing check about half as many states, with the same guarantee that consecutive checked states are at most
+`resolution` apart.
+
 ### Changed
 - **A trajectory piece off the source path is sampled by its own speed, not by the velocity limits (#279).**
   - The rule: `n = max(1, ceil(T * speed / resolution - 1e-9))` time steps, where `Piece::speed` (Python
