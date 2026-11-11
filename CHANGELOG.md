@@ -7,9 +7,11 @@ follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Fixed
-- **The door demo's handle is a 32 mm bar** (was 24 mm; #280). sstsr 4.1 keeps a side grasp's closed fingertips a
-  clearance inside the far side of the bar, and the Robotiq 2F-85 cannot do that on a bar thinner than 30 mm, so the
-  demo found no grasp and `test_door_follows_the_arc` failed on every sstsr from 4.1.
+- **The door demo's handle is a 36 mm bar** (was 24 mm; #280). sstsr 4.1 keeps a side grasp's closed fingertips a
+  clearance inside the far side of the bar, and the Robotiq 2F-85 cannot do that on a bar thinner than 29 mm (sstsr
+  4.1 to 4.4), so the demo found no grasp and `test_door_follows_the_arc` failed on every sstsr from 4.1. The door
+  demo now names the gripper and the handle when it finds no grasp. The committed door benchmark data were recorded
+  on the 24 mm handle.
 
 ## [3.15.0] - 2026-10-26
 

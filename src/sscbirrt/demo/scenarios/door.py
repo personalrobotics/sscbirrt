@@ -45,7 +45,12 @@ def door_chain(lo: float, hi: float) -> TSRChain:
     side grasp of the handle bar from the robot's side, fingers level, from the tsr package's Robotiq 2F-85.
     """
     templates = Robotiq2F85().grasp_cylinder_side(cylinder_radius=HANDLE_RADIUS, cylinder_height=HANDLE_LENGTH)
-    mid_level = next(t for t in templates if "mid" in t.name and "roll 0" in t.name)
+    mid_level = next((t for t in templates if "mid" in t.name and "roll 0" in t.name), None)
+    if mid_level is None:
+        raise ValueError(
+            f"the Robotiq 2F-85 has no mid-depth, roll-0 side grasp of a handle of radius {HANDLE_RADIUS} m under this "
+            f"sstsr ({len(templates)} side-grasp templates)"
+        )
     # A chain composes each link on the previous link's end frame and ignores the T0_w of every link after the first
     # (Berenson et al. 2011, sec. 5.1), so the template's frame on the bar goes into the hinge link's Tw_e.
     hinge = TSR(
