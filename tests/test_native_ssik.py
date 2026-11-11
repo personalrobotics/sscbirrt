@@ -27,15 +27,40 @@ def _sorted(sols):
     return sorted((tuple(np.round(q, 9)) for q in sols))
 
 
-def _same(a, b, atol=1e-6):
-    """The same solution set: equal counts, and every solution of each matched by one of the other within ``atol``.
-    The polished 7R families refine numerically, so the backends agree to about 1e-7, not to the last bit."""
+def _atol(arm):
+    """How closely the backends' solutions agree. xarm7's polished family refines numerically, and the two builds of
+    ssik's C++ converge to points up to 2.4e-6 apart on CI's runners (#282), not to the last bit; its distinct solutions
+    are 1e-3 apart or more."""
+    return 1e-5 if arm.solver_name == "seven_r.spherical_shoulder_polished" else 1e-6
+
+
+def _on_a_limit(q, arm, margin=1e-6):
+    """Whether ``q`` lies within ``margin`` of a joint limit. A solution on a limit, such as a joint at 0 wound to the
+    UR5e's +-2pi, is kept or dropped by round-off, and the two builds of ssik's C++ may break that tie either way
+    (#282)."""
+    lo = np.array([lim[0] if lim else -np.inf for lim in arm.joint_limits])
+    hi = np.array([lim[1] if lim else np.inf for lim in arm.joint_limits])
+    return bool(np.any(q - lo < margin) or np.any(hi - q < margin))
+
+
+def _difference(a, b, atol=1e-6, arm=None):
+    """How solution sets ``a`` and ``b`` differ, or None for the same set: equal counts, and every solution of each
+    matched by one of the other within ``atol``. Given ``arm``, a solution only one side has is excused when it lies on
+    a joint limit, and the counts are compared without it."""
     a, b = [np.asarray(q) for q in a], [np.asarray(q) for q in b]
-    return (
-        len(a) == len(b)
-        and all(any(np.max(np.abs(x - y)) <= atol for y in b) for x in a)
-        and all(any(np.max(np.abs(x - y)) <= atol for y in a) for x in b)
-    )
+
+    def unmatched(xs, ys):
+        gaps = [min((float(np.max(np.abs(x - y))) for y in ys), default=np.inf) for x in xs]
+        missing = [(x, g) for x, g in zip(xs, gaps, strict=True) if g > atol]
+        on_limit = [arm is not None and _on_a_limit(x, arm) for x, _ in missing]
+        unexcused = [(x.round(9).tolist(), f"{g:.1e}") for (x, g), e in zip(missing, on_limit, strict=True) if not e]
+        return unexcused, sum(on_limit)
+
+    (only_a, excused_a), (only_b, excused_b) = unmatched(a, b), unmatched(b, a)
+    if len(a) - excused_a == len(b) - excused_b and not only_a and not only_b:
+        return None
+    counts = f"{len(a)} against {len(b)} solutions, {excused_a} and {excused_b} unmatched on a limit"
+    return f"{counts}; unmatched {len(only_a)}: {only_a[:3]}, and {len(only_b)}: {only_b[:3]}"
 
 
 # One prebuilt arm per family ssik solves natively (ssik.cpp.NATIVE_FAMILIES, minus jointlock, which no prebuilt arm
@@ -77,7 +102,8 @@ class TestEveryNativeFamily:
             T = py.fk(q)
             a, b = py.solve(T), nat.solve(T.tolist())
             assert len(a) > 0, "reachable by construction"
-            assert _same(a, b), f"solution sets differ at q={q}"
+            difference = _difference(a, b, _atol(arm))
+            assert difference is None, f"solution sets differ at q={q}: {difference}"
             for sol in b:
                 assert np.allclose(nat.fk(list(sol)), T, atol=1e-8)
 
@@ -87,7 +113,8 @@ class TestEveryNativeFamily:
         for q in _random_configs(rng, arm, 20):
             T = py.fk(q)
             seed = q + rng.normal(scale=0.3, size=arm.dof)
-            assert _same(py.solve(T, q_init=seed), nat.solve(T.tolist(), list(seed)))
+            difference = _difference(py.solve(T, q_init=seed), nat.solve(T.tolist(), list(seed)), _atol(arm))
+            assert difference is None, f"seeded solution sets differ at q={q}, seed={seed}: {difference}"
 
     def test_a_wrong_length_seed_is_refused(self, pair):
         arm, py, nat = pair
@@ -111,15 +138,18 @@ class TestPrebuiltUR5e:
         far = np.eye(4)
         far[:3, 3] = [5.0, 0.0, 0.0]
         assert py.solve(far) == [] and nat.solve(far.tolist()) == []
-        # Wrist singularity: joints 4 and 6 aligned (q5 = 0); shoulder singularity: wrist over the base.
+        # Wrist singularity: joints 4 and 6 aligned (q5 = 0); shoulder singularity: wrist over the base. Both put
+        # solutions on the +-2pi limits, where only one backend may keep them.
         for q in (
             [0.0, -1.2, 1.0, 0.2, 0.0, 0.7],
             [0.0, -np.pi / 2, 0.0, 0.0, 0.0, 0.0],
             [0.3, -0.8, 0.8, 0.0, 1e-7, 0.0],
         ):
             T = py.fk(np.array(q))
-            a, b = _sorted(py.solve(T)), _sorted(nat.solve(T.tolist()))
-            assert a == b, f"singular pose disagreement at q={q}"
+            a, b = py.solve(T), nat.solve(T.tolist())
+            assert len(a) > 0 and len(b) > 0, "reachable by construction"
+            difference = _difference(a, b, _atol(arm), arm)
+            assert difference is None, f"singular pose disagreement at q={q}: {difference}"
 
 
 @pytest.mark.skipif("MUJOCO_MENAGERIE_PATH" not in os.environ, reason="needs the MuJoCo Menagerie")
