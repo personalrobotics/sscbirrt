@@ -96,7 +96,7 @@ DOOR_HINGE = np.array([0.30, -0.60, 0.0])
 DOOR_WIDTH = 0.45
 DOOR_HEIGHT = 0.95
 DOOR_THICKNESS = 0.03
-HANDLE_RADIUS = 0.012
+HANDLE_RADIUS = 0.016  # the thinnest bar, with margin, the 2F-85 can side-grasp under sstsr >= 4.1 (#280)
 HANDLE_LENGTH = 0.16
 HANDLE_OFFSET = np.array([DOOR_WIDTH - 0.07, DOOR_THICKNESS / 2 + 0.05, 0.50])  # handle bottom, in the door frame
 
