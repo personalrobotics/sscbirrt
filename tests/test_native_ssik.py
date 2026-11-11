@@ -27,10 +27,24 @@ def _sorted(sols):
     return sorted((tuple(np.round(q, 9)) for q in sols))
 
 
+def _atol(arm):
+    """How closely the backends' solutions agree. The polished 7R families refine numerically, and the two builds of
+    ssik's C++ converge to points up to 2.4e-6 apart (CI's runners, #282), not to the last bit; distinct solutions are
+    1e-3 apart or more."""
+    return 1e-5 if arm.solver_name.endswith("_polished") else 1e-6
+
+
+def _clear_of_limits(sols, arm, margin=1e-8):
+    """The solutions at least ``margin`` inside every joint limit. A solution on a limit, such as a joint at 0 wound to
+    the UR5e's +-2pi, is kept or dropped by round-off, and the two builds of ssik's C++ may break that tie either way
+    (#282)."""
+    lo, hi = (np.array([lim[i] for lim in arm.joint_limits]) for i in (0, 1))
+    return [q for q in sols if np.all(np.asarray(q) >= lo + margin) and np.all(np.asarray(q) <= hi - margin)]
+
+
 def _difference(a, b, atol=1e-6):
     """How solution sets ``a`` and ``b`` differ, or None for the same set: equal counts, and every solution of each
-    matched by one of the other within ``atol``. The polished 7R families refine numerically, so the backends agree to
-    about 1e-7, not to the last bit."""
+    matched by one of the other within ``atol``."""
     a, b = [np.asarray(q) for q in a], [np.asarray(q) for q in b]
 
     def unmatched(xs, ys):
@@ -83,7 +97,9 @@ class TestEveryNativeFamily:
             T = py.fk(q)
             a, b = py.solve(T), nat.solve(T.tolist())
             assert len(a) > 0, "reachable by construction"
-            assert _difference(a, b) is None, f"solution sets differ at q={q}: {_difference(a, b)}"
+            assert _difference(a, b, _atol(arm)) is None, (
+                f"solution sets differ at q={q}: {_difference(a, b, _atol(arm))}"
+            )
             for sol in b:
                 assert np.allclose(nat.fk(list(sol)), T, atol=1e-8)
 
@@ -93,7 +109,7 @@ class TestEveryNativeFamily:
         for q in _random_configs(rng, arm, 20):
             T = py.fk(q)
             seed = q + rng.normal(scale=0.3, size=arm.dof)
-            assert _difference(py.solve(T, q_init=seed), nat.solve(T.tolist(), list(seed))) is None
+            assert _difference(py.solve(T, q_init=seed), nat.solve(T.tolist(), list(seed)), _atol(arm)) is None
 
     def test_a_wrong_length_seed_is_refused(self, pair):
         arm, py, nat = pair
@@ -117,14 +133,16 @@ class TestPrebuiltUR5e:
         far = np.eye(4)
         far[:3, 3] = [5.0, 0.0, 0.0]
         assert py.solve(far) == [] and nat.solve(far.tolist()) == []
-        # Wrist singularity: joints 4 and 6 aligned (q5 = 0); shoulder singularity: wrist over the base.
+        # Wrist singularity: joints 4 and 6 aligned (q5 = 0); shoulder singularity: wrist over the base. Both put
+        # solutions on the +-2pi limits, which are compared only clear of them.
         for q in (
             [0.0, -1.2, 1.0, 0.2, 0.0, 0.7],
             [0.0, -np.pi / 2, 0.0, 0.0, 0.0, 0.0],
             [0.3, -0.8, 0.8, 0.0, 1e-7, 0.0],
         ):
             T = py.fk(np.array(q))
-            a, b = _sorted(py.solve(T)), _sorted(nat.solve(T.tolist()))
+            a = _sorted(_clear_of_limits(py.solve(T), arm))
+            b = _sorted(_clear_of_limits(nat.solve(T.tolist()), arm))
             assert a == b, f"singular pose disagreement at q={q}: {_difference(a, b)}"
 
 
