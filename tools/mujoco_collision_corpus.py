@@ -14,7 +14,10 @@ scenario it records configurations near and across contact with:
 - whether ``mj_kinematics`` followed by ``mj_collision`` yields the same contact geom pairs as ``mj_forward``.
 
 ``tests/test_mujoco_collision_corpus.py`` replays the native validator against the recorded decisions.
-Regenerating needs mj_manipulator installed (a workspace member).
+Regenerating needs mj_manipulator installed. It is retired and archived
+(personalrobotics/mj_manipulator#182); the corpus was recorded with 2.0.0, and its final tag
+is v2.1.0, installed with its workspace sources ignored:
+``uv run --no-sources --with "mj_manipulator @ git+https://github.com/personalrobotics/mj_manipulator@v2.1.0"``.
 
     uv run python tools/mujoco_collision_corpus.py           # write tests/reference/mujoco_collision_corpus.json
     uv run python tools/mujoco_collision_corpus.py --check   # regenerate and compare decisions
@@ -164,7 +167,11 @@ def generate() -> dict[str, Any]:
     try:
         from mj_manipulator.collision import CollisionChecker as MjmChecker
     except ImportError:
-        print("mj_manipulator is not installed; it is needed to regenerate the corpus", file=sys.stderr)
+        print(
+            "mj_manipulator is not installed; it is needed to regenerate the corpus (retired: install its "
+            "final tag, v2.1.0, from git)",
+            file=sys.stderr,
+        )
         raise
     from sscbirrt.backends.mujoco import MuJoCoCollisionChecker
 
