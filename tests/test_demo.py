@@ -24,6 +24,18 @@ from sscbirrt.demo.__main__ import main  # noqa: E402
 REQUIRE_RENDER = os.environ.get("SSCBIRRT_REQUIRE_RENDER") == "1"
 
 
+@pytest.fixture(autouse=True)
+def _restore_mujoco_gl():
+    # main() calls headless_gl_default, which writes MUJOCO_GL into this process. A leaked "egl" reaches every later
+    # subprocess, and on a headless runner without libEGL their `import mujoco` fails (the release check's did).
+    before = os.environ.get("MUJOCO_GL")
+    yield
+    if before is None:
+        os.environ.pop("MUJOCO_GL", None)
+    else:
+        os.environ["MUJOCO_GL"] = before
+
+
 def test_list_names_every_scenario(capsys):
     assert main(["--list"]) == 0
     listed = [line.split()[0] for line in capsys.readouterr().out.splitlines()]
