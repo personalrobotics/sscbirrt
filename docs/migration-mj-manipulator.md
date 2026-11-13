@@ -2,6 +2,10 @@
 
 Written for the mj_manipulator maintainers, ahead of personalrobotics/mj_manipulator#174 and #175.
 
+> **Historical.** That migration did not happen: #174 and #175 were closed as not planned,
+> and mj_manipulator is retired and archived (personalrobotics/mj_manipulator#182). Its
+> successors plan through ssrobot's planning boundary. This guide is kept as a record.
+
 Since 1.7, sscbirrt offers one boundary for planning against a live MuJoCo world: an
 owned scene, an immutable snapshot, a collision checker with mj_manipulator's
 contact policy implemented in C++, and one call that runs the whole solve

@@ -14,10 +14,15 @@ scenario it records configurations near and across contact with:
 - whether ``mj_kinematics`` followed by ``mj_collision`` yields the same contact geom pairs as ``mj_forward``.
 
 ``tests/test_mujoco_collision_corpus.py`` replays the native validator against the recorded decisions.
-Regenerating needs mj_manipulator installed (a workspace member).
+Regenerating needs mj_manipulator, which is retired and archived (personalrobotics/mj_manipulator#182). The
+corpus was recorded with 2.0.0; its final tag, v2.1.0, reproduces every recorded decision. Install it on Python
+3.11 or later with its workspace sources ignored. The overlay brings its own pins (sstsr 3.x, sscbirrt 3.x from
+PyPI, no sscbirrt-assets), so use it for this tool only. It writes
+``tests/reference/mujoco_collision_corpus.json``:
 
-    uv run python tools/mujoco_collision_corpus.py           # write tests/reference/mujoco_collision_corpus.json
-    uv run python tools/mujoco_collision_corpus.py --check   # regenerate and compare decisions
+    MJM="mj_manipulator @ git+https://github.com/personalrobotics/mj_manipulator@v2.1.0"
+    uv run --no-sources --with "$MJM" python tools/mujoco_collision_corpus.py          # write the reference
+    uv run --no-sources --with "$MJM" python tools/mujoco_collision_corpus.py --check  # regenerate, compare
 """
 
 from __future__ import annotations
@@ -164,7 +169,12 @@ def generate() -> dict[str, Any]:
     try:
         from mj_manipulator.collision import CollisionChecker as MjmChecker
     except ImportError:
-        print("mj_manipulator is not installed; it is needed to regenerate the corpus", file=sys.stderr)
+        print(
+            "mj_manipulator is not installed; it is needed to regenerate the corpus. It is retired: run this "
+            'tool with uv run --no-sources --with "mj_manipulator @ '
+            "git+https://github.com/personalrobotics/mj_manipulator@v2.1.0\" (see this module's docstring)",
+            file=sys.stderr,
+        )
         raise
     from sscbirrt.backends.mujoco import MuJoCoCollisionChecker
 
