@@ -36,5 +36,3 @@ Thumbs.db
 # MuJoCo writes this next to the process when it warns
 MUJOCO_LOG.TXT
 
-# A member of the robot-code uv workspace: the root lock is the one that counts (#27)
-uv.lock
